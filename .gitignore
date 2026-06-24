@@ -1,0 +1,22 @@
+# dependencies
+node_modules/
+
+# next.js
+.next/
+out/
+
+# env files — never commit secrets
+.env
+.env.local
+.env*.local
+
+# vercel
+.vercel
+
+# nested repo — tracked separately
+The-Start-Up/
+
+# misc
+.DS_Store
+*.pem
+npm-debug.log*
