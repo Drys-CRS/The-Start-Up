@@ -1,6 +1,6 @@
 "use client";
 import React, { useState, useRef } from "react";
-import { ArrowRight, Check, Download, FileText, Loader2, ShieldCheck } from "lucide-react";
+import { ArrowRight, Check, Download, FileText, Loader2, PenLine, ShieldCheck } from "lucide-react";
 import WordMark from "./WordMark";
 
 const OFFER_DEADLINE = "30 Sep 2026";
@@ -51,7 +51,7 @@ export default function ScopeLockForm() {
       });
       if (res.ok) {
         const data = await res.json().catch(() => ({}));
-        lastSubmission.current = { ...payload, mondayItemId: data.itemId };
+        lastSubmission.current = { ...payload, mondayItemId: data.itemId, refNo: data.refNo };
         setStatus("done");
       } else {
         setStatus("error");
@@ -98,6 +98,8 @@ export default function ScopeLockForm() {
     const s = lastSubmission.current || {};
     const selectedTier = TIERS.find((t) => t.value === s.tier) || TIERS[0];
     const cur = s.currency || "USD";
+    const tierKey = selectedTier.promo ? "promo" : "premium";
+    const signHref = `/sign?ref=${encodeURIComponent(s.refNo || "")}&item=${encodeURIComponent(s.mondayItemId || "")}&t=${tierKey}&c=${cur}`;
 
     const Row = ({ label: l, value: v }) =>
       v ? (
@@ -159,35 +161,46 @@ export default function ScopeLockForm() {
               )}
             </div>
 
-            {/* Download strip */}
-            <div className="border-t border-slate-100 bg-slate-50 px-5 py-4">
-              <div className="flex items-center gap-2 mb-3">
-                <FileText className="h-4 w-4 text-teal-500 flex-none" />
-                <p className="text-xs text-slate-600">
-                  Your proposal PDF includes everything above plus terms &amp; conditions and a signature block.
+            {/* Action strip */}
+            <div className="border-t border-slate-100 px-5 py-5 space-y-3">
+
+              {/* PRIMARY: Sign & Pay */}
+              <a href={signHref} className="block">
+                <div className="inline-flex w-full items-center justify-center gap-2 rounded-xl px-4 py-3.5 text-sm font-bold bg-teal-500 text-white hover:bg-teal-600 transition-colors cursor-pointer">
+                  <PenLine className="h-4 w-4" /> Sign Agreement &amp; Pay
+                </div>
+              </a>
+              <p className="text-xs text-slate-500 text-center">
+                Sign your agreement digitally and complete payment — no printing required.
+              </p>
+
+              {/* SECONDARY: PDF download */}
+              <div className="border-t border-slate-100 pt-3">
+                <p className="text-[11px] font-medium text-slate-400 uppercase tracking-wider mb-2 text-center">
+                  Optional
                 </p>
-              </div>
-              <button
-                onClick={downloadProposal}
-                disabled={downloading}
-                className={
-                  "inline-flex w-full items-center justify-center gap-2 rounded-lg px-4 py-2.5 text-sm font-semibold transition-colors " +
-                  (downloading
-                    ? "bg-slate-200 text-slate-400 cursor-not-allowed"
-                    : "bg-teal-500 text-white hover:bg-teal-600")
-                }
-              >
-                {downloading ? (
-                  <><Loader2 className="h-4 w-4 animate-spin" /> Generating PDF…</>
-                ) : (
-                  <><Download className="h-4 w-4" /> Download Proposal PDF</>
+                <button
+                  onClick={downloadProposal}
+                  disabled={downloading}
+                  className={
+                    "inline-flex w-full items-center justify-center gap-2 rounded-lg px-4 py-2.5 text-sm font-medium transition-colors border " +
+                    (downloading
+                      ? "bg-slate-50 text-slate-400 border-slate-200 cursor-not-allowed"
+                      : "bg-white text-slate-600 border-slate-200 hover:bg-slate-50")
+                  }
+                >
+                  {downloading ? (
+                    <><Loader2 className="h-4 w-4 animate-spin" /> Generating…</>
+                  ) : (
+                    <><Download className="h-4 w-4" /> Download Proposal PDF</>
+                  )}
+                </button>
+                {dlError && (
+                  <p className="mt-2 text-xs text-rose-500 text-center">
+                    PDF generation failed — please try again.
+                  </p>
                 )}
-              </button>
-              {dlError && (
-                <p className="mt-2 text-xs text-rose-500 text-center">
-                  PDF generation failed — please try again.
-                </p>
-              )}
+              </div>
             </div>
           </div>
 

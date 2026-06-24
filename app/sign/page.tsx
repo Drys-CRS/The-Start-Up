@@ -319,11 +319,6 @@ export default function SignPage() {
             : "Sign Agreement"}
         </button>
 
-        {!item && (
-          <p style={{ color: "#f59e0b", fontSize: 12, marginTop: "0.75rem", textAlign: "center" }}>
-            No proposal record linked. Please use the link from your PDF.
-          </p>
-        )}
       </div>
       <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
     </main>

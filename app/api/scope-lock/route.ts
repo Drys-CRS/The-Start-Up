@@ -21,8 +21,9 @@ export async function POST(req: NextRequest) {
     [SCOPE.submitted]: { date: today() },
   };
   try {
+    const refNo = `SL-${Date.now().toString().slice(-8)}`;
     const id = await createItem(SCOPE_BOARD_ID, b.company || b.email, columnValues);
-    return NextResponse.json({ ok: true, itemId: id });
+    return NextResponse.json({ ok: true, itemId: id, refNo });
   } catch (e: any) {
     return NextResponse.json({ error: "Could not save scope lock", detail: String(e?.message || e) }, { status: 502 });
   }

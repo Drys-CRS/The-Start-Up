@@ -145,29 +145,38 @@ async function buildCertPDF(opts: {
 export async function POST(req: NextRequest) {
   const { ref, item, name, sigDataUrl, tier, cur } = await req.json().catch(() => ({}));
 
-  if (!name || !sigDataUrl || !item) {
-    return NextResponse.json({ error: "name, sigDataUrl and item are required" }, { status: 400 });
+  if (!name || !sigDataUrl) {
+    return NextResponse.json({ error: "name and sigDataUrl are required" }, { status: 400 });
   }
 
   const signedAt = new Date().toISOString();
 
-  // Generate signature certificate PDF
-  const certBytes = await buildCertPDF({ ref, name, signedAt, sigDataUrl, tier, cur });
+  // Generate signature certificate PDF (optional — swallow errors)
+  let certBytes: Uint8Array | null = null;
+  try {
+    certBytes = await buildCertPDF({ ref, name, signedAt, sigDataUrl, tier, cur });
+  } catch {
+    // cert generation failed — proceed without it
+  }
 
-  // Fire off Monday.com updates concurrently (errors are swallowed — don't block the response)
-  await Promise.allSettled([
-    addFileToItem(
-      item,
-      Buffer.from(certBytes),
-      `signature-cert-${ref || Date.now()}.pdf`,
-      `Digital agreement signed by ${name} on ${new Date(signedAt).toLocaleString("en-ZA")}. Ref: ${ref}`,
-    ),
-    addUpdateToItem(
-      item,
-      `<strong>Agreement signed digitally</strong><br>Signatory: ${name}<br>Reference: ${ref}<br>Timestamp: ${new Date(signedAt).toUTCString()}`,
-    ),
-    changeItemStage(item, "Signed"),
-  ]);
+  // If we have a Monday.com item ID, attach cert and update the item
+  if (item) {
+    await Promise.allSettled([
+      certBytes
+        ? addFileToItem(
+            item,
+            Buffer.from(certBytes),
+            `signature-cert-${ref || Date.now()}.pdf`,
+            `Digital agreement signed by ${name} on ${new Date(signedAt).toLocaleString("en-ZA")}. Ref: ${ref}`,
+          )
+        : Promise.resolve(),
+      addUpdateToItem(
+        item,
+        `<strong>Agreement signed digitally</strong><br>Signatory: ${name}<br>Reference: ${ref}<br>Timestamp: ${new Date(signedAt).toUTCString()}`,
+      ),
+      changeItemStage(item, "Signed"),
+    ]);
+  }
 
   return NextResponse.json({ ok: true, signedAt });
 }
