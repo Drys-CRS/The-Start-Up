@@ -50,7 +50,8 @@ export default function ScopeLockForm() {
         body: JSON.stringify(payload),
       });
       if (res.ok) {
-        lastSubmission.current = payload;
+        const data = await res.json().catch(() => ({}));
+        lastSubmission.current = { ...payload, mondayItemId: data.itemId };
         setStatus("done");
       } else {
         setStatus("error");

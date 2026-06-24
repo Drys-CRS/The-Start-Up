@@ -90,3 +90,42 @@ export async function createItem(
 }
 
 export const today = () => new Date().toISOString().slice(0, 10);
+
+// Attach a file to a Monday.com item by creating an update then uploading to it.
+export async function addFileToItem(
+  itemId: string,
+  fileBuffer: Buffer,
+  filename: string,
+  updateBody = "Proposal PDF generated and sent to client.",
+): Promise<void> {
+  if (!TOKEN) return;
+
+  // 1 — create an update on the item
+  const updateRes = await fetch(MONDAY_API, {
+    method: "POST",
+    headers: { Authorization: TOKEN, "Content-Type": "application/json", "API-Version": "2024-10" },
+    body: JSON.stringify({
+      query: `mutation { create_update(item_id: ${itemId}, body: ${JSON.stringify(updateBody)}) { id } }`,
+    }),
+  }).catch(() => null);
+  const updateJson = await updateRes?.json().catch(() => null);
+  const updateId = updateJson?.data?.create_update?.id;
+  if (!updateId) return;
+
+  // 2 — upload file to that update (multipart, no explicit Content-Type header)
+  const form = new FormData();
+  form.append(
+    "query",
+    `mutation ($file: File!) { add_file_to_update(update_id: ${updateId}, file: $file) { id } }`,
+  );
+  form.append(
+    "variables[file]",
+    new Blob([fileBuffer], { type: "application/pdf" }),
+    filename,
+  );
+  await fetch("https://api.monday.com/v2/file", {
+    method: "POST",
+    headers: { Authorization: TOKEN, "API-Version": "2024-10" },
+    body: form,
+  }).catch(() => null);
+}
