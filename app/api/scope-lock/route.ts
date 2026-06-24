@@ -9,7 +9,7 @@ export async function POST(req: NextRequest) {
   const columnValues: Record<string, unknown> = {
     [SCOPE.contact]: b.contact || "",
     [SCOPE.email]: { email: b.email, text: b.email },
-    [SCOPE.tier]: { label: b.tier || "Core" },
+    [SCOPE.tier]: { label: b.tier || "Premium" },
     [SCOPE.currency]: b.currency || "USD",
     [SCOPE.goal]: { text: b.goal || "" },
     [SCOPE.bottleneck]: { text: b.bottleneck || "" },

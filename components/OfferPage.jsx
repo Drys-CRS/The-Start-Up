@@ -13,16 +13,14 @@ const TIERS = {
     sym: "$",
     offer: { total: "3,000", tag: "30-day build · 60 days support FREE" },
     items: [
-      { name: "Core", total: "18,000", monthly: "6,000", tag: "Most teams start here" },
-      { name: "Premium", total: "30,000", monthly: "10,000", tag: "Complex / multi-system" },
+      { name: "Premium", total: "50,000", monthly: "10,000", tag: "Complex / multi-system · 120-day support" },
     ],
   },
   ZAR: {
     sym: "R",
     offer: { total: "60,000", tag: "30-day build · 60 days support FREE" },
     items: [
-      { name: "Core", total: "180,000", monthly: "60,000", tag: "Most teams start here" },
-      { name: "Premium", total: "300,000", monthly: "100,000", tag: "Complex / multi-system" },
+      { name: "Premium", total: "500,000", monthly: "100,000", tag: "Complex / multi-system · 120-day support" },
     ],
   },
 };
@@ -75,11 +73,11 @@ export default function OfferPage() {
           </div>
           <h1 className="text-4xl sm:text-5xl font-semibold tracking-tight leading-tight">
             Shipped in <span className="font-mono tabular-nums">30</span>.
-            <br className="hidden sm:block" /> Supported for <span className="font-mono tabular-nums">60</span>.
+            <br className="hidden sm:block" /> Supported for <span className="font-mono tabular-nums">60–120</span>.
           </h1>
           <p className="mt-4 text-lg text-slate-600">
             We turn your worst pipeline bottleneck into a working CRM system in one month —
-            then spend two more making sure your team runs it. No endless discovery. No disappearing act.
+            then support your team through it for 60 days (Promotional) or 120 days (Premium). No endless discovery. No disappearing act.
           </p>
           <div className="mt-7 flex flex-col sm:flex-row gap-3">
             <a href="/scope-lock" className="inline-flex items-center justify-center gap-2 rounded-lg bg-slate-900 px-6 py-3 text-sm font-semibold text-white hover:bg-slate-800">
@@ -109,7 +107,7 @@ export default function OfferPage() {
                 { n: "02", label: "Bottleneck Report", sub: "AI analysis pinpoints exactly where revenue leaks and what to build" },
                 { n: "03", label: "Scope Lock", sub: "Short async questionnaire fixes scope, price, and ship date" },
                 { n: "04", label: "30-Day Build", sub: "Your CRM system built and live — fixed date, no delays" },
-                { n: "05", label: "60-Day Support", sub: "Training, optimisation, and documentation so it sticks" },
+                { n: "05", label: "Support Period", sub: "60 days (Promotional) or 120 days (Premium) — training, optimisation, documentation" },
               ].map((step, i) => (
                 <div key={step.n} className="flex flex-col items-center text-center">
                   <div className={`relative z-10 flex h-10 w-10 items-center justify-center rounded-full border-2 text-xs font-mono font-semibold mb-3 ${
@@ -128,7 +126,7 @@ export default function OfferPage() {
           <div className="mt-8 pt-6 border-t border-slate-800 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
             <div className="flex items-center gap-3">
               <WordMark className="opacity-50 scale-75 origin-left" />
-              <span className="text-xs text-slate-500">Shipped in 30 · Supported for 60</span>
+              <span className="text-xs text-slate-500">Shipped in 30 · Supported for 60–120</span>
             </div>
             <a href="/calculator" className="inline-flex items-center gap-1.5 rounded-lg bg-teal-500 px-4 py-2 text-xs font-semibold text-slate-950 hover:bg-teal-400">
               Start with the free audit <ArrowRight className="h-3.5 w-3.5" />
@@ -181,8 +179,8 @@ export default function OfferPage() {
           <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 mb-7">
             <div>
               <div className="text-xs font-medium uppercase tracking-wider text-slate-500 mb-1">Pricing</div>
-              <h2 className="text-2xl font-semibold tracking-tight">One fixed program. Billed monthly.</h2>
-              <p className="mt-1.5 text-sm text-slate-600">A 3-month engagement: the 30-day build, then 60 days of support.</p>
+              <h2 className="text-2xl font-semibold tracking-tight">Two tiers. Fixed scope. Fixed price.</h2>
+              <p className="mt-1.5 text-sm text-slate-600">Promotional: 30-day build + 60 days support. Premium: 30-day build + 120 days support.</p>
             </div>
             <div className="flex rounded-lg border border-slate-200 bg-white p-0.5 text-xs font-medium self-start">
               {["USD", "ZAR"].map((cc) => (
@@ -237,40 +235,45 @@ export default function OfferPage() {
             </div>
           </div>
 
-          {/* Standard tiers */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-            {tiers.items.map((t, i) => {
-              const featured = i === 0;
-              return (
-                <div key={t.name}
-                  className={"relative flex flex-col rounded-2xl border p-6 " +
-                    (featured ? "border-slate-900 bg-slate-950 text-slate-100 shadow-lg" : "border-slate-200 bg-white")}>
-                  {featured && (
-                    <span className="absolute -top-2.5 left-6 rounded-full bg-teal-500 px-2.5 py-0.5 text-xs font-semibold text-slate-950">
-                      Recommended
-                    </span>
-                  )}
-                  <div className="text-sm font-semibold tracking-tight">{t.name}</div>
-                  <div className={"text-xs mt-0.5 " + (featured ? "text-slate-400" : "text-slate-500")}>{t.tag}</div>
-                  <div className="mt-5 flex items-baseline gap-1">
+          {/* Standard tier — Premium */}
+          {tiers.items.map((t) => (
+            <div key={t.name}
+              className="relative flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6 rounded-2xl border border-slate-900 bg-slate-950 text-slate-100 shadow-lg p-6 sm:p-8">
+              <span className="absolute -top-2.5 left-6 rounded-full bg-teal-500 px-2.5 py-0.5 text-xs font-semibold text-slate-950">
+                Standard
+              </span>
+              <div className="flex-1">
+                <div className="text-base font-semibold tracking-tight">{t.name}</div>
+                <div className="text-xs text-slate-400 mt-0.5">{t.tag}</div>
+                <div className="mt-4 flex flex-wrap items-center gap-4">
+                  <span className="flex items-center gap-1.5 text-sm text-slate-300">
+                    <Check className="h-4 w-4 text-teal-400" strokeWidth={3} /> 30-day build, fixed date
+                  </span>
+                  <span className="flex items-center gap-1.5 text-sm text-slate-300">
+                    <Check className="h-4 w-4 text-teal-400" strokeWidth={3} /> 120 days support included
+                  </span>
+                  <span className="flex items-center gap-1.5 text-sm text-slate-300">
+                    <Check className="h-4 w-4 text-teal-400" strokeWidth={3} /> Full handover documentation
+                  </span>
+                </div>
+              </div>
+              <div className="flex-none flex flex-col sm:items-end gap-3">
+                <div>
+                  <div className="flex items-baseline gap-1">
                     <span className="font-mono text-3xl font-semibold tracking-tight tabular-nums">
                       {tiers.sym}{t.monthly}
                     </span>
-                    <span className={"text-sm " + (featured ? "text-slate-400" : "text-slate-500")}>/mo</span>
+                    <span className="text-sm text-slate-400">/mo</span>
                   </div>
-                  <div className={"mt-1 text-xs " + (featured ? "text-slate-400" : "text-slate-500")}>
-                    {tiers.sym}{t.total} total · 3 months
-                  </div>
-                  <a href="/scope-lock"
-                    className={"mt-6 inline-flex items-center justify-center gap-2 rounded-lg px-4 py-2.5 text-sm font-semibold transition-colors " +
-                      (featured ? "bg-teal-500 text-slate-950 hover:bg-teal-400"
-                                : "bg-slate-900 text-white hover:bg-slate-800")}>
-                    Start <ArrowRight className="h-4 w-4" />
-                  </a>
+                  <div className="text-xs text-slate-400 mt-0.5">{tiers.sym}{t.total} total · 5 months</div>
                 </div>
-              );
-            })}
-          </div>
+                <a href="/scope-lock"
+                  className="inline-flex items-center justify-center gap-2 rounded-lg bg-teal-500 px-6 py-2.5 text-sm font-semibold text-slate-950 hover:bg-teal-400 transition-colors whitespace-nowrap">
+                  Start <ArrowRight className="h-4 w-4" />
+                </a>
+              </div>
+            </div>
+          ))}
         </div>
 
         {/* Start (no-call) */}

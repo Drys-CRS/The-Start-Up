@@ -15,19 +15,11 @@ const TIERS = [
     promo: true,
   },
   {
-    value: "Core",
-    label: "Core",
-    sublabel: null,
-    price: { USD: "$6,000 /mo", ZAR: "R60,000 /mo" },
-    note: { USD: "$18,000 total · 3 months", ZAR: "R180,000 total · 3 months" },
-    promo: false,
-  },
-  {
     value: "Premium",
     label: "Premium",
-    sublabel: null,
+    sublabel: "120-day support",
     price: { USD: "$10,000 /mo", ZAR: "R100,000 /mo" },
-    note: { USD: "$30,000 total · 3 months", ZAR: "R300,000 total · 3 months" },
+    note: { USD: "$50,000 total · 5 months", ZAR: "R500,000 total · 5 months" },
     promo: false,
   },
 ];
