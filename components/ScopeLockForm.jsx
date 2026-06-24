@@ -33,6 +33,7 @@ export default function ScopeLockForm() {
   });
   const [status, setStatus] = useState("idle"); // idle | sending | done | error
   const [downloading, setDownloading] = useState(false);
+  const [dlError, setDlError] = useState(false);
   const lastSubmission = useRef(null);
   const set = (k) => (e) => setF({ ...f, [k]: e.target.value });
 
@@ -62,13 +63,14 @@ export default function ScopeLockForm() {
   async function downloadProposal() {
     if (!lastSubmission.current || downloading) return;
     setDownloading(true);
+    setDlError(false);
     try {
       const res = await fetch("/api/proposal", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(lastSubmission.current),
       });
-      if (!res.ok) throw new Error("Failed");
+      if (!res.ok) throw new Error(`Server error ${res.status}`);
       const blob = await res.blob();
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
@@ -81,7 +83,7 @@ export default function ScopeLockForm() {
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
     } catch {
-      // silent — user can retry
+      setDlError(true);
     } finally {
       setDownloading(false);
     }
@@ -180,6 +182,11 @@ export default function ScopeLockForm() {
                   <><Download className="h-4 w-4" /> Download Proposal PDF</>
                 )}
               </button>
+              {dlError && (
+                <p className="mt-2 text-xs text-rose-500 text-center">
+                  PDF generation failed — please try again.
+                </p>
+              )}
             </div>
           </div>
 
