@@ -91,6 +91,40 @@ export async function createItem(
 
 export const today = () => new Date().toISOString().slice(0, 10);
 
+// Post a plain-text update on a Monday.com item.
+export async function addUpdateToItem(itemId: string, body: string): Promise<string | null> {
+  if (!TOKEN) return null;
+  const res = await fetch(MONDAY_API, {
+    method: "POST",
+    headers: { Authorization: TOKEN, "Content-Type": "application/json", "API-Version": "2024-10" },
+    body: JSON.stringify({
+      query: `mutation { create_update(item_id: ${itemId}, body: ${JSON.stringify(body)}) { id } }`,
+    }),
+  }).catch(() => null);
+  const json = await res?.json().catch(() => null);
+  return json?.data?.create_update?.id ?? null;
+}
+
+// Change the stage/status column value on a scope-lock item.
+export async function changeItemStage(
+  itemId: string,
+  label: string,
+  boardId = SCOPE_BOARD_ID,
+  columnId = SCOPE.stage,
+): Promise<void> {
+  if (!TOKEN) return;
+  await fetch(MONDAY_API, {
+    method: "POST",
+    headers: { Authorization: TOKEN, "Content-Type": "application/json", "API-Version": "2024-10" },
+    body: JSON.stringify({
+      query: `mutation ($iid: ID!, $bid: ID!, $cid: String!, $val: JSON!) {
+        change_column_value(item_id: $iid, board_id: $bid, column_id: $cid, value: $val) { id }
+      }`,
+      variables: { iid: itemId, bid: boardId, cid: columnId, val: JSON.stringify({ label }) },
+    }),
+  }).catch(() => null);
+}
+
 // Attach a file to a Monday.com item by creating an update then uploading to it.
 export async function addFileToItem(
   itemId: string,

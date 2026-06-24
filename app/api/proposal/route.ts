@@ -90,9 +90,11 @@ export async function POST(req: NextRequest) {
   const today  = fmt(new Date());
   const expiry = fmt(new Date(Date.now() + 14 * 864e5));
 
-  // Submission URL (for the "return signed copy" section)
-  const host = req.headers.get("host") || "the-start-up-eight.vercel.app";
-  const signUrl = `https://${host}/sign?ref=${refNo}${mondayItemId ? `&item=${mondayItemId}` : ""}`;
+  // Signing URL — includes tier key and currency so the sign page knows the amount
+  const host    = req.headers.get("host") || "the-start-up-eight.vercel.app";
+  const proto   = host.startsWith("localhost") ? "http" : "https";
+  const tierKey = pkg.isPromo ? "promo" : "premium";
+  const signUrl = `${proto}://${host}/sign?ref=${refNo}&t=${tierKey}&c=${currency}${mondayItemId ? `&item=${mondayItemId}` : ""}`;
 
   // ── Create PDF document ────────────────────────────────────────────────────
   // pdf-lib embedStandardFont uses WinAnsi name references — no file I/O.
@@ -396,8 +398,8 @@ export async function POST(req: NextRequest) {
   checkBreak(submitH);
   rFill(ML, cy, CW, submitH, TEAL_L);
   rFill(ML, cy, 4,  submitH, TEAL);
-  txt("RETURN YOUR SIGNED PROPOSAL", ML + 12, cy - 10, fontB, 8, TEAL_D);
-  txt("Once signed, scan or photograph this document and submit it online:", ML + 12, cy - 23, fontR, 8, MID);
+  txt("SIGN & PAY ONLINE", ML + 12, cy - 10, fontB, 8, TEAL_D);
+  txt("Sign this agreement digitally and complete your payment in one step:", ML + 12, cy - 23, fontR, 8, MID);
 
   // Draw the submission URL as a clickable teal link
   const urlTopY = cy - 36;
