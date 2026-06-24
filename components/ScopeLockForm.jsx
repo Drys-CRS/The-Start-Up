@@ -17,9 +17,9 @@ const TIERS = [
   {
     value: "Premium",
     label: "Premium",
-    sublabel: "120-day support",
-    price: { USD: "$10,000 /mo", ZAR: "R100,000 /mo" },
-    note: { USD: "$50,000 total · 5 months", ZAR: "R500,000 total · 5 months" },
+    sublabel: "120 days total",
+    price: { USD: "$5,000 flat", ZAR: "R100,000 flat" },
+    note: { USD: "30-day build · 60 days support · +30 days FREE", ZAR: "30-day build · 60 days support · +30 days FREE" },
     promo: false,
   },
 ];

@@ -13,14 +13,14 @@ const TIERS = {
     sym: "$",
     offer: { total: "3,000", tag: "30-day build · 60 days support FREE" },
     items: [
-      { name: "Premium", total: "50,000", monthly: "10,000", tag: "Complex / multi-system · 120-day support" },
+      { name: "Premium", total: "5,000", tag: "Complex / multi-system builds" },
     ],
   },
   ZAR: {
     sym: "R",
     offer: { total: "60,000", tag: "30-day build · 60 days support FREE" },
     items: [
-      { name: "Premium", total: "500,000", monthly: "100,000", tag: "Complex / multi-system · 120-day support" },
+      { name: "Premium", total: "100,000", tag: "Complex / multi-system builds" },
     ],
   },
 };
@@ -180,7 +180,7 @@ export default function OfferPage() {
             <div>
               <div className="text-xs font-medium uppercase tracking-wider text-slate-500 mb-1">Pricing</div>
               <h2 className="text-2xl font-semibold tracking-tight">Two tiers. Fixed scope. Fixed price.</h2>
-              <p className="mt-1.5 text-sm text-slate-600">Promotional: 30-day build + 60 days support. Premium: 30-day build + 120 days support.</p>
+              <p className="mt-1.5 text-sm text-slate-600">Promotional: 30-day build + 60 days FREE support. Premium: 30-day build + 60 days support + 30 days FREE = 120 days total.</p>
             </div>
             <div className="flex rounded-lg border border-slate-200 bg-white p-0.5 text-xs font-medium self-start">
               {["USD", "ZAR"].map((cc) => (
@@ -250,7 +250,10 @@ export default function OfferPage() {
                     <Check className="h-4 w-4 text-teal-400" strokeWidth={3} /> 30-day build, fixed date
                   </span>
                   <span className="flex items-center gap-1.5 text-sm text-slate-300">
-                    <Check className="h-4 w-4 text-teal-400" strokeWidth={3} /> 120 days support included
+                    <Check className="h-4 w-4 text-teal-400" strokeWidth={3} /> 60 days support included
+                  </span>
+                  <span className="flex items-center gap-1.5 text-sm text-slate-300">
+                    <Check className="h-4 w-4 text-teal-400" strokeWidth={3} /> +30 days FREE — <span className="text-teal-400 font-semibold">120 days total</span>
                   </span>
                   <span className="flex items-center gap-1.5 text-sm text-slate-300">
                     <Check className="h-4 w-4 text-teal-400" strokeWidth={3} /> Full handover documentation
@@ -261,11 +264,11 @@ export default function OfferPage() {
                 <div>
                   <div className="flex items-baseline gap-1">
                     <span className="font-mono text-3xl font-semibold tracking-tight tabular-nums">
-                      {tiers.sym}{t.monthly}
+                      {tiers.sym}{t.total}
                     </span>
-                    <span className="text-sm text-slate-400">/mo</span>
+                    <span className="text-sm text-slate-400">flat · all-in</span>
                   </div>
-                  <div className="text-xs text-slate-400 mt-0.5">{tiers.sym}{t.total} total · 5 months</div>
+                  <div className="text-xs text-slate-400 mt-0.5">90 days included · +30 days FREE</div>
                 </div>
                 <a href="/scope-lock"
                   className="inline-flex items-center justify-center gap-2 rounded-lg bg-teal-500 px-6 py-2.5 text-sm font-semibold text-slate-950 hover:bg-teal-400 transition-colors whitespace-nowrap">
