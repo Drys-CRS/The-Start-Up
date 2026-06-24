@@ -3,8 +3,9 @@
 const MONDAY_API = "https://api.monday.com/v2";
 const TOKEN = process.env.MONDAY_API_TOKEN || "";
 
-export const LEADS_BOARD_ID = process.env.MONDAY_LEADS_BOARD_ID || "18419074343";
-export const SCOPE_BOARD_ID = process.env.MONDAY_SCOPE_BOARD_ID || "18419074490";
+export const LEADS_BOARD_ID  = process.env.MONDAY_LEADS_BOARD_ID  || "18419179018";
+export const SCOPE_BOARD_ID  = process.env.MONDAY_SCOPE_BOARD_ID  || "18419179036";
+export const DELIVERY_BOARD_ID = process.env.MONDAY_DELIVERY_BOARD_ID || "18419179069";
 
 // Inbound Leads board column IDs
 export const LEADS = {

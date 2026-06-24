@@ -6,19 +6,21 @@ import {
 import WordMark from "./WordMark";
 
 
+const OFFER_DEADLINE = "30 Sep 2026";
+
 const TIERS = {
   USD: {
     sym: "$",
+    offer: { total: "3,000", tag: "30-day build · 60 days support FREE" },
     items: [
-      { name: "Foundational", total: "9,000", monthly: "3,000", tag: "Limited — case-study partners" },
       { name: "Core", total: "18,000", monthly: "6,000", tag: "Most teams start here" },
       { name: "Premium", total: "30,000", monthly: "10,000", tag: "Complex / multi-system" },
     ],
   },
   ZAR: {
     sym: "R",
+    offer: { total: "60,000", tag: "30-day build · 60 days support FREE" },
     items: [
-      { name: "Foundational", total: "120,000", monthly: "40,000", tag: "Limited — case-study partners" },
       { name: "Core", total: "180,000", monthly: "60,000", tag: "Most teams start here" },
       { name: "Premium", total: "300,000", monthly: "100,000", tag: "Complex / multi-system" },
     ],
@@ -193,9 +195,52 @@ export default function OfferPage() {
             </div>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
+          {/* Limited Time Offer — full-width feature block */}
+          <div className="relative rounded-2xl border-2 border-emerald-500 bg-slate-950 text-slate-100 p-7 sm:p-9 shadow-xl mb-5 overflow-hidden">
+            <div className="absolute inset-0 pointer-events-none" style={{ background: "radial-gradient(ellipse at 80% 0%, rgba(16,185,129,0.12) 0%, transparent 60%)" }} />
+            <div className="relative flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6">
+              <div className="flex-1">
+                <div className="flex items-center gap-2 mb-3">
+                  <span className="rounded-full bg-emerald-500 px-3 py-0.5 text-xs font-bold text-slate-950 tracking-wide uppercase">
+                    Limited Time Offer
+                  </span>
+                  <span className="text-xs text-slate-400">Ends {OFFER_DEADLINE}</span>
+                </div>
+                <div className="flex items-baseline gap-2">
+                  <span className="font-mono text-5xl font-semibold tracking-tight tabular-nums text-white">
+                    {tiers.sym}{tiers.offer.total}
+                  </span>
+                  <span className="text-slate-400 text-sm">flat · all-in</span>
+                </div>
+                <div className="mt-3 flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-5">
+                  <span className="flex items-center gap-1.5 text-sm text-slate-300">
+                    <Check className="h-4 w-4 text-emerald-400" strokeWidth={3} /> 30-day build, fixed date
+                  </span>
+                  <span className="flex items-center gap-1.5 text-sm text-slate-300">
+                    <Check className="h-4 w-4 text-emerald-400" strokeWidth={3} /> 60 days support — <span className="text-emerald-400 font-semibold">FREE</span>
+                  </span>
+                  <span className="flex items-center gap-1.5 text-sm text-slate-300">
+                    <Check className="h-4 w-4 text-emerald-400" strokeWidth={3} /> Full handover docs
+                  </span>
+                </div>
+                <p className="mt-3 text-xs text-slate-500 max-w-md">
+                  We're taking on a small cohort of case-study partners at this price. Once the September window closes, the rate moves to the standard tier.
+                </p>
+              </div>
+              <div className="flex-none">
+                <a href="/scope-lock"
+                  className="inline-flex items-center justify-center gap-2 rounded-xl bg-emerald-500 px-8 py-4 text-base font-semibold text-slate-950 hover:bg-emerald-400 shadow-lg whitespace-nowrap">
+                  Claim this rate <ArrowRight className="h-5 w-5" />
+                </a>
+                <p className="mt-2 text-center text-xs text-slate-500">No call required</p>
+              </div>
+            </div>
+          </div>
+
+          {/* Standard tiers */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
             {tiers.items.map((t, i) => {
-              const featured = i === 1;
+              const featured = i === 0;
               return (
                 <div key={t.name}
                   className={"relative flex flex-col rounded-2xl border p-6 " +
@@ -238,7 +283,7 @@ export default function OfferPage() {
             {[
               ["Answer the Scope Lock", "A short questionnaire pins down exactly what we'll build and the date we'll ship it."],
               ["Approve & pay month one", "We send the fixed scope and price. Approve it and pay the first month — that starts the 30-day clock."],
-              ["Build begins", "Your project lands on a Monday board and we ship daily updates. First check-in is async too."],
+              ["Build begins", "Your project lands on a shared board and we ship daily updates. First check-in is async too."],
             ].map(([t, b], i) => (
               <div key={t} className="rounded-xl border border-emerald-200 bg-white p-4">
                 <span className="font-mono text-sm font-semibold text-emerald-600 tabular-nums">{`0${i + 1}`}</span>
