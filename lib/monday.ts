@@ -58,24 +58,35 @@ export async function createItem(
   itemName: string,
   columnValues: Record<string, unknown>
 ): Promise<string> {
+  if (!TOKEN) throw new Error("MONDAY_API_TOKEN is not set in environment variables");
+
   const query = `mutation ($boardId: ID!, $itemName: String!, $columnValues: JSON!) {
     create_item(board_id: $boardId, item_name: $itemName, column_values: $columnValues) { id }
   }`;
-  const res = await fetch(MONDAY_API, {
-    method: "POST",
-    headers: {
-      Authorization: TOKEN,
-      "Content-Type": "application/json",
-      "API-Version": "2024-10",
-    },
-    body: JSON.stringify({
-      query,
-      variables: { boardId, itemName, columnValues: JSON.stringify(columnValues) },
-    }),
-  });
+
+  let res: Response;
+  try {
+    res = await fetch(MONDAY_API, {
+      method: "POST",
+      headers: {
+        Authorization: TOKEN,
+        "Content-Type": "application/json",
+        "API-Version": "2024-10",
+      },
+      body: JSON.stringify({
+        query,
+        variables: { boardId, itemName, columnValues: JSON.stringify(columnValues) },
+      }),
+    });
+  } catch (networkErr) {
+    throw new Error(`Network error reaching Monday.com: ${String(networkErr)}`);
+  }
+
   const data = await res.json();
-  if (data.errors) throw new Error(JSON.stringify(data.errors));
-  return data.data?.create_item?.id as string;
+  if (!res.ok) throw new Error(`Monday.com HTTP ${res.status}: ${JSON.stringify(data)}`);
+  if (data.errors) throw new Error(`Monday.com API error: ${JSON.stringify(data.errors)}`);
+  if (!data.data?.create_item?.id) throw new Error(`Monday.com returned no item ID: ${JSON.stringify(data)}`);
+  return data.data.create_item.id as string;
 }
 
 export const today = () => new Date().toISOString().slice(0, 10);
