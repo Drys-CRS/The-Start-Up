@@ -1,49 +1,67 @@
 import { NextRequest, NextResponse } from "next/server";
-import PDFDocument from "pdfkit";
+import { PDFDocument, StandardFonts, PageSizes, rgb } from "pdf-lib";
 
 export const runtime = "nodejs";
 
-// ── Colour palette (matches site) ────────────────────────────────────────────
-const C = {
-  teal:   "#14b8a6",
-  tealL:  "#f0fdfa",
-  tealD:  "#0f766e",
-  dark:   "#0f172a",
-  mid:    "#475569",
-  light:  "#94a3b8",
-  border: "#e2e8f0",
-  white:  "#ffffff",
-};
+// ── Helpers ───────────────────────────────────────────────────────────────────
 
-// ── Tier metadata ─────────────────────────────────────────────────────────────
+// Hex → pdf-lib rgb (values 0-1)
+function c(hex: string) {
+  return rgb(
+    parseInt(hex.slice(1, 3), 16) / 255,
+    parseInt(hex.slice(3, 5), 16) / 255,
+    parseInt(hex.slice(5, 7), 16) / 255,
+  );
+}
+
+const TEAL   = c("#14b8a6");
+const TEAL_L = c("#f0fdfa");
+const TEAL_D = c("#0f766e");
+const DARK   = c("#0f172a");
+const MID    = c("#475569");
+const LIGHT  = c("#94a3b8");
+const BORDER = c("#e2e8f0");
+const WHITE  = rgb(1, 1, 1);
+
+// Tier metadata
 const TIERS: Record<string, { label: string; usd: string; zar: string; period: string; isPromo: boolean }> = {
   "PROMOTIONAL (Base + Free 2 Months)": {
     label: "Promotional — Limited Time Offer",
-    usd: "$3,000 flat",
-    zar: "R60,000 flat",
+    usd: "$3,000 flat", zar: "R60,000 flat",
     period: "90 days total (30-day build · 60 days support FREE)",
     isPromo: true,
   },
   Premium: {
     label: "Premium",
-    usd: "$5,000 flat",
-    zar: "R100,000 flat",
+    usd: "$5,000 flat", zar: "R100,000 flat",
     period: "120 days total (30-day build · 60 days support · +30 days FREE)",
     isPromo: false,
   },
 };
 
-// ── Helpers ───────────────────────────────────────────────────────────────────
-
 function fmt(d: Date) {
   return d.toLocaleDateString("en-ZA", { day: "2-digit", month: "long", year: "numeric" });
 }
 
-function safeName(company: string) {
-  return `proposal-${(company || "client").replace(/[^a-z0-9]/gi, "-").slice(0, 40).toLowerCase()}`;
+function wrapText(
+  text: string,
+  widthOf: (s: string) => number,
+  maxW: number,
+): string[] {
+  if (!text?.trim()) return [];
+  const words = text.split(/\s+/);
+  const lines: string[] = [];
+  let line = "";
+  for (const word of words) {
+    const test = line ? `${line} ${word}` : word;
+    if (widthOf(test) <= maxW) { line = test; }
+    else { if (line) lines.push(line); line = word; }
+  }
+  if (line) lines.push(line);
+  return lines.length ? lines : [""];
 }
 
-// ── PDF generation ────────────────────────────────────────────────────────────
+// ── Route ─────────────────────────────────────────────────────────────────────
 
 export async function POST(req: NextRequest) {
   const b = await req.json().catch(() => ({}));
@@ -57,365 +75,377 @@ export async function POST(req: NextRequest) {
   const today  = fmt(new Date());
   const expiry = fmt(new Date(Date.now() + 14 * 864e5));
 
-  const pdf = await new Promise<Buffer>((resolve, reject) => {
-    const doc = new PDFDocument({
-      size: "A4",
-      margins: { top: 0, bottom: 0, left: 0, right: 0 },
-      bufferPages: true,
-      info: {
-        Title: "Service Proposal — The Startup",
-        Author: "The Startup",
-        Subject: `Scope Lock Agreement — ${b.company || "Client"}`,
-        Creator: "The Startup Platform",
-      },
+  // ── Create document ────────────────────────────────────────────────────────
+  // pdf-lib embeds standard fonts by NAME — zero file I/O, works everywhere.
+  const doc = await PDFDocument.create();
+  doc.setTitle("Service Proposal — The Startup");
+  doc.setAuthor("The Startup");
+  doc.setSubject(`Scope Lock Agreement — ${b.company || "Client"}`);
+
+  const fontR = await doc.embedStandardFont(StandardFonts.Helvetica);
+  const fontB = await doc.embedStandardFont(StandardFonts.HelveticaBold);
+
+  const [W, H] = PageSizes.A4; // 595.28 × 841.89
+  const ML = 55;
+  const CW = W - ML * 2;
+  const FOOTER_H = 26;
+  const MIN_Y = FOOTER_H + 44; // lowest usable y on any page
+
+  // ── Page / cursor state ────────────────────────────────────────────────────
+  let page = doc.addPage(PageSizes.A4);
+  // cy = y from bottom (pdf-lib native). Decreases as we flow downward.
+  let cy = H;
+
+  function newPage() {
+    page = doc.addPage(PageSizes.A4);
+    cy = H - 55;
+  }
+
+  function checkBreak(needed: number) {
+    if (cy - needed < MIN_Y) newPage();
+  }
+
+  // ── Drawing primitives ─────────────────────────────────────────────────────
+  // topY: top edge of element in pdf-lib coords (y from bottom)
+
+  type AnyColor = ReturnType<typeof rgb>;
+
+  function rFill(x: number, topY: number, w: number, h: number, color: AnyColor) {
+    page.drawRectangle({ x, y: topY - h, width: w, height: h, color });
+  }
+
+  function rBorder(x: number, topY: number, w: number, h: number, color: AnyColor, bw = 0.5, dash?: number[]) {
+    page.drawRectangle({
+      x, y: topY - h, width: w, height: h,
+      borderColor: color, borderWidth: bw,
+      ...(dash ? { borderDashArray: dash } : {}),
     });
+  }
 
-    const chunks: Buffer[] = [];
-    doc.on("data", (c: Buffer) => chunks.push(c));
-    doc.on("end",  () => resolve(Buffer.concat(chunks)));
-    doc.on("error", reject);
+  function hLine(x1: number, x2: number, y: number, color: AnyColor, t = 0.5) {
+    page.drawLine({ start: { x: x1, y }, end: { x: x2, y }, thickness: t, color });
+  }
 
-    const W  = doc.page.width;   // 595.28
-    const H  = doc.page.height;  // 841.89
-    const ML = 55;               // left margin
-    const CW = W - ML * 2;      // content width
+  // y in drawText = baseline from bottom. We pass the top of the text box;
+  // subtracting size gives a close approximation of baseline position.
+  function txt(
+    str: string, x: number, topY: number,
+    font: typeof fontR, size: number, color: AnyColor,
+  ) {
+    if (!str?.trim()) return;
+    page.drawText(str, { x, y: topY - size, font, size, color });
+  }
 
-    // ── Section title helper ────────────────────────────────────────────────
-    const sectionTitle = (title: string) => {
-      if (doc.y > 700) doc.addPage();
-      doc.moveDown(0.8);
-      doc.rect(ML, doc.y, 3, 13).fill(C.teal);
-      doc.fontSize(8).font("Helvetica-Bold").fillColor(C.dark)
-        .text(title.toUpperCase(), ML + 10, doc.y + 1, { characterSpacing: 0.5, width: CW - 10 });
-      doc.moveDown(0.25);
-      doc.rect(ML, doc.y, CW, 0.5).fill(C.border);
-      doc.moveDown(0.65);
-    };
+  function rtxt(
+    str: string, rightX: number, topY: number,
+    font: typeof fontR, size: number, color: AnyColor,
+  ) {
+    const w = font.widthOfTextAtSize(str, size);
+    txt(str, rightX - w, topY, font, size, color);
+  }
 
-    // ── Labeled field helper ────────────────────────────────────────────────
-    const field = (label: string, value: string | undefined) => {
-      if (!value?.trim()) return;
-      if (doc.y > 710) doc.addPage();
-      doc.fontSize(6.5).font("Helvetica-Bold").fillColor(C.light)
-        .text(label.toUpperCase(), ML, doc.y, { characterSpacing: 0.4, width: CW });
-      doc.fontSize(9).font("Helvetica").fillColor(C.dark)
-        .text(value, ML, doc.y, { width: CW });
-      doc.moveDown(0.55);
-    };
+  // ── Section helpers ────────────────────────────────────────────────────────
 
-    // ── Three-column row helper ─────────────────────────────────────────────
-    const triRow = (
-      col1: string, col2: string, col3: string,
-      w1: number, w2: number,
-      bold1 = false, tealCol2 = false
-    ) => {
-      if (doc.y > 715) doc.addPage();
-      const ry = doc.y;
-      const x2 = ML + w1 + 8;
-      const x3 = x2 + w2 + 8;
-      const w3 = CW - w1 - w2 - 16;
+  function sectionTitle(title: string) {
+    cy -= 16;
+    checkBreak(24);
+    rFill(ML, cy, 3, 13, TEAL);
+    txt(title.toUpperCase(), ML + 10, cy - 1, fontB, 8, DARK);
+    cy -= 14;
+    hLine(ML, ML + CW, cy - 2, BORDER);
+    cy -= 9;
+  }
 
-      doc.fontSize(9).font(bold1 ? "Helvetica-Bold" : "Helvetica").fillColor(C.dark)
-        .text(col1, ML, ry, { width: w1 });
-      const y1 = doc.y;
-
-      doc.fontSize(9).font("Helvetica-Bold").fillColor(tealCol2 ? C.teal : C.mid)
-        .text(col2, x2, ry, { width: w2, align: "right" });
-      const y2 = doc.y;
-
-      doc.fontSize(8).font("Helvetica").fillColor(C.light)
-        .text(col3, x3, ry, { width: w3 });
-      const y3 = doc.y;
-
-      doc.y = Math.max(y1, y2, y3) + 4;
-    };
-
-    // ── HEADER ──────────────────────────────────────────────────────────────
-    doc.rect(0, 0, W, 88).fill(C.dark);
-    doc.rect(0, 88, W, 3).fill(C.teal);
-
-    // Logo
-    doc.fontSize(6.5).font("Helvetica").fillColor(C.teal)
-      .text("THE", ML, 20, { characterSpacing: 3.5 });
-    doc.fontSize(21).font("Helvetica-Bold").fillColor(C.white)
-      .text("STARTUP", ML, 28);
-    doc.fontSize(8.5).font("Helvetica").fillColor(C.light)
-      .text("Service Proposal & Scope Lock Agreement", ML, 68);
-
-    // Right: ref + dates
-    doc.fontSize(7.5).font("Helvetica").fillColor(C.light)
-      .text(`Reference: ${refNo}`,   ML, 20, { width: CW, align: "right" });
-    doc.fontSize(7.5).fillColor(C.light)
-      .text(`Issued: ${today}`,      ML, 33, { width: CW, align: "right" });
-    doc.fontSize(7.5).fillColor(C.light)
-      .text(`Valid until: ${expiry}`,ML, 46, { width: CW, align: "right" });
-
-    doc.y = 106;
-
-    // ── PROPOSAL INFO BAR ────────────────────────────────────────────────────
-    const barY = doc.y;
-    doc.rect(ML, barY, CW, 54).fill(C.tealL);
-    doc.rect(ML, barY, 4, 54).fill(C.teal);
-
-    doc.fontSize(7).font("Helvetica-Bold").fillColor(C.tealD)
-      .text("PREPARED FOR", ML + 12, barY + 9, { characterSpacing: 0.5 });
-    doc.fontSize(15).font("Helvetica-Bold").fillColor(C.dark)
-      .text(b.company || "Your Organisation", ML + 12, barY + 19);
-    const contactLine = [b.contact, b.email].filter(Boolean).join("   ·   ");
-    doc.fontSize(8).font("Helvetica").fillColor(C.mid)
-      .text(contactLine, ML + 12, barY + 38);
-
-    doc.y = barY + 62;
-
-    // ── CLIENT INFORMATION ───────────────────────────────────────────────────
-    sectionTitle("Client Information");
-    field("Company / Organisation", b.company);
-    field("Contact Name", b.contact);
-    field("Email Address", b.email);
-    field("Preferred Currency", currency);
-
-    // ── SELECTED PACKAGE ─────────────────────────────────────────────────────
-    sectionTitle("Selected Package");
-
-    const pkgY = doc.y;
-    doc.rect(ML, pkgY, CW, 76).fill(C.dark);
-    doc.rect(ML, pkgY, 4, 76).fill(C.teal);
-
-    doc.fontSize(8).font("Helvetica-Bold").fillColor(C.teal)
-      .text(pkg.label.toUpperCase(), ML + 12, pkgY + 11, { characterSpacing: 0.4 });
-    doc.fontSize(23).font("Helvetica-Bold").fillColor(C.white)
-      .text(price, ML + 12, pkgY + 23);
-    doc.fontSize(8).font("Helvetica").fillColor(C.light)
-      .text(pkg.period, ML + 12, pkgY + 52);
-
-    const featureLine = pkg.isPromo
-      ? "30-day build   ·   60 days support FREE   ·   Full handover documentation"
-      : "30-day build   ·   60 days support   ·   +30 days FREE   ·   Full handover documentation";
-    doc.fontSize(7.5).font("Helvetica").fillColor(C.teal)
-      .text(featureLine, ML + 12, pkgY + 64, { width: CW - 24 });
-
-    doc.y = pkgY + 84;
-
-    // ── PROJECT SCOPE ─────────────────────────────────────────────────────────
-    sectionTitle("Project Scope (as submitted)");
-    field("Business Objective / Outcome Sought", b.goal);
-    field("Current Bottleneck", b.bottleneck);
-    field("Core Workflow to Build", b.workflow);
-    field("Must-Have Features", b.musthaves);
-    field("Required Integrations", b.integrations || "Not specified");
-    field("Proposed Start Date", b.startDate || "To be confirmed");
-
-    // ── WHAT'S INCLUDED ───────────────────────────────────────────────────────
-    sectionTitle("What's Included in Your Build");
-
-    const deliverables = [
-      "One core workflow built end-to-end (capture → score → route → report)",
-      "CRM board your team already knows how to use on day one",
-      "One reporting dashboard with the metrics leadership actually watches",
-      "One third-party integration (your CRM, enrichment tool, or calendar)",
-      "Team training session, recorded and yours to keep",
-      "Full handover documentation — you own the system completely",
-    ];
-
-    deliverables.forEach(item => {
-      if (doc.y > 720) doc.addPage();
-      const iy = doc.y;
-      doc.rect(ML, iy + 4, 4, 4).fill(C.teal);
-      doc.fontSize(9).font("Helvetica").fillColor(C.mid)
-        .text(item, ML + 11, iy, { width: CW - 11 });
-      doc.moveDown(0.25);
+  function fieldBlock(label: string, value: string | undefined) {
+    if (!value?.trim()) return;
+    const lines = wrapText(value, (s) => fontR.widthOfTextAtSize(s, 9), CW);
+    checkBreak(11 + lines.length * 13 + 5);
+    txt(label.toUpperCase(), ML, cy, fontB, 6.5, LIGHT);
+    cy -= 11;
+    lines.forEach((line) => {
+      checkBreak(13);
+      txt(line, ML, cy, fontR, 9, DARK);
+      cy -= 13;
     });
+    cy -= 5;
+  }
 
-    // ── TIMELINE ──────────────────────────────────────────────────────────────
-    sectionTitle("Project Timeline");
+  // ── PAGE 1: HEADER ─────────────────────────────────────────────────────────
+  rFill(0, H, W, 90, DARK);
+  rFill(0, H - 90, W, 3, TEAL);
 
-    type Phase = [string, string, string, boolean];
-    const phases: Phase[] = [
-      ["Build Phase",    "Day 1–30",                         "System scoped, configured, tested, and delivered to your team",       false],
-      ["Support Phase",  pkg.isPromo ? "Day 31–90" : "Day 31–90",  "Active support: training, optimisation, bug fixes, and assistance",  false],
-      ...(!pkg.isPromo ? [["Free Support Extension", "Day 91–120", "30 additional days of support at no charge", false] as Phase] : []),
-      ["Total Engagement", `${pkg.isPromo ? 90 : 120} days`, "From signed agreement through to end of support period",             true],
-    ];
+  txt("THE",      ML, H - 14, fontR, 7,    TEAL);
+  txt("STARTUP",  ML, H - 36, fontB, 22,   WHITE);
+  txt("Service Proposal & Scope Lock Agreement", ML, H - 66, fontR, 8.5, LIGHT);
 
-    const pw1 = CW * 0.36;
-    const pw2 = CW * 0.2;
+  rtxt(`Reference: ${refNo}`,    W - ML, H - 14, fontR, 7.5, LIGHT);
+  rtxt(`Issued: ${today}`,       W - ML, H - 27, fontR, 7.5, LIGHT);
+  rtxt(`Valid until: ${expiry}`, W - ML, H - 40, fontR, 7.5, LIGHT);
 
-    phases.forEach(([phase, period, note, isFinal]) => {
-      if (doc.y > 710) doc.addPage();
-      const py = doc.y;
-      if (isFinal) {
-        doc.rect(ML, py - 3, CW, 22).fill(C.tealL);
-        doc.rect(ML, py - 3, 3, 22).fill(C.teal);
-      }
-      triRow(phase, period, note, pw1, pw2, isFinal, isFinal);
+  cy = H - 106;
+
+  // ── INFO BAR ───────────────────────────────────────────────────────────────
+  const barH = 52;
+  rFill(ML, cy, CW, barH, TEAL_L);
+  rFill(ML, cy, 4,  barH, TEAL);
+
+  txt("PREPARED FOR",                    ML + 12, cy - 9,  fontB, 7,  TEAL_D);
+  txt(b.company || "Your Organisation", ML + 12, cy - 22, fontB, 15, DARK);
+  const contactLine = [b.contact, b.email].filter(Boolean).join("   ·   ");
+  txt(contactLine,                       ML + 12, cy - 40, fontR, 8,  MID);
+
+  cy -= barH + 8;
+
+  // ── CLIENT INFORMATION ─────────────────────────────────────────────────────
+  sectionTitle("Client Information");
+  fieldBlock("Company / Organisation", b.company);
+  fieldBlock("Contact Name", b.contact);
+  fieldBlock("Email Address", b.email);
+  fieldBlock("Preferred Currency", currency);
+
+  // ── SELECTED PACKAGE ───────────────────────────────────────────────────────
+  sectionTitle("Selected Package");
+
+  const pkgH = 72;
+  checkBreak(pkgH + 10);
+  rFill(ML, cy, CW, pkgH, DARK);
+  rFill(ML, cy, 4,  pkgH, TEAL);
+
+  txt(pkg.label.toUpperCase(), ML + 12, cy - 10, fontB, 8,  TEAL);
+  txt(price,                   ML + 12, cy - 30, fontB, 22, WHITE);
+  txt(pkg.period,              ML + 12, cy - 50, fontR, 8,  LIGHT);
+
+  const feat = pkg.isPromo
+    ? "30-day build  ·  60 days support FREE  ·  Full handover documentation"
+    : "30-day build  ·  60 days support  ·  +30 days FREE  ·  Full handover documentation";
+  txt(feat, ML + 12, cy - 62, fontR, 7.5, TEAL);
+
+  cy -= pkgH + 8;
+
+  // ── PROJECT SCOPE ──────────────────────────────────────────────────────────
+  sectionTitle("Project Scope (as submitted)");
+  fieldBlock("Business Objective / Outcome Sought", b.goal);
+  fieldBlock("Current Bottleneck", b.bottleneck);
+  fieldBlock("Core Workflow to Build", b.workflow);
+  fieldBlock("Must-Have Features", b.musthaves);
+  fieldBlock("Required Integrations", b.integrations || "Not specified");
+  fieldBlock("Proposed Start Date", b.startDate || "To be confirmed");
+
+  // ── WHAT'S INCLUDED ────────────────────────────────────────────────────────
+  sectionTitle("What's Included in Your Build");
+
+  const deliverables = [
+    "One core workflow built end-to-end (capture → score → route → report)",
+    "CRM board your team already knows how to use on day one",
+    "One reporting dashboard with the metrics leadership actually watches",
+    "One third-party integration (your CRM, enrichment tool, or calendar)",
+    "Team training session, recorded and yours to keep",
+    "Full handover documentation — you own the system completely",
+  ];
+
+  deliverables.forEach((item) => {
+    const lines = wrapText(item, (s) => fontR.widthOfTextAtSize(s, 9), CW - 12);
+    checkBreak(lines.length * 13 + 6);
+    rFill(ML, cy - 4, 4, 4, TEAL);
+    lines.forEach((line) => {
+      txt(line, ML + 11, cy, fontR, 9, MID);
+      cy -= 13;
     });
-
-    // ── INVESTMENT ────────────────────────────────────────────────────────────
-    sectionTitle("Investment Summary");
-
-    type IRow = [string, string, string];
-    const invRows: IRow[] = pkg.isPromo
-      ? [["Total — all-in, fixed price", price, "Full payment due on signature to initiate build"]]
-      : [
-          ["First Payment — 50%",  currency === "ZAR" ? "R50,000" : "$2,500", "Due on signature to initiate the build"],
-          ["Final Payment — 50%",  currency === "ZAR" ? "R50,000" : "$2,500", "Due on system handover"],
-          ["Total Investment",      price,                                       "Fixed price — no overruns, no hidden fees"],
-        ];
-
-    const iw1 = CW * 0.44;
-    const iw2 = CW * 0.2;
-
-    invRows.forEach(([item, amount, note]) => {
-      if (doc.y > 710) doc.addPage();
-      triRow(item, amount, note, iw1, iw2, false, true);
-    });
-
-    // ── TERMS & CONDITIONS ────────────────────────────────────────────────────
-    if (doc.y > 540) doc.addPage();
-    sectionTitle("Terms & Conditions");
-
-    const tcs: [string, string][] = [
-      ["1. Scope & Agreement",
-        "This document constitutes a binding service proposal between The Startup (service provider) and the client named herein. The scope of work is limited to what is described in this document. Changes or additions require written amendment and may affect the timeline and price."],
-      ["2. 30-Day Build Guarantee",
-        "The Startup commits to delivering a working system within 30 calendar days of the confirmed build start date. If this deadline is missed for reasons attributable solely to The Startup, the client receives an additional 30 days of support at no cost. The build clock starts on the date the signed agreement and first payment are received."],
-      ["3. Payment Terms",
-        "Promotional tier: full payment is due on signature. Premium tier: 50% is due on signature to initiate the build; the remaining 50% is due on system handover. All invoices are payable within 5 business days of issue. Overdue payments may result in the build being paused until payment is received."],
-      ["4. Ownership of Deliverables",
-        "Upon receipt of final payment, all custom configurations, automations, dashboards, workflows, and documentation built under this agreement become the client's sole property. The Startup retains rights to its reusable internal frameworks, methodologies, and tooling that are not specific to the client's build."],
-      ["5. Support Period",
-        "The support period begins on the handover date and covers active system support, bug fixes, performance optimisation, and training as specified in the selected tier. Support does not include the development of new features or workflows not defined in this scope document."],
-      ["6. Confidentiality",
-        "Both parties agree to treat all project details, business information, financial data, and proprietary processes as strictly confidential. Neither party will disclose this information to third parties without prior written consent from the other party."],
-      ["7. Cancellation Policy",
-        "Cancellation before build commencement: full refund minus a 10% scoping and administration fee. Cancellation after build has commenced: the initial deposit (50%) is non-refundable. Completed work will be invoiced at a pro-rata day rate, deducted from any balance held."],
-      ["8. Limitation of Liability",
-        "The Startup's total liability under this agreement is limited to the total fees paid by the client. The Startup is not liable for any indirect, consequential, incidental, or punitive damages arising from the use or inability to use the delivered system."],
-      ["9. Force Majeure",
-        "Neither party shall be liable for delays or failure to perform obligations caused by circumstances beyond their reasonable control, including but not limited to natural disasters, government actions, platform outages, or critical infrastructure failure."],
-      ["10. Governing Law",
-        "This agreement is governed by and construed in accordance with the laws of the Republic of South Africa. Any disputes arising from or related to this agreement shall be subject to the exclusive jurisdiction of the South African courts."],
-    ];
-
-    tcs.forEach(([title, body]) => {
-      if (doc.y > 695) doc.addPage();
-      doc.fontSize(8).font("Helvetica-Bold").fillColor(C.dark)
-        .text(title, ML, doc.y, { width: CW });
-      doc.fontSize(7.5).font("Helvetica").fillColor(C.mid)
-        .text(body, ML, doc.y, { width: CW });
-      doc.moveDown(0.5);
-    });
-
-    // ── PAYMENT METHODS ───────────────────────────────────────────────────────
-    sectionTitle("Payment Methods");
-
-    [
-      ["EFT / Bank Transfer",
-       "Banking details are provided on your invoice (Capitec / Standard Bank). Please reference your proposal number when making payment."],
-      ["Credit / Debit Card",
-       "A secure payment link is sent with your invoice (Stripe for international clients; PayFast for South African clients)."],
-      ["PayPal / Wise",
-       "Available for international clients. USD pricing applies. Payment link provided on confirmation of your scope."],
-      ["Cryptocurrency",
-       "BTC, ETH, or USDC accepted on request. Wallet address and instructions provided after scope confirmation."],
-    ].forEach(([method, detail]) => {
-      if (doc.y > 715) doc.addPage();
-      const my = doc.y;
-      doc.rect(ML, my + 3, 5, 5).fill(C.teal);
-      doc.fontSize(8.5).font("Helvetica-Bold").fillColor(C.dark)
-        .text(method, ML + 12, my, { width: CW - 12 });
-      doc.fontSize(8).font("Helvetica").fillColor(C.mid)
-        .text(detail, ML + 12, doc.y, { width: CW - 12 });
-      doc.moveDown(0.4);
-    });
-
-    // ── ACKNOWLEDGEMENT ───────────────────────────────────────────────────────
-    if (doc.y > 550) doc.addPage();
-    sectionTitle("Client Acknowledgement");
-
-    doc.fontSize(9).font("Helvetica").fillColor(C.mid)
-      .text(
-        "By signing below, the client confirms and agrees to each of the following statements:",
-        ML, doc.y, { width: CW }
-      );
-    doc.moveDown(0.7);
-
-    const acks = [
-      "The information provided in the Scope Lock form is accurate and complete to the best of my knowledge.",
-      "I have read and understood the Terms & Conditions stated in this document.",
-      "I agree to the investment amount, payment schedule, and pricing as outlined in this proposal.",
-      "I understand this agreement becomes legally binding upon my signature and receipt of initial payment.",
-    ];
-
-    acks.forEach(ack => {
-      if (doc.y > 710) doc.addPage();
-      const ay = doc.y;
-      doc.rect(ML, ay + 1.5, 9, 9).lineWidth(0.75).stroke(C.mid);
-      doc.fontSize(9).font("Helvetica").fillColor(C.dark)
-        .text(ack, ML + 16, ay, { width: CW - 16 });
-      doc.moveDown(0.65);
-    });
-
-    // ── SIGNATURE BLOCKS ──────────────────────────────────────────────────────
-    if (doc.y > 590) doc.addPage();
-    doc.moveDown(1.2);
-
-    const sigY   = doc.y;
-    const half   = (CW - 24) / 2;
-    const rX     = ML + half + 24;
-
-    const sigLine = (x: number, y: number, label: string, width = half) => {
-      doc.moveTo(x, y).lineTo(x + width, y).lineWidth(0.5).stroke(C.border);
-      doc.fontSize(7).font("Helvetica").fillColor(C.light).text(label, x, y + 3, { width });
-    };
-
-    // Column headers
-    doc.fontSize(8).font("Helvetica-Bold").fillColor(C.dark)
-      .text("CLIENT SIGNATURE", ML, sigY, { width: half });
-    doc.fontSize(8).font("Helvetica-Bold").fillColor(C.dark)
-      .text("AUTHORISED BY — THE STARTUP", rX, sigY, { width: half });
-
-    const l1 = sigY + 22;
-    const l2 = l1 + 38;
-    const l3 = l2 + 30;
-    const l4 = l3 + 30;
-
-    // Client sig lines
-    sigLine(ML, l1, "Signature");
-    sigLine(ML, l2, "Full Name (Printed)");
-    sigLine(ML, l3, "Title / Position");
-    sigLine(ML, l4, "Date");
-
-    // Startup sig lines
-    sigLine(rX, l1, "Authorised Signature");
-    sigLine(rX, l2, "Full Name (Printed)");
-    sigLine(rX, l3, "Date");
-
-    // Company stamp box
-    doc.rect(rX + half - 76, l3 + 15, 72, 44)
-      .lineWidth(0.5).dash(3, { space: 2 }).stroke(C.border);
-    doc.undash();
-    doc.fontSize(7).font("Helvetica").fillColor(C.light)
-      .text("Company Stamp", rX + half - 76, l3 + 32, { width: 72, align: "center" });
-
-    // ── FOOTER ON ALL PAGES ───────────────────────────────────────────────────
-    const range = doc.bufferedPageRange();
-    for (let i = 0; i < range.count; i++) {
-      doc.switchToPage(range.start + i);
-      doc.rect(0, H - 26, W, 26).fill(C.dark);
-      doc.fontSize(7).font("Helvetica").fillColor(C.light)
-        .text(`The Startup  ·  ${refNo}  ·  Confidential`, ML, H - 15, { width: CW / 2 });
-      doc.fontSize(7).font("Helvetica").fillColor(C.light)
-        .text(`Page ${i + 1} of ${range.count}`, ML, H - 15, { width: CW, align: "right" });
-    }
-
-    doc.end();
+    cy -= 3;
   });
 
-  return new NextResponse(pdf, {
+  // ── TIMELINE ───────────────────────────────────────────────────────────────
+  sectionTitle("Project Timeline");
+
+  type Phase = [string, string, string, boolean];
+  const phases: Phase[] = [
+    ["Build Phase",    "Day 1–30",  "System scoped, configured, tested, and delivered", false],
+    ["Support Phase",  "Day 31–90", "Active support: training, optimisation, bug fixes", false],
+    ...(!pkg.isPromo ? [["Free Support Extension", "Day 91–120", "30 additional days at no charge", false] as Phase] : []),
+    ["Total Engagement", `${pkg.isPromo ? 90 : 120} days`, "From signed agreement to end of support", true],
+  ];
+
+  const p1W = CW * 0.37;
+  const p2W = CW * 0.2;
+  const p3X = ML + p1W + p2W + 6;
+  const p3W = CW - p1W - p2W - 6;
+
+  phases.forEach(([phaseName, period, note, isFinal]) => {
+    checkBreak(22);
+    if (isFinal) {
+      rFill(ML, cy, CW, 20, TEAL_L);
+      rFill(ML, cy, 3,  20, TEAL);
+    }
+    txt(phaseName, ML + (isFinal ? 6 : 8), cy - 1, isFinal ? fontB : fontR, 9, DARK);
+    rtxt(period, ML + p1W + p2W, cy - 1, fontB, 9, isFinal ? TEAL : MID);
+    const noteLines = wrapText(note, (s) => fontR.widthOfTextAtSize(s, 8), p3W);
+    noteLines.forEach((nl, ni) => txt(nl, p3X, cy - ni * 10, fontR, 8, LIGHT));
+    cy -= 22;
+  });
+
+  // ── INVESTMENT SUMMARY ─────────────────────────────────────────────────────
+  sectionTitle("Investment Summary");
+
+  type IRow = [string, string, string];
+  const invRows: IRow[] = pkg.isPromo
+    ? [["Total — all-in, fixed price", price, "Full payment due on signature"]]
+    : [
+        ["First Payment — 50%", currency === "ZAR" ? "R50,000" : "$2,500", "Due on signature to initiate build"],
+        ["Final Payment — 50%", currency === "ZAR" ? "R50,000" : "$2,500", "Due on system handover"],
+        ["Total Investment",    price,                                       "Fixed price — no overruns"],
+      ];
+
+  const i1W = CW * 0.44;
+  const i2W = CW * 0.22;
+  const i3X = ML + i1W + i2W + 6;
+  const i3W = CW - i1W - i2W - 6;
+
+  invRows.forEach(([item, amount, note]) => {
+    const nLines = wrapText(note, (s) => fontR.widthOfTextAtSize(s, 8), i3W);
+    checkBreak(nLines.length * 10 + 8);
+    txt(item, ML, cy - 1, fontB, 9, DARK);
+    rtxt(amount, ML + i1W + i2W, cy - 1, fontB, 9, TEAL);
+    nLines.forEach((nl, ni) => txt(nl, i3X, cy - ni * 10, fontR, 8, LIGHT));
+    cy -= Math.max(nLines.length * 10, 12) + 8;
+  });
+
+  // ── TERMS & CONDITIONS ─────────────────────────────────────────────────────
+  if (cy < MIN_Y + 200) newPage();
+  sectionTitle("Terms & Conditions");
+
+  const tcs: [string, string][] = [
+    ["1. Scope & Agreement",
+      "This document constitutes a binding service proposal between The Startup (service provider) and the client named herein. Scope is limited to what is described; changes require written amendment and may affect timeline and price."],
+    ["2. 30-Day Build Guarantee",
+      "We commit to delivering a working system within 30 calendar days of the confirmed build start. If we miss this for reasons attributable solely to us, the client receives an additional 30 days of support at no cost."],
+    ["3. Payment Terms",
+      "Promotional tier: full payment due on signature. Premium tier: 50% on signature; 50% on handover. Invoices are due within 5 business days. Overdue payments may pause the build."],
+    ["4. Ownership of Deliverables",
+      "All custom configurations, automations, dashboards, and documentation become the client's property upon final payment. The Startup retains rights to its reusable internal frameworks and methodologies."],
+    ["5. Support Period",
+      "The support period covers active system support, bug fixes, optimisation, and training. It begins on handover and does not include new feature development."],
+    ["6. Confidentiality",
+      "Both parties agree to keep all project details, business information, and proprietary data confidential and will not disclose to third parties without prior written consent."],
+    ["7. Cancellation Policy",
+      "Before build start: full refund minus 10% scoping and admin fee. After build start: deposit is non-refundable; remaining work invoiced at a pro-rata day rate."],
+    ["8. Limitation of Liability",
+      "The Startup's total liability is limited to the fees paid under this agreement. We are not liable for indirect, consequential, or incidental losses."],
+    ["9. Force Majeure",
+      "Neither party is liable for delays caused by circumstances beyond reasonable control, including natural disasters, government actions, or infrastructure failure."],
+    ["10. Governing Law",
+      "This agreement is governed by the laws of the Republic of South Africa. Disputes are subject to the exclusive jurisdiction of the South African courts."],
+  ];
+
+  tcs.forEach(([title, body]) => {
+    const bodyLines = wrapText(body, (s) => fontR.widthOfTextAtSize(s, 7.5), CW);
+    checkBreak(11 + bodyLines.length * 10 + 6);
+    txt(title, ML, cy, fontB, 8, DARK);
+    cy -= 12;
+    bodyLines.forEach((line) => { txt(line, ML, cy, fontR, 7.5, MID); cy -= 10; });
+    cy -= 6;
+  });
+
+  // ── PAYMENT METHODS ────────────────────────────────────────────────────────
+  sectionTitle("Payment Methods");
+
+  ([
+    ["EFT / Bank Transfer",  "Details on invoice (Capitec / Standard Bank). Reference your proposal number."],
+    ["Credit / Debit Card",  "Secure payment link sent with invoice (Stripe or PayFast for South African clients)."],
+    ["PayPal / Wise",        "Available for international clients. USD pricing applies."],
+    ["Cryptocurrency",       "BTC, ETH, or USDC accepted on request. Wallet details provided on confirmation."],
+  ] as [string, string][]).forEach(([method, detail]) => {
+    const dLines = wrapText(detail, (s) => fontR.widthOfTextAtSize(s, 8), CW - 12);
+    checkBreak(12 + dLines.length * 10 + 6);
+    rFill(ML, cy - 4, 4, 4, TEAL);
+    txt(method, ML + 11, cy, fontB, 8.5, DARK);
+    cy -= 13;
+    dLines.forEach((line) => { txt(line, ML + 11, cy, fontR, 8, MID); cy -= 10; });
+    cy -= 5;
+  });
+
+  // ── ACKNOWLEDGEMENT ────────────────────────────────────────────────────────
+  if (cy < MIN_Y + 160) newPage();
+  sectionTitle("Client Acknowledgement");
+
+  txt(
+    "By signing below, the client confirms and agrees to each of the following statements:",
+    ML, cy, fontR, 9, MID,
+  );
+  cy -= 18;
+
+  const acks = [
+    "The information provided in the Scope Lock form is accurate and complete to the best of my knowledge.",
+    "I have read and understood the Terms & Conditions stated in this document.",
+    "I agree to the investment amount, payment schedule, and pricing as outlined in this proposal.",
+    "I understand this agreement becomes legally binding upon my signature and receipt of initial payment.",
+  ];
+
+  acks.forEach((ack) => {
+    const aLines = wrapText(ack, (s) => fontR.widthOfTextAtSize(s, 9), CW - 16);
+    checkBreak(aLines.length * 13 + 8);
+    rBorder(ML, cy - 1, 9, 9, MID, 0.75);
+    aLines.forEach((line, i) => txt(line, ML + 16, cy - i * 13, fontR, 9, DARK));
+    cy -= aLines.length * 13 + 8;
+  });
+
+  // ── SIGNATURE BLOCKS ───────────────────────────────────────────────────────
+  if (cy < MIN_Y + 140) newPage();
+  cy -= 18;
+
+  const sigHalf = (CW - 24) / 2;
+  const rX = ML + sigHalf + 24;
+
+  txt("CLIENT SIGNATURE",            ML, cy, fontB, 8, DARK);
+  txt("AUTHORISED BY — THE STARTUP", rX, cy, fontB, 8, DARK);
+  cy -= 20;
+
+  const sigLine = (x: number, y: number, label: string) => {
+    hLine(x, x + sigHalf, y, BORDER);
+    txt(label, x, y - 10, fontR, 7, LIGHT);
+  };
+
+  const L0 = cy;
+  const L1 = cy - 36;
+  const L2 = cy - 66;
+  const L3 = cy - 96;
+
+  sigLine(ML, L0, "Signature");
+  sigLine(ML, L1, "Full Name (Printed)");
+  sigLine(ML, L2, "Title / Position");
+  sigLine(ML, L3, "Date");
+
+  sigLine(rX, L0, "Authorised Signature");
+  sigLine(rX, L1, "Full Name (Printed)");
+  sigLine(rX, L2, "Date");
+
+  // Stamp box
+  rBorder(rX + sigHalf - 74, L2 - 14, 70, 42, BORDER, 0.5, [3, 2]);
+  const stampLabel = "Company Stamp";
+  const stW = fontR.widthOfTextAtSize(stampLabel, 7);
+  txt(stampLabel, rX + sigHalf - 74 + (70 - stW) / 2, L2 - 34, fontR, 7, LIGHT);
+
+  // ── FOOTER ON ALL PAGES ────────────────────────────────────────────────────
+  const allPages = doc.getPages();
+  const pageCount = allPages.length;
+  allPages.forEach((p, i) => {
+    p.drawRectangle({ x: 0, y: 0, width: W, height: FOOTER_H, color: DARK });
+    p.drawText(`The Startup  ·  ${refNo}  ·  Confidential`, {
+      x: ML, y: 9, font: fontR, size: 7, color: LIGHT,
+    });
+    const pageStr = `Page ${i + 1} of ${pageCount}`;
+    const psW = fontR.widthOfTextAtSize(pageStr, 7);
+    p.drawText(pageStr, { x: W - ML - psW, y: 9, font: fontR, size: 7, color: LIGHT });
+  });
+
+  // ── Serialize ──────────────────────────────────────────────────────────────
+  const pdfBytes = await doc.save();
+  const safeName = `proposal-${(b.company || "client")
+    .replace(/[^a-z0-9]/gi, "-").slice(0, 40).toLowerCase()}`;
+
+  return new NextResponse(pdfBytes, {
     headers: {
       "Content-Type": "application/pdf",
-      "Content-Disposition": `attachment; filename="${safeName(b.company)}.pdf"`,
+      "Content-Disposition": `attachment; filename="${safeName}.pdf"`,
     },
   });
 }
