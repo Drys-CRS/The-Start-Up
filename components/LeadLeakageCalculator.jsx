@@ -4,9 +4,10 @@ import {
   BarChart, Bar, XAxis, YAxis, Cell, ResponsiveContainer, LabelList,
 } from "recharts";
 import {
-  Droplets, ArrowRight, ArrowLeft, TrendingDown, Zap, Check,
+  ArrowRight, ArrowLeft, TrendingDown, Zap, Check,
   Loader2, ChevronDown, ShieldCheck, Mail,
 } from "lucide-react";
+import WordMark from "./WordMark";
 
 /**
  * THE START UP — Lead Leakage Calculator + AI Bottleneck Report
@@ -214,15 +215,7 @@ Be concrete and non-generic. No flattery, no filler.`;
 
         {/* Brand */}
         <div className="flex items-center justify-between mb-10">
-          <div className="flex items-center gap-2.5">
-            <div className="flex h-8 w-8 items-center justify-center rounded-md bg-slate-900">
-              <Droplets className="h-4 w-4 text-emerald-400" strokeWidth={2.5} />
-            </div>
-            <div className="leading-none">
-              <div className="text-sm font-semibold tracking-tight">The Start Up</div>
-              <div className="text-xs text-slate-400">Shipped in 30 · Supported for 60</div>
-            </div>
-          </div>
+          <a href="/"><WordMark dark /></a>
           <div className="hidden sm:block text-xs font-medium uppercase tracking-wider text-slate-400">
             Lead Leakage Audit
           </div>

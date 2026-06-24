@@ -3,17 +3,7 @@ import React, { useState } from "react";
 import {
   ArrowRight, Check, X, ShieldCheck, FileText, ChevronDown,
 } from "lucide-react";
-
-function WordMark({ dark = false, className = "" }) {
-  const color = dark ? "text-slate-900" : "text-white";
-  return (
-    <div className={`flex items-baseline gap-0 font-black uppercase tracking-tighter leading-none select-none ${color} ${className}`}>
-      <span className="text-2xl">Star</span>
-      <span className="text-[9px] font-bold tracking-[0.2em] self-end mb-0.5 mx-0.5 opacity-70">the</span>
-      <span className="text-2xl">tup</span>
-    </div>
-  );
-}
+import WordMark from "./WordMark";
 
 
 const TIERS = {

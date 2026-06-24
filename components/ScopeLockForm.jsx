@@ -1,6 +1,7 @@
 "use client";
 import React, { useState } from "react";
-import { Droplets, ArrowRight, Check, Loader2, ShieldCheck } from "lucide-react";
+import { ArrowRight, Check, Loader2, ShieldCheck } from "lucide-react";
+import WordMark from "./WordMark";
 
 const TIERS = ["Foundational", "Core", "Premium"];
 const TIER_PRICE = {
@@ -62,14 +63,8 @@ export default function ScopeLockForm() {
   return (
     <div className="min-h-screen w-full bg-slate-50 text-slate-900 font-sans">
       <div className="mx-auto max-w-2xl px-5 py-10 sm:py-14">
-        <a href="/" className="flex items-center gap-2.5 mb-10">
-          <div className="flex h-8 w-8 items-center justify-center rounded-md bg-slate-900">
-            <Droplets className="h-4 w-4 text-emerald-400" strokeWidth={2.5} />
-          </div>
-          <div className="leading-none">
-            <div className="text-sm font-semibold tracking-tight">The Start Up</div>
-            <div className="text-xs text-slate-400">Shipped in 30 · Supported for 60</div>
-          </div>
+        <a href="/" className="mb-10 inline-block">
+          <WordMark dark />
         </a>
 
         <h1 className="text-3xl sm:text-4xl font-semibold tracking-tight">Start your Scope Lock</h1>
