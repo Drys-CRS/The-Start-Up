@@ -1,18 +1,9 @@
 "use client";
 import React, { useState } from "react";
 import {
-  Droplets, ArrowRight, Check, X, Play, ShieldCheck, Zap,
-  Clock, LifeBuoy, FileText, ChevronDown,
+  ArrowRight, Check, X, ShieldCheck, FileText, ChevronDown,
 } from "lucide-react";
 
-/**
- * THE START UP — Offer Page + VSL (funnel stage 4)
- * Drop into your React + Vite + TS project. The report's "See how we'd build it"
- * button links here. No-call: the CTA starts an async Scope Lock, not a meeting.
- *
- * VSL: paste your Loom / Wistia / YouTube embed URL into VIDEO_EMBED_URL.
- */
-const VIDEO_EMBED_URL = ""; // e.g. "https://www.loom.com/embed/xxxxxxxx"
 
 const TIERS = {
   USD: {
@@ -50,12 +41,6 @@ const DEFERRED = [
   "Long chains of integrations",
 ];
 
-const STEPS = [
-  { n: "01", icon: Zap, title: "Free automated audit", body: "Run the calculator, get an instant Bottleneck Report. You see where revenue leaks and exactly what we'd build — before you spend a cent." },
-  { n: "02", icon: Clock, title: "30-day MVP build", body: "Fixed scope, fixed date, agreed up front. We ship a working Monday.com system your team uses Monday morning — not a prototype." },
-  { n: "03", icon: LifeBuoy, title: "60 days of support", body: "Training, optimization against real usage, workflow audits, and full documentation. We make sure it sticks." },
-];
-
 const FAQS = [
   { q: "Do I have to get on a call?", a: "No. The audit is automated, the scope and price are transparent on this page, and you start with a short Scope Lock questionnaire and a deposit. If you'd rather talk it through, you can — but nothing here requires it." },
   { q: "What does \"shipped in 30 days\" actually mean?", a: "A working system, in your team's hands, doing the core job — not a demo. The clock starts only once the Scope Lock is signed and the first month is paid, so the date is real." },
@@ -66,7 +51,6 @@ const FAQS = [
 export default function OfferPage() {
   const [currency, setCurrency] = useState("USD");
   const [openFaq, setOpenFaq] = useState(0);
-  const [playing, setPlaying] = useState(false);
   const tiers = TIERS[currency];
 
   return (
@@ -75,15 +59,7 @@ export default function OfferPage() {
 
         {/* Brand */}
         <div className="flex items-center justify-between mb-12">
-          <div className="flex items-center gap-2.5">
-            <div className="flex h-8 w-8 items-center justify-center rounded-md bg-slate-900">
-              <Droplets className="h-4 w-4 text-emerald-400" strokeWidth={2.5} />
-            </div>
-            <div className="leading-none">
-              <div className="text-sm font-semibold tracking-tight">The Start Up</div>
-              <div className="text-xs text-slate-400">Shipped in 30 · Supported for 60</div>
-            </div>
-          </div>
+          <img src="/logo-black.png" alt="The Start Up" className="h-8 w-auto" />
           <a href="#pricing" className="hidden sm:inline-flex items-center gap-1.5 rounded-lg bg-slate-900 px-4 py-2 text-xs font-semibold text-white hover:bg-slate-800">
             See pricing <ArrowRight className="h-3.5 w-3.5" />
           </a>
@@ -107,7 +83,7 @@ export default function OfferPage() {
               Start your Scope Lock <ArrowRight className="h-4 w-4" />
             </a>
             <a href="#how" className="inline-flex items-center justify-center gap-2 rounded-lg border border-slate-300 bg-white px-6 py-3 text-sm font-semibold text-slate-900 hover:bg-slate-100">
-              <Play className="h-4 w-4" /> Watch the 3-min walkthrough
+              See how it works <ArrowRight className="h-4 w-4" />
             </a>
           </div>
           <p className="mt-3 flex items-center gap-1.5 text-xs text-slate-400">
@@ -118,49 +94,45 @@ export default function OfferPage() {
           </a>
         </div>
 
-        {/* VSL */}
-        <div id="how" className="mt-12 overflow-hidden rounded-2xl border border-slate-200 bg-slate-950 shadow-sm">
-          <div className="relative w-full" style={{ paddingTop: "56.25%" }}>
-            {playing && VIDEO_EMBED_URL ? (
-              <iframe
-                className="absolute inset-0 h-full w-full"
-                src={VIDEO_EMBED_URL}
-                title="The Start Up walkthrough"
-                allow="autoplay; fullscreen"
-                allowFullScreen
-              />
-            ) : (
-              <button
-                onClick={() => setPlaying(true)}
-                className="absolute inset-0 flex flex-col items-center justify-center gap-3 text-slate-300 hover:text-white"
-              >
-                <span className="flex h-16 w-16 items-center justify-center rounded-full bg-emerald-500 text-slate-950 shadow-lg">
-                  <Play className="h-7 w-7 ml-1" fill="currentColor" />
-                </span>
-                <span className="text-sm font-medium">
-                  {VIDEO_EMBED_URL ? "Play the walkthrough" : "Your VSL embeds here (3 min)"}
-                </span>
-              </button>
-            )}
+        {/* Process Flow */}
+        <div id="how" className="mt-12 overflow-hidden rounded-2xl bg-slate-950 shadow-sm p-8 sm:p-10">
+          <div className="text-xs font-medium uppercase tracking-wider text-slate-500 mb-8">How it works</div>
+          <div className="relative">
+            {/* connecting line */}
+            <div className="hidden sm:block absolute top-5 left-0 right-0 h-px bg-slate-700" style={{ left: "10%", right: "10%" }} />
+            <div className="grid grid-cols-1 sm:grid-cols-5 gap-6 sm:gap-2 relative">
+              {[
+                { n: "01", label: "Free Audit", sub: "Run the calculator — instant Bottleneck Report, no call needed" },
+                { n: "02", label: "Bottleneck Report", sub: "AI analysis pinpoints exactly where revenue leaks and what to build" },
+                { n: "03", label: "Scope Lock", sub: "Short async questionnaire fixes scope, price, and ship date" },
+                { n: "04", label: "30-Day Build", sub: "Your Monday.com system built and live — fixed date, no delays" },
+                { n: "05", label: "60-Day Support", sub: "Training, optimisation, and documentation so it sticks" },
+              ].map((step, i) => (
+                <div key={step.n} className="flex flex-col items-center text-center">
+                  <div className={`relative z-10 flex h-10 w-10 items-center justify-center rounded-full border-2 text-xs font-mono font-semibold mb-3 ${
+                    i === 3
+                      ? "border-emerald-500 bg-emerald-500 text-slate-950"
+                      : "border-slate-600 bg-slate-900 text-slate-400"
+                  }`}>
+                    {step.n}
+                  </div>
+                  <div className="text-sm font-semibold text-slate-100 tracking-tight">{step.label}</div>
+                  <p className="mt-1.5 text-xs leading-relaxed text-slate-500 max-w-[140px]">{step.sub}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+          <div className="mt-8 pt-6 border-t border-slate-800 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+            <div className="flex items-center gap-3">
+              <img src="/logo-white.png" alt="The Start Up" className="h-5 w-auto opacity-60" />
+              <span className="text-xs text-slate-500">Shipped in 30 · Supported for 60</span>
+            </div>
+            <a href="/calculator" className="inline-flex items-center gap-1.5 rounded-lg bg-emerald-500 px-4 py-2 text-xs font-semibold text-slate-950 hover:bg-emerald-400">
+              Start with the free audit <ArrowRight className="h-3.5 w-3.5" />
+            </a>
           </div>
         </div>
 
-        {/* How it works */}
-        <div className="mt-16">
-          <div className="text-xs font-medium uppercase tracking-wider text-slate-500 mb-6">How it works</div>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
-            {STEPS.map((s) => (
-              <div key={s.n} className="rounded-2xl border border-slate-200 bg-white p-5">
-                <div className="flex items-center justify-between mb-3">
-                  <span className="font-mono text-sm font-semibold text-slate-300 tabular-nums">{s.n}</span>
-                  <s.icon className="h-4 w-4 text-emerald-500" strokeWidth={2.5} />
-                </div>
-                <div className="font-semibold tracking-tight">{s.title}</div>
-                <p className="mt-1.5 text-sm leading-relaxed text-slate-600">{s.body}</p>
-              </div>
-            ))}
-          </div>
-        </div>
 
         {/* Scope */}
         <div className="mt-16 rounded-2xl border border-slate-200 bg-white p-6 sm:p-8">
@@ -297,7 +269,7 @@ export default function OfferPage() {
         </div>
 
         <div className="mt-14 border-t border-slate-200 pt-6 flex flex-col sm:flex-row items-center justify-between gap-3">
-          <div className="text-xs text-slate-400">© The Start Up · Shipped in 30 · Supported for 60</div>
+          <img src="/logo-black.png" alt="The Start Up" className="h-5 w-auto opacity-40" />
           <a href="/scope-lock" className="text-xs font-semibold text-slate-900 hover:text-emerald-600">Start your Scope Lock →</a>
         </div>
       </div>
