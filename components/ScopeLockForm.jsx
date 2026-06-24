@@ -1,6 +1,6 @@
 "use client";
-import React, { useState } from "react";
-import { ArrowRight, Check, Loader2, ShieldCheck } from "lucide-react";
+import React, { useState, useRef } from "react";
+import { ArrowRight, Check, Download, FileText, Loader2, ShieldCheck } from "lucide-react";
 import WordMark from "./WordMark";
 
 const OFFER_DEADLINE = "30 Sep 2026";
@@ -32,6 +32,8 @@ export default function ScopeLockForm() {
     integrations: "", startDate: "",
   });
   const [status, setStatus] = useState("idle"); // idle | sending | done | error
+  const [downloading, setDownloading] = useState(false);
+  const lastSubmission = useRef(null);
   const set = (k) => (e) => setF({ ...f, [k]: e.target.value });
 
   const valid = f.company && /.+@.+\..+/.test(f.email) && f.goal && f.bottleneck;
@@ -39,15 +41,49 @@ export default function ScopeLockForm() {
   async function submit() {
     if (!valid) return;
     setStatus("sending");
+    const payload = { ...f, currency };
     try {
       const res = await fetch("/api/scope-lock", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...f, currency }),
+        body: JSON.stringify(payload),
       });
-      setStatus(res.ok ? "done" : "error");
+      if (res.ok) {
+        lastSubmission.current = payload;
+        setStatus("done");
+      } else {
+        setStatus("error");
+      }
     } catch (e) {
       setStatus("error");
+    }
+  }
+
+  async function downloadProposal() {
+    if (!lastSubmission.current || downloading) return;
+    setDownloading(true);
+    try {
+      const res = await fetch("/api/proposal", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(lastSubmission.current),
+      });
+      if (!res.ok) throw new Error("Failed");
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      const company = (lastSubmission.current.company || "scope-lock")
+        .replace(/[^a-z0-9]/gi, "-").toLowerCase();
+      a.download = `proposal-${company}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    } catch {
+      // silent — user can retry
+    } finally {
+      setDownloading(false);
     }
   }
 
@@ -56,20 +92,103 @@ export default function ScopeLockForm() {
   const label = "block text-xs font-medium uppercase tracking-wider text-slate-500 mb-1.5";
 
   if (status === "done") {
+    const s = lastSubmission.current || {};
+    const selectedTier = TIERS.find((t) => t.value === s.tier) || TIERS[0];
+    const cur = s.currency || "USD";
+
+    const Row = ({ label: l, value: v }) =>
+      v ? (
+        <div>
+          <p className="text-[10px] font-semibold uppercase tracking-wider text-slate-400">{l}</p>
+          <p className="mt-0.5 text-sm text-slate-800">{v}</p>
+        </div>
+      ) : null;
+
     return (
-      <div className="min-h-screen w-full bg-slate-50 font-sans flex items-center justify-center px-5">
-        <div className="max-w-md text-center">
-          <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-teal-500 mb-5">
-            <Check className="h-6 w-6 text-white" strokeWidth={3} />
+      <div className="min-h-screen w-full bg-slate-50 font-sans py-12 px-5">
+        <div className="mx-auto max-w-lg">
+
+          {/* Header */}
+          <div className="mb-7 text-center">
+            <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-teal-500">
+              <Check className="h-6 w-6 text-white" strokeWidth={3} />
+            </div>
+            <h1 className="text-2xl font-semibold tracking-tight text-slate-900">Scope Lock received.</h1>
+            <p className="mt-2 text-sm text-slate-500">
+              We will turn this into a fixed scope, price, and start date — sent to your email. No call needed.
+            </p>
           </div>
-          <h1 className="text-2xl font-semibold tracking-tight text-slate-900">Scope Lock received.</h1>
-          <p className="mt-3 text-slate-600">
-            We have everything to put together your fixed scope, timeline, and price. You will get it by
-            email — no call needed. Approve it and the 30-day clock starts.
-          </p>
-          <a href="/" className="mt-6 inline-flex items-center gap-2 text-sm font-semibold text-slate-900 hover:text-teal-600">
-            Back to the start <ArrowRight className="h-4 w-4" />
-          </a>
+
+          {/* Submission summary card */}
+          <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+
+            {/* Tier banner */}
+            <div className="flex items-center justify-between bg-slate-900 px-5 py-4">
+              <div>
+                <p className="text-[10px] font-semibold uppercase tracking-wider text-teal-400">
+                  {selectedTier.label}
+                </p>
+                <p className="mt-0.5 text-lg font-bold text-white">
+                  {selectedTier.price[cur]}
+                </p>
+              </div>
+              <p className="text-xs text-slate-400 text-right max-w-[140px]">
+                {selectedTier.note[cur]}
+              </p>
+            </div>
+
+            {/* Fields */}
+            <div className="space-y-4 px-5 py-5">
+              <div className="grid grid-cols-2 gap-4">
+                <Row label="Company" value={s.company} />
+                <Row label="Contact" value={s.contact} />
+              </div>
+              <Row label="Email" value={s.email} />
+              {(s.goal || s.bottleneck || s.workflow || s.musthaves || s.integrations || s.startDate) && (
+                <div className="border-t border-slate-100 pt-4 space-y-4">
+                  <Row label="Business objective" value={s.goal} />
+                  <Row label="Current bottleneck" value={s.bottleneck} />
+                  <Row label="Core workflow" value={s.workflow} />
+                  <Row label="Must-have features" value={s.musthaves} />
+                  <Row label="Integrations" value={s.integrations} />
+                  <Row label="Proposed start date" value={s.startDate} />
+                </div>
+              )}
+            </div>
+
+            {/* Download strip */}
+            <div className="border-t border-slate-100 bg-slate-50 px-5 py-4">
+              <div className="flex items-center gap-2 mb-3">
+                <FileText className="h-4 w-4 text-teal-500 flex-none" />
+                <p className="text-xs text-slate-600">
+                  Your proposal PDF includes everything above plus terms &amp; conditions and a signature block.
+                </p>
+              </div>
+              <button
+                onClick={downloadProposal}
+                disabled={downloading}
+                className={
+                  "inline-flex w-full items-center justify-center gap-2 rounded-lg px-4 py-2.5 text-sm font-semibold transition-colors " +
+                  (downloading
+                    ? "bg-slate-200 text-slate-400 cursor-not-allowed"
+                    : "bg-teal-500 text-white hover:bg-teal-600")
+                }
+              >
+                {downloading ? (
+                  <><Loader2 className="h-4 w-4 animate-spin" /> Generating PDF…</>
+                ) : (
+                  <><Download className="h-4 w-4" /> Download Proposal PDF</>
+                )}
+              </button>
+            </div>
+          </div>
+
+          <div className="mt-5 text-center">
+            <a href="/" className="inline-flex items-center gap-1.5 text-sm font-medium text-slate-500 hover:text-slate-900">
+              Back to the start <ArrowRight className="h-4 w-4" />
+            </a>
+          </div>
+
         </div>
       </div>
     );
