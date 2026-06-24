@@ -4,10 +4,12 @@ import {
   ArrowRight, Search, Filter, Zap, Users, Clock,
   TrendingUp, BarChart2, Check, Bell, ChevronRight,
   Layers, RefreshCw, ShieldCheck, GitMerge,
+  LayoutGrid, List, Calendar, Activity,
+  Code2, Monitor, Package,
 } from "lucide-react";
 import WordMark from "./WordMark";
 
-// ─── Industry data ────────────────────────────────────────────────────────────
+// ─── Industry data ─────────────────────────────────────────────────────────────
 
 const INDUSTRIES = [
   {
@@ -50,7 +52,7 @@ const INDUSTRIES = [
       },
     ],
     metrics: [
-      { label: "Avg. trial-to-demo", value: "34%", gain: "+18 pts with auto-routing" },
+      { label: "Trial-to-demo rate", value: "34%", gain: "+18 pts with auto-routing" },
       { label: "Demo-to-close rate", value: "28%", gain: "+11 pts with follow-up seq." },
       { label: "Days to close", value: "22 days", gain: "−9 days with automation" },
     ],
@@ -363,9 +365,445 @@ const INDUSTRIES = [
       "Review date approaching → re-engagement and referral request sequence",
     ],
   },
+
+  // ── NEW SECTORS ──────────────────────────────────────────────────────────────
+
+  {
+    id: "healthcare",
+    label: "Healthcare",
+    icon: "❤️",
+    tagline: "Reduce admin, fill appointment gaps, and keep patients from falling through the cracks",
+    stages: [
+      {
+        name: "Referral Received",
+        count: 18,
+        leads: [
+          { company: "Dr. Patel Clinic", contact: "Ref: James Wu", value: "$320 /visit", days: 1, heat: "hot", note: "GP referral — urgent physio assessment" },
+          { company: "Metro Hospital", contact: "Ref: Sarah Young", value: "$280 /visit", days: 3, heat: "warm", note: "Post-surgery rehabilitation programme" },
+        ],
+      },
+      {
+        name: "Assessment Booked",
+        count: 12,
+        leads: [
+          { company: "Northside Surgery", contact: "Ref: Tom Abbas", value: "$450 package", days: 2, heat: "hot", note: "Initial assessment Tuesday 10am" },
+          { company: "Self-referral", contact: "Lucy Hammond", value: "$390 package", days: 5, heat: "warm", note: "Waiting for insurance pre-authorisation" },
+        ],
+      },
+      {
+        name: "Treatment Plan Active",
+        count: 9,
+        leads: [
+          { company: "Riverdale Corp", contact: "Occupational — 4 staff", value: "$1,200 /mo", days: 8, heat: "warm", note: "Corporate health plan — monthly review" },
+          { company: "Self-pay", contact: "Mark Simons", value: "$195 /session", days: 3, heat: "hot", note: "6-session plan, 4 remaining" },
+        ],
+      },
+      {
+        name: "Ongoing Care",
+        count: 24,
+        leads: [
+          { company: "Blue Shield Corp", contact: "Corporate — 12 staff", value: "$3,600 /mo", days: 0, heat: "hot", note: "Annual contract renewing next month" },
+          { company: "Long-term patient", contact: "Helen Brant", value: "$195 /session", days: 21, heat: "cold", note: "Missed last 2 appointments — re-engage" },
+        ],
+      },
+    ],
+    metrics: [
+      { label: "Appointment fill rate", value: "91%", gain: "+23 pts with automated rebooking" },
+      { label: "Referral response time", value: "4 hrs", gain: "vs. 2.1 days manually" },
+      { label: "Patient retention (12mo)", value: "78%", gain: "+19 pts with check-in sequences" },
+    ],
+    insights: [
+      { icon: Clock, title: "No-shows cost more than acquisition", body: "The average appointment no-show costs a practice $200 in lost revenue and blocked capacity. Automated SMS and email reminders 48 hours and 2 hours before reduce no-shows by up to 40%." },
+      { icon: RefreshCw, title: "Referral pipelines prevent capacity gaps", body: "A structured referral tracking system lets you see which referring GPs and specialists are sending work, follow up on open referrals, and maintain the relationships that fill your calendar predictably." },
+      { icon: ShieldCheck, title: "Compliant records protect your practice", body: "Centralised, timestamped patient interaction records protect against disputes and ensure compliance with health data regulations — without the manual filing burden." },
+    ],
+    automations: [
+      "Referral received → intake form sent to patient within 1 hour",
+      "Appointment booked → confirmation + preparation notes sent",
+      "48 hours before appointment → SMS and email reminder",
+      "No-show → rebooking link sent automatically within 30 minutes",
+      "Treatment plan milestone → progress note triggered for practitioner",
+      "Corporate plan renewal date approaching → account manager alerted",
+    ],
+  },
+
+  {
+    id: "realestate",
+    label: "Real Estate",
+    icon: "🏠",
+    tagline: "Give every buyer, seller, and tenant the response speed that closes the deal",
+    stages: [
+      {
+        name: "New Enquiry",
+        count: 34,
+        leads: [
+          { company: "Buyer — Johnson Family", contact: "Michael Johnson", value: "$680k budget", days: 1, heat: "hot", note: "Pre-approved, needs 4-bed in Northdale" },
+          { company: "Landlord — investment", contact: "Priya Naidoo", value: "$2,200 /mo rental", days: 2, heat: "warm", note: "2 units to let — portfolio landlord" },
+        ],
+      },
+      {
+        name: "Viewing Arranged",
+        count: 18,
+        leads: [
+          { company: "Buyer — Chen Family", contact: "David Chen", value: "$540k budget", days: 4, heat: "warm", note: "Saturday 10am — 3 properties shortlisted" },
+          { company: "Corporate tenant", contact: "Apex Tech (HR)", value: "$3,800 /mo lease", days: 2, heat: "hot", note: "Office lease decision by end of month" },
+        ],
+      },
+      {
+        name: "Offer Stage",
+        count: 8,
+        leads: [
+          { company: "Buyer — Williams", contact: "Sarah Williams", value: "$612k offer", days: 3, heat: "hot", note: "5% under asking — counter submitted" },
+          { company: "Relocating tenant", contact: "Horizon Group", value: "$4,200 /mo", days: 7, heat: "warm", note: "Awaiting head-office sign-off" },
+        ],
+      },
+      {
+        name: "Sale / Lease Agreed",
+        count: 5,
+        leads: [
+          { company: "Buyer — completed", contact: "The Nguyen Family", value: "$725k", days: 1, heat: "hot", note: "Exchange this Friday" },
+          { company: "Tenant — signed", contact: "Pulse Fitness", value: "$5,400 /mo", days: 2, heat: "hot", note: "Lease signed — keys handover booked" },
+        ],
+      },
+    ],
+    metrics: [
+      { label: "Enquiry response time", value: "9 mins", gain: "vs. 4.3 hrs industry avg." },
+      { label: "Viewing-to-offer rate", value: "44%", gain: "+17 pts with prep sequences" },
+      { label: "Avg. days to close", value: "31 days", gain: "−14 days vs. unmanaged pipeline" },
+    ],
+    insights: [
+      { icon: Clock, title: "The first agent to respond usually wins the listing", body: "Research shows 78% of buyers and tenants choose the agent who responds first. Automated instant acknowledgements and immediate rep assignment mean you're always first, even outside office hours." },
+      { icon: Users, title: "Buyer profiles save lost matches", body: "When a new property is listed, your system can automatically match it against every active buyer profile and alert the right people — before the property even hits the public portals." },
+      { icon: TrendingUp, title: "Post-sale relationships generate repeat revenue", body: "Landlords, investors, and upgrading homeowners come back — if you stay top of mind. Automated annual market valuations and check-ins keep your brand present without manual effort." },
+    ],
+    automations: [
+      "Enquiry received → auto-acknowledgement + agent assigned within 5 mins",
+      "Viewing booked → confirmation, directions, and property details sent",
+      "Offer submitted → seller notified instantly with full details",
+      "Offer agreed → conveyancing checklist triggered for both parties",
+      "Keys handed over → 30-day check-in and review request sent",
+      "Landlord's lease anniversary → rental appraisal offer automated",
+    ],
+  },
+
+  {
+    id: "ecommerce",
+    label: "E-commerce & Retail",
+    icon: "🛒",
+    tagline: "Turn first-time stockists into recurring wholesale accounts",
+    stages: [
+      {
+        name: "New Brand Lead",
+        count: 28,
+        leads: [
+          { company: "Sunrise Organics", contact: "Kate Walsh — Buyer", value: "$48k /yr", days: 1, heat: "hot", note: "Inbound from trade show — 3 SKUs" },
+          { company: "Urban Outpost", contact: "Ben Zhao — CEO", value: "$22k /yr", days: 3, heat: "warm", note: "Looking to switch current supplier" },
+        ],
+      },
+      {
+        name: "Sample Sent",
+        count: 14,
+        leads: [
+          { company: "Nature's Best Retail", contact: "Amanda Price", value: "$96k /yr", days: 5, heat: "warm", note: "Samples out — feedback call in 2 days" },
+          { company: "Peak Performance", contact: "Ross Turner — Buyer", value: "$34k /yr", days: 9, heat: "cold", note: "No feedback — follow up this week" },
+        ],
+      },
+      {
+        name: "Trial Order",
+        count: 7,
+        leads: [
+          { company: "FreshBox Retail", contact: "Lisa Ng", value: "$61k /yr", days: 4, heat: "warm", note: "Trial order fulfilled — reorder in 3 weeks" },
+          { company: "Vitality Stores", contact: "Cam Davis", value: "$180k /yr", days: 2, heat: "hot", note: "Trial exceeded targets — contract talks started" },
+        ],
+      },
+      {
+        name: "Active Stockist",
+        count: 42,
+        leads: [
+          { company: "Wellbeing Direct", contact: "National account", value: "$420k /yr", days: 0, heat: "hot", note: "Top account — quarterly review next week" },
+          { company: "Corner Health (19 stores)", contact: "Head of Buying", value: "$78k /yr", days: 18, heat: "cold", note: "Reorder overdue — competitor risk" },
+        ],
+      },
+    ],
+    metrics: [
+      { label: "Sample-to-order rate", value: "54%", gain: "+22 pts with 48-hr follow-up" },
+      { label: "Avg. account LTV", value: "$112k", gain: "tracked and visible" },
+      { label: "Stockist retention rate", value: "88%", gain: "+31 pts vs. unmanaged accounts" },
+    ],
+    insights: [
+      { icon: RefreshCw, title: "Reorder timing is your biggest revenue lever", body: "Wholesale revenue is won or lost in the days around each reorder cycle. A system that flags accounts approaching their reorder window — before they go to a competitor — pays for itself in a single retained account." },
+      { icon: BarChart2, title: "Buyer behaviour predicts churn before it happens", body: "When a stockist who previously reordered every 4 weeks goes 6 weeks silent, something has changed. Automated flags give your team time to intervene before the account is lost." },
+      { icon: TrendingUp, title: "Trial orders are your most important data point", body: "How a stockist behaves with their first order tells you everything about their lifetime value. Tracking sell-through rate and reorder speed creates a scoring system that lets your team prioritise the right accounts." },
+    ],
+    automations: [
+      "New lead enquiry → sample request pack sent within 2 hours",
+      "Sample sent → 5-day follow-up call reminder triggered",
+      "Trial order placed → thank-you + next order discount sent on delivery",
+      "Reorder window passed → rep alerted before account goes quiet",
+      "Account hits $50k in orders → flagged as key account for priority service",
+      "No order in 60 days → win-back sequence triggered automatically",
+    ],
+  },
+
+  {
+    id: "construction",
+    label: "Construction & Property",
+    icon: "🏗️",
+    tagline: "Win more tenders, track every site, and never miss a contract milestone",
+    stages: [
+      {
+        name: "Tender Enquiry",
+        count: 21,
+        leads: [
+          { company: "Meridian Developments", contact: "Mark Forsyth — COO", value: "$1.2M contract", days: 2, heat: "hot", note: "Mixed-use development — tender due Friday" },
+          { company: "City Infrastructure", contact: "Procurement Dept", value: "$340k contract", days: 4, heat: "warm", note: "3 contractors shortlisted" },
+        ],
+      },
+      {
+        name: "Site Survey",
+        count: 9,
+        leads: [
+          { company: "Harrington Group", contact: "Project Director", value: "$780k contract", days: 3, heat: "warm", note: "Site survey done — pricing in progress" },
+          { company: "Nova Retail Parks", contact: "Development Manager", value: "$2.4M contract", days: 7, heat: "hot", note: "Preliminary design approved — quote next" },
+        ],
+      },
+      {
+        name: "Quote Submitted",
+        count: 6,
+        leads: [
+          { company: "Peak Property Ltd", contact: "Steve Lau — MD", value: "$510k contract", days: 4, heat: "warm", note: "Quote submitted — decision in 2 weeks" },
+          { company: "Riverside Consortium", contact: "Project Lead", value: "$1.8M contract", days: 10, heat: "cold", note: "Stalled — decision delayed by planning" },
+        ],
+      },
+      {
+        name: "Awarded",
+        count: 4,
+        leads: [
+          { company: "Summit Build Ltd", contact: "Contract Manager", value: "$960k contract", days: 1, heat: "hot", note: "Contract signed — mobilisation next week" },
+          { company: "Greenfield Holdings", contact: "J. Blackwood — Owner", value: "$3.1M contract", days: 3, heat: "hot", note: "Largest active contract — phase 1 underway" },
+        ],
+      },
+    ],
+    metrics: [
+      { label: "Tender win rate", value: "38%", gain: "+16 pts with faster response" },
+      { label: "Avg. quote turnaround", value: "4.1 days", gain: "−2.8 days with templates" },
+      { label: "Variation order tracking", value: "100%", gain: "vs. 0% on spreadsheets" },
+    ],
+    insights: [
+      { icon: Clock, title: "Tender deadlines wait for no one", body: "A missed tender submission is 100% loss. A system that tracks every open tender, deadline, and required document — with automated reminders — eliminates the risk of losing work to admin failure rather than competition." },
+      { icon: Layers, title: "Site and project capacity limits what you can bid", body: "Before committing to a new project, you need visibility into what your teams are currently delivering. Linking your pipeline to active site capacity prevents over-bidding on work you can't resource." },
+      { icon: BarChart2, title: "Variation orders destroy margins when untracked", body: "Construction projects almost always scope-change. A system that captures, prices, and tracks every variation order in real time protects your margin and makes billing disputes nearly impossible." },
+    ],
+    automations: [
+      "Tender received → checklist assigned to estimator with deadline",
+      "Site survey complete → quote template pre-filled and assigned",
+      "Quote submitted → 7-day and 14-day follow-up reminders",
+      "Contract awarded → project setup checklist triggered",
+      "Variation order raised → approval workflow and margin impact flagged",
+      "Project milestone reached → invoice trigger and client notification",
+    ],
+  },
+
+  {
+    id: "education",
+    label: "Education & Training",
+    icon: "🎓",
+    tagline: "Convert more enquiries to enrolments and keep your intake calendar full",
+    stages: [
+      {
+        name: "Enquiry",
+        count: 46,
+        leads: [
+          { company: "Deloitte SA", contact: "L&D Manager — Thabo N.", value: "$28k cohort", days: 1, heat: "hot", note: "60 staff — leadership development programme" },
+          { company: "Private enquiry", contact: "Mrs Daniels (parent)", value: "$12k /yr", days: 3, heat: "warm", note: "Year 10 entry — requested prospectus" },
+        ],
+      },
+      {
+        name: "Open Day / Consult",
+        count: 22,
+        leads: [
+          { company: "KPMG Africa", contact: "HR Director", value: "$54k contract", days: 2, heat: "hot", note: "Attended open session — follow-up call Thurs" },
+          { company: "Private — family", contact: "The Peterson Family", value: "$12k /yr", days: 5, heat: "warm", note: "Visited campus — comparing 2 institutions" },
+        ],
+      },
+      {
+        name: "Application Submitted",
+        count: 14,
+        leads: [
+          { company: "Standard Bank", contact: "People Lead — K. Adams", value: "$72k contract", days: 3, heat: "hot", note: "Application in — assessment pending" },
+          { company: "Student — bursary", contact: "Amara Osei", value: "$18k /yr", days: 6, heat: "warm", note: "Academic assessment complete" },
+        ],
+      },
+      {
+        name: "Enrolled",
+        count: 9,
+        leads: [
+          { company: "MTN Group", contact: "L&D — 24 staff enrolled", value: "$96k /yr", days: 0, heat: "hot", note: "Enterprise deal — cohort 2 already requested" },
+          { company: "Full-fee student", contact: "Jordan Baptiste", value: "$12k /yr", days: 2, heat: "warm", note: "Enrolled — orientation in 3 weeks" },
+        ],
+      },
+    ],
+    metrics: [
+      { label: "Enquiry-to-enrolment", value: "19%", gain: "+11 pts with automated nurture" },
+      { label: "Corporate deal avg. value", value: "$48k", gain: "visible and trackable for the first time" },
+      { label: "Open day show-up rate", value: "74%", gain: "+28 pts with reminder sequences" },
+    ],
+    insights: [
+      { icon: Clock, title: "Speed of response determines enrolment", body: "Prospective students who receive a personalised response within 1 hour of enquiring are 6× more likely to enrol than those who wait 24 hours. Automated acknowledgements and assigned counsellors fix this instantly." },
+      { icon: TrendingUp, title: "Corporate training is your highest-margin channel", body: "A single corporate training contract can be worth 20× an individual enrolment. A dedicated B2B pipeline — separate from your student pipeline — ensures these opportunities get the attention and responsiveness they require." },
+      { icon: BarChart2, title: "Intake season demand is predictable — and plannable", body: "Enrolment enquiries follow clear seasonal patterns. A system with historical pipeline data lets you forecast intake numbers weeks in advance and resource your admissions team before the peak hits." },
+    ],
+    automations: [
+      "Enquiry received → personalised info pack sent within 15 minutes",
+      "Open day RSVP → confirmation + calendar invite + reminder sequence",
+      "Application submitted → acknowledgement + next steps sent instantly",
+      "Application approved → offer letter triggered with acceptance deadline",
+      "Offer accepted → onboarding checklist and orientation invite sent",
+      "Corporate inquiry → account manager assigned and scoping call booked",
+    ],
+  },
+
+  // ── CUSTOM APP SECTOR ────────────────────────────────────────────────────────
+  {
+    id: "custom",
+    label: "Custom App",
+    icon: "⚙️",
+    tagline: "Beyond CRM — purpose-built tools for any workflow you can describe",
+    isCustomApp: true,
+    metrics: [
+      { label: "Avg. build time", value: "30 days", gain: "vs. 6–18 months traditional dev" },
+      { label: "Apps in production", value: "15+", gain: "across 8 industries" },
+      { label: "Team adoption rate", value: "94%", gain: "vs. ~30% for off-the-shelf tools" },
+    ],
+    insights: [
+      { icon: Code2, title: "Off-the-shelf tools are a compromise, not a solution", body: "Software built for everyone is optimised for no one. A custom app built around your exact workflow eliminates the workarounds, unused features, and frustration of bending your process to fit a product someone else designed." },
+      { icon: Zap, title: "30 days to live — not 6 months", body: "Traditional software development cycles kill momentum. We scope tightly, build to the exact requirements, and ship a working system in 30 days. You see real output in the first week, not after a quarterly review." },
+      { icon: ShieldCheck, title: "You own it completely — no licensing lock-in", body: "There are no ongoing licensing fees for the app itself. You own the code, configuration, and documentation. If you want to extend it, move platforms, or hand it to an internal team, nothing stops you." },
+    ],
+    automations: [
+      "New requirement → scoped and estimated within 24 hours",
+      "Build kickoff → weekly progress update sent to stakeholder",
+      "Feature complete → review session automatically booked",
+      "Go-live → training session and full documentation delivered",
+      "Post-launch → 60-day check-in and optimisation review",
+      "Support request → triaged and resolved within 1 business day",
+    ],
+  },
 ];
 
-// ─── Generic benefits ─────────────────────────────────────────────────────────
+// ─── Custom app types ──────────────────────────────────────────────────────────
+
+const CUSTOM_APPS = [
+  {
+    icon: Monitor,
+    name: "Client Portal",
+    desc: "Give clients real-time visibility into project status, approvals, invoices, and communication — all branded to your business.",
+    examples: [
+      "Live project progress & milestone board",
+      "Document review and approval workflows",
+      "Invoice and payment tracking",
+      "Secure messaging channel",
+    ],
+  },
+  {
+    icon: Calendar,
+    name: "Booking & Scheduling System",
+    desc: "Replace back-and-forth emails with automated booking flows, smart reminders, and real-time capacity management.",
+    examples: [
+      "Online booking interface",
+      "Staff availability and capacity management",
+      "Automated confirmations and reminders",
+      "Cancellation and rescheduling flows",
+    ],
+  },
+  {
+    icon: Users,
+    name: "Employee Onboarding Hub",
+    desc: "Standardise how new hires get up to speed — tasks, documents, introductions, and sign-offs all tracked in one place.",
+    examples: [
+      "Day-1 to Week-4 task checklists",
+      "Document signing and compliance tracking",
+      "Manager approval workflows",
+      "Training completion and certification records",
+    ],
+  },
+  {
+    icon: BarChart2,
+    name: "Executive Reporting Dashboard",
+    desc: "Give leadership the numbers they actually need — live, not updated every Friday in a spreadsheet one version behind.",
+    examples: [
+      "Live KPI and revenue board",
+      "Team performance and output metrics",
+      "Pipeline and forecast views",
+      "Custom charts with filter controls",
+    ],
+  },
+  {
+    icon: Package,
+    name: "Inventory & Stock Management",
+    desc: "Track stock levels, flag low inventory before it becomes a problem, and trigger reorder workflows automatically.",
+    examples: [
+      "Real-time stock level board",
+      "Low-stock alert automations",
+      "Supplier reorder request workflows",
+      "Purchase order tracking and history",
+    ],
+  },
+  {
+    icon: Code2,
+    name: "Fully Custom Internal Tool",
+    desc: "If none of the above fits, we scope a tool to your exact workflow — built in 30 days, documented, and fully yours.",
+    examples: [
+      "Any workflow digitised and automated",
+      "Connects to your existing stack via API",
+      "Reporting built around your specific KPIs",
+      "Full documentation — yours to own and extend",
+    ],
+  },
+];
+
+// ─── Service overview cards ────────────────────────────────────────────────────
+
+const SERVICE_CARDS = [
+  {
+    icon: GitMerge,
+    accent: "bg-blue-50 text-blue-600",
+    title: "CRM & Lead Pipeline",
+    desc: "One structured system that captures every lead from every source, routes them to the right person, and tracks every deal from first touch to close.",
+    points: [
+      "Single pipeline across all inbound channels",
+      "Auto-routing by territory or service type",
+      "Follow-up automation so nothing goes cold",
+      "Win/loss reporting by source and rep",
+    ],
+  },
+  {
+    icon: Zap,
+    accent: "bg-emerald-50 text-emerald-600",
+    title: "Workflow Automation",
+    desc: "Replace the manual tasks your team repeats every day with automated flows that trigger on the right event at the right time — without anyone managing them.",
+    points: [
+      "Trigger-based sequences and task creation",
+      "Cross-system integrations via API",
+      "Escalation rules for time-sensitive items",
+      "Instant notifications to the right person",
+    ],
+  },
+  {
+    icon: Code2,
+    accent: "bg-violet-50 text-violet-600",
+    title: "Custom App Development",
+    desc: "When off-the-shelf tools don't fit your workflow, we build purpose-built apps — portals, booking systems, dashboards, and more — in 30 days.",
+    points: [
+      "Scoped precisely to your requirements",
+      "Built and live in 30 days",
+      "Full documentation — you own it entirely",
+      "Connects to your existing tools via API",
+    ],
+  },
+];
+
+// ─── Generic benefits ──────────────────────────────────────────────────────────
 
 const BENEFITS = [
   {
@@ -388,13 +826,22 @@ const BENEFITS = [
   },
 ];
 
-// ─── Components ───────────────────────────────────────────────────────────────
+// ─── Lookups ───────────────────────────────────────────────────────────────────
 
 const HEAT = {
-  hot:  { dot: "bg-emerald-500", bar: "border-l-emerald-500", label: "Hot" },
-  warm: { dot: "bg-amber-400",   bar: "border-l-amber-400",   label: "Warm" },
-  cold: { dot: "bg-slate-300",   bar: "border-l-slate-300",   label: "Cold" },
+  hot:  { dot: "bg-emerald-500", bar: "border-l-emerald-500", label: "Hot",  hex: "#10b981" },
+  warm: { dot: "bg-amber-400",   bar: "border-l-amber-400",   label: "Warm", hex: "#fbbf24" },
+  cold: { dot: "bg-slate-300",   bar: "border-l-slate-300",   label: "Cold", hex: "#cbd5e1" },
 };
+
+const VIEWS = [
+  { id: "pipeline",  label: "Pipeline",  icon: LayoutGrid },
+  { id: "timeline",  label: "Timeline",  icon: Calendar },
+  { id: "dashboard", label: "Dashboard", icon: Activity },
+  { id: "table",     label: "Table",     icon: List },
+];
+
+// ─── Lead card ─────────────────────────────────────────────────────────────────
 
 function LeadCard({ lead }) {
   const h = HEAT[lead.heat];
@@ -418,10 +865,11 @@ function LeadCard({ lead }) {
   );
 }
 
+// ─── Kanban (pipeline) view ────────────────────────────────────────────────────
+
 function KanbanBoard({ industry }) {
   return (
     <div className="rounded-2xl border border-slate-200 overflow-hidden shadow-sm">
-      {/* fake toolbar */}
       <div className="flex items-center justify-between gap-3 bg-white border-b border-slate-200 px-4 py-3">
         <div className="flex items-center gap-2 rounded-lg border border-slate-200 bg-slate-50 px-3 py-1.5 text-xs text-slate-400 w-48">
           <Search className="h-3.5 w-3.5 flex-none" />
@@ -442,7 +890,6 @@ function KanbanBoard({ industry }) {
         </div>
       </div>
 
-      {/* kanban */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-0 bg-slate-100">
         {industry.stages.map((stage, si) => (
           <div key={stage.name} className={`p-3 ${si < industry.stages.length - 1 ? "border-r border-slate-200" : ""}`}>
@@ -462,7 +909,6 @@ function KanbanBoard({ industry }) {
         ))}
       </div>
 
-      {/* stats bar */}
       <div className="flex items-center gap-6 bg-white border-t border-slate-200 px-4 py-2.5 overflow-x-auto">
         {industry.metrics.map((m) => (
           <div key={m.label} className="flex items-center gap-2 flex-none text-xs">
@@ -476,10 +922,285 @@ function KanbanBoard({ industry }) {
   );
 }
 
-// ─── Page ─────────────────────────────────────────────────────────────────────
+// ─── Timeline view ─────────────────────────────────────────────────────────────
+
+function TimelineView({ industry }) {
+  const MAX_DAYS = 21;
+  const weeks = ["3 wks ago", "2 wks ago", "Last week", "This week"];
+  const allLeads = industry.stages.flatMap((s) =>
+    s.leads.map((l) => ({ ...l, stageName: s.name }))
+  ).sort((a, b) => b.days - a.days);
+
+  return (
+    <div className="rounded-2xl border border-slate-200 overflow-hidden shadow-sm">
+      <div className="flex items-center justify-between gap-3 bg-white border-b border-slate-200 px-4 py-3">
+        <span className="text-xs font-semibold text-slate-600 uppercase tracking-wide">Deal Timeline — days in current stage</span>
+        <div className="flex items-center gap-3">
+          {Object.entries(HEAT).map(([k, v]) => (
+            <span key={k} className="flex items-center gap-1.5 text-xs text-slate-500">
+              <span className={`h-2 w-2 rounded-full ${v.dot}`} /> {v.label}
+            </span>
+          ))}
+        </div>
+      </div>
+
+      <div className="grid grid-cols-4 border-b border-slate-200 bg-slate-50">
+        {weeks.map((w) => (
+          <div key={w} className="px-3 py-2 text-xs font-medium text-slate-400 text-center border-r last:border-r-0 border-slate-200">{w}</div>
+        ))}
+      </div>
+
+      <div className="bg-white divide-y divide-slate-100">
+        {allLeads.map((lead) => {
+          const pct = Math.min(100, Math.max(6, (lead.days / MAX_DAYS) * 100));
+          return (
+            <div key={lead.company + lead.contact} className="flex items-center gap-3 px-4 py-3">
+              <div className="w-36 flex-none">
+                <div className="text-sm font-semibold text-slate-900 truncate">{lead.company}</div>
+                <div className="text-xs text-slate-400 truncate">{lead.stageName}</div>
+              </div>
+              <div className="flex-1 relative h-7 bg-slate-100 rounded-lg overflow-hidden">
+                <div
+                  className="absolute right-0 top-0 bottom-0 rounded-lg"
+                  style={{ width: `${pct}%`, backgroundColor: HEAT[lead.heat].hex, opacity: 0.75 }}
+                />
+                <div className="absolute inset-0 flex items-center pl-3">
+                  <span className="text-xs font-semibold text-slate-700">
+                    {lead.days === 0 ? "Today" : `${lead.days}d`}
+                  </span>
+                </div>
+              </div>
+              <div className="w-24 flex-none text-right">
+                <div className="text-sm font-semibold text-emerald-600">{lead.value}</div>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
+      <div className="flex items-center gap-6 bg-white border-t border-slate-200 px-4 py-2.5 overflow-x-auto">
+        {industry.metrics.map((m) => (
+          <div key={m.label} className="flex items-center gap-2 flex-none text-xs">
+            <span className="text-slate-500">{m.label}</span>
+            <span className="font-semibold text-slate-900">{m.value}</span>
+            <span className="text-emerald-600">{m.gain}</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ─── Dashboard view ────────────────────────────────────────────────────────────
+
+function KpiCard({ label, value, sub, accent }) {
+  return (
+    <div className={`rounded-2xl border p-4 ${accent ? "border-emerald-200 bg-emerald-50" : "border-slate-200 bg-white"}`}>
+      <div className={`text-2xl font-bold tracking-tight ${accent ? "text-emerald-700" : "text-slate-900"}`}>{value}</div>
+      <div className="text-xs font-medium text-slate-600 mt-0.5">{label}</div>
+      <div className={`text-xs mt-1 ${accent ? "text-emerald-600" : "text-slate-400"}`}>{sub}</div>
+    </div>
+  );
+}
+
+function DashboardView({ industry }) {
+  const allLeads = industry.stages.flatMap((s) =>
+    s.leads.map((l) => ({ ...l, stageName: s.name }))
+  );
+  const totalCount = industry.stages.reduce((s, st) => s + st.count, 0);
+  const hotLeads = allLeads.filter((l) => l.heat === "hot");
+  const maxCount = Math.max(...industry.stages.map((s) => s.count));
+  const funnelColors = ["#0f172a", "#334155", "#64748b", "#94a3b8"];
+
+  return (
+    <div className="space-y-4">
+      {/* KPI row */}
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        <KpiCard label="Total in Pipeline" value={totalCount} sub="active leads" />
+        <KpiCard label="Hot Leads" value={hotLeads.length} sub={`${Math.round((hotLeads.length / allLeads.length) * 100)}% of pipeline`} accent />
+        <KpiCard label={industry.metrics[0].label} value={industry.metrics[0].value} sub={industry.metrics[0].gain} />
+        <KpiCard label={industry.metrics[1].label} value={industry.metrics[1].value} sub={industry.metrics[1].gain} />
+      </div>
+
+      {/* Funnel + top prospects */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        <div className="rounded-2xl border border-slate-200 bg-white p-5">
+          <div className="text-xs font-medium uppercase tracking-wider text-slate-500 mb-4">Pipeline Funnel</div>
+          <div className="space-y-3">
+            {industry.stages.map((stage, i) => {
+              const pct = Math.max(12, Math.round((stage.count / maxCount) * 100));
+              return (
+                <div key={stage.name} className="flex items-center gap-3">
+                  <div className="w-32 flex-none text-xs text-slate-600 text-right truncate">{stage.name}</div>
+                  <div className="flex-1 bg-slate-100 rounded-full h-7 overflow-hidden">
+                    <div
+                      className="h-7 rounded-full flex items-center px-3"
+                      style={{ width: `${pct}%`, backgroundColor: funnelColors[i] }}
+                    >
+                      <span className="text-xs font-bold text-white">{stage.count}</span>
+                    </div>
+                  </div>
+                  <div className="w-8 flex-none text-xs text-slate-400 text-right">
+                    {Math.round((stage.count / totalCount) * 100)}%
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
+        <div className="rounded-2xl border border-slate-200 bg-white p-5">
+          <div className="text-xs font-medium uppercase tracking-wider text-slate-500 mb-4">Hottest Prospects</div>
+          <div className="space-y-3">
+            {hotLeads.slice(0, 4).map((lead) => (
+              <div key={lead.company + lead.contact} className="flex items-center gap-3">
+                <div className="flex h-8 w-8 flex-none items-center justify-center rounded-lg bg-emerald-50 text-xs font-bold text-emerald-600">
+                  {lead.company.charAt(0)}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="text-sm font-semibold text-slate-900 truncate">{lead.company}</div>
+                  <div className="text-xs text-slate-400 truncate">{lead.stageName}</div>
+                </div>
+                <div className="text-sm font-semibold text-emerald-600 flex-none">{lead.value}</div>
+              </div>
+            ))}
+          </div>
+
+          <div className="mt-5 pt-4 border-t border-slate-100">
+            <div className="text-xs font-medium uppercase tracking-wider text-slate-500 mb-3">Latest Automation Activity</div>
+            <div className="space-y-2">
+              {industry.automations.slice(0, 3).map((a, i) => (
+                <div key={i} className="flex items-start gap-2">
+                  <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 mt-1.5 flex-none" />
+                  <span className="text-xs text-slate-500 leading-relaxed">{a}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Stats bar */}
+      <div className="flex items-center gap-6 bg-white border border-slate-200 rounded-2xl px-5 py-3 overflow-x-auto">
+        {industry.metrics.map((m) => (
+          <div key={m.label} className="flex items-center gap-2 flex-none text-xs">
+            <span className="text-slate-500">{m.label}</span>
+            <span className="font-semibold text-slate-900">{m.value}</span>
+            <span className="text-emerald-600">{m.gain}</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ─── Table view ────────────────────────────────────────────────────────────────
+
+function TableView({ industry }) {
+  const allLeads = industry.stages.flatMap((s) =>
+    s.leads.map((l) => ({ ...l, stageName: s.name }))
+  );
+
+  return (
+    <div className="rounded-2xl border border-slate-200 overflow-hidden shadow-sm">
+      <div className="flex items-center gap-3 bg-white border-b border-slate-200 px-4 py-3">
+        <div className="flex items-center gap-2 rounded-lg border border-slate-200 bg-slate-50 px-3 py-1.5 text-xs text-slate-400 w-48">
+          <Search className="h-3.5 w-3.5 flex-none" />
+          <span>Search table…</span>
+        </div>
+        <button className="ml-auto flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-2.5 py-1.5 text-xs text-slate-500 hover:bg-slate-50">
+          <Filter className="h-3.5 w-3.5" /> Filter
+        </button>
+      </div>
+
+      <div className="overflow-x-auto bg-white">
+        <table className="w-full text-sm">
+          <thead>
+            <tr className="border-b border-slate-200 bg-slate-50">
+              <th className="text-left px-4 py-2.5 text-xs font-semibold text-slate-500 uppercase tracking-wider">Company</th>
+              <th className="text-left px-4 py-2.5 text-xs font-semibold text-slate-500 uppercase tracking-wider hidden sm:table-cell">Contact</th>
+              <th className="text-left px-4 py-2.5 text-xs font-semibold text-slate-500 uppercase tracking-wider">Stage</th>
+              <th className="text-left px-4 py-2.5 text-xs font-semibold text-slate-500 uppercase tracking-wider">Value</th>
+              <th className="text-left px-4 py-2.5 text-xs font-semibold text-slate-500 uppercase tracking-wider">Days</th>
+              <th className="text-left px-4 py-2.5 text-xs font-semibold text-slate-500 uppercase tracking-wider">Heat</th>
+              <th className="text-left px-4 py-2.5 text-xs font-semibold text-slate-500 uppercase tracking-wider hidden lg:table-cell">Note</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-slate-100">
+            {allLeads.map((lead) => {
+              const h = HEAT[lead.heat];
+              return (
+                <tr key={lead.company + lead.contact} className="hover:bg-slate-50 transition-colors">
+                  <td className="px-4 py-3 font-semibold text-slate-900 max-w-[140px] truncate">{lead.company}</td>
+                  <td className="px-4 py-3 text-slate-600 hidden sm:table-cell">{lead.contact}</td>
+                  <td className="px-4 py-3">
+                    <span className="rounded-full bg-slate-100 px-2.5 py-0.5 text-xs font-medium text-slate-600 whitespace-nowrap">{lead.stageName}</span>
+                  </td>
+                  <td className="px-4 py-3 font-semibold text-emerald-600 whitespace-nowrap">{lead.value}</td>
+                  <td className="px-4 py-3 text-slate-500 text-xs">{lead.days === 0 ? "Today" : `${lead.days}d`}</td>
+                  <td className="px-4 py-3">
+                    <span className={`flex items-center gap-1.5 text-xs font-medium whitespace-nowrap ${
+                      lead.heat === "hot" ? "text-emerald-600" : lead.heat === "warm" ? "text-amber-600" : "text-slate-400"
+                    }`}>
+                      <span className={`h-2 w-2 rounded-full flex-none ${h.dot}`} />
+                      {h.label}
+                    </span>
+                  </td>
+                  <td className="px-4 py-3 text-xs text-slate-400 hidden lg:table-cell max-w-xs truncate">{lead.note}</td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
+
+      <div className="flex items-center gap-6 bg-white border-t border-slate-200 px-4 py-2.5 overflow-x-auto">
+        {industry.metrics.map((m) => (
+          <div key={m.label} className="flex items-center gap-2 flex-none text-xs">
+            <span className="text-slate-500">{m.label}</span>
+            <span className="font-semibold text-slate-900">{m.value}</span>
+            <span className="text-emerald-600">{m.gain}</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ─── Custom app grid ───────────────────────────────────────────────────────────
+
+function CustomAppGrid() {
+  return (
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+      {CUSTOM_APPS.map((app) => (
+        <div
+          key={app.name}
+          className="rounded-2xl border border-slate-200 bg-white p-5 hover:border-slate-400 hover:shadow-sm transition-all"
+        >
+          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-slate-900 mb-4">
+            <app.icon className="h-5 w-5 text-emerald-400" strokeWidth={2} />
+          </div>
+          <div className="font-semibold tracking-tight text-slate-900 mb-2">{app.name}</div>
+          <p className="text-sm leading-relaxed text-slate-600 mb-4">{app.desc}</p>
+          <ul className="space-y-1.5">
+            {app.examples.map((ex) => (
+              <li key={ex} className="flex items-start gap-2 text-xs text-slate-600">
+                <Check className="h-3.5 w-3.5 flex-none text-emerald-500 mt-px" strokeWidth={3} />
+                {ex}
+              </li>
+            ))}
+          </ul>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+// ─── Page ──────────────────────────────────────────────────────────────────────
 
 export default function CRMSimulator() {
   const [active, setActive] = useState(0);
+  const [view, setView] = useState("pipeline");
   const industry = INDUSTRIES[active];
 
   return (
@@ -509,17 +1230,47 @@ export default function CRMSimulator() {
             <span className="text-slate-400">Before you build it.</span>
           </h1>
           <p className="mt-4 text-lg text-slate-600 max-w-xl">
-            Select your industry below to see how a custom CRM system would organise your leads, automate your follow-up, and surface the numbers that matter.
+            Select your industry to see how a custom system would organise your leads, automate your follow-up, and surface the numbers that matter.
           </p>
         </div>
 
+        {/* Service overview */}
+        <div className="mb-14">
+          <div className="text-xs font-medium uppercase tracking-wider text-slate-500 mb-2">What we build</div>
+          <h2 className="text-2xl font-semibold tracking-tight mb-2">Three types of systems. One team. 30 days to live.</h2>
+          <p className="text-slate-600 mb-7 max-w-2xl">
+            Every system is custom-scoped to your business, built in 30 days, and handed over with full documentation.
+            No vendor lock-in, no subscriptions for the system itself — you own it on day one.
+          </p>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            {SERVICE_CARDS.map((card) => (
+              <div key={card.title} className="rounded-2xl border border-slate-200 bg-white p-5">
+                <div className={`flex h-9 w-9 items-center justify-center rounded-xl ${card.accent} mb-4`}>
+                  <card.icon className="h-4.5 w-4.5" strokeWidth={2.5} />
+                </div>
+                <div className="font-semibold tracking-tight mb-2">{card.title}</div>
+                <p className="text-sm leading-relaxed text-slate-600 mb-4">{card.desc}</p>
+                <ul className="space-y-1.5">
+                  {card.points.map((p) => (
+                    <li key={p} className="flex items-start gap-2 text-xs text-slate-600">
+                      <Check className="h-3.5 w-3.5 flex-none text-emerald-500 mt-px" strokeWidth={3} />
+                      {p}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ))}
+          </div>
+        </div>
+
         {/* Industry picker */}
-        <div className="flex flex-wrap gap-2 mb-8">
+        <div className="text-xs font-medium uppercase tracking-wider text-slate-500 mb-3">Explore by sector</div>
+        <div className="flex flex-wrap gap-2 mb-6">
           {INDUSTRIES.map((ind, i) => (
             <button
               key={ind.id}
               onClick={() => setActive(i)}
-              className={`flex items-center gap-2 rounded-xl border px-4 py-2.5 text-sm font-medium transition-all ${
+              className={`flex items-center gap-2 rounded-xl border px-3.5 py-2 text-sm font-medium transition-all ${
                 active === i
                   ? "border-slate-900 bg-slate-900 text-white shadow-sm"
                   : "border-slate-200 bg-white text-slate-600 hover:border-slate-400 hover:text-slate-900"
@@ -532,21 +1283,52 @@ export default function CRMSimulator() {
         </div>
 
         {/* Tagline */}
-        <div className="flex items-center gap-2 mb-5">
-          <span className="text-2xl">{industry.icon}</span>
+        <div className="flex items-start gap-2.5 mb-3">
+          <span className="text-2xl flex-none mt-0.5">{industry.icon}</span>
           <p className="text-lg font-semibold tracking-tight text-slate-800">{industry.tagline}</p>
         </div>
 
-        {/* Board simulation */}
-        <KanbanBoard industry={industry} />
+        {/* View toggle — hidden for Custom App sector */}
+        {!industry.isCustomApp && (
+          <div className="flex items-center gap-2 mb-5 flex-wrap">
+            <span className="text-xs text-slate-400">View as:</span>
+            <div className="flex items-center gap-1 rounded-xl border border-slate-200 bg-white p-1">
+              {VIEWS.map((v) => (
+                <button
+                  key={v.id}
+                  onClick={() => setView(v.id)}
+                  className={`flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium transition-all ${
+                    view === v.id
+                      ? "bg-slate-900 text-white"
+                      : "text-slate-500 hover:text-slate-900"
+                  }`}
+                >
+                  <v.icon className="h-3.5 w-3.5" />
+                  {v.label}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Simulation area */}
+        {industry.isCustomApp ? (
+          <CustomAppGrid />
+        ) : view === "pipeline" ? (
+          <KanbanBoard industry={industry} />
+        ) : view === "timeline" ? (
+          <TimelineView industry={industry} />
+        ) : view === "dashboard" ? (
+          <DashboardView industry={industry} />
+        ) : (
+          <TableView industry={industry} />
+        )}
 
         {/* Insights + Automations */}
         <div className="mt-10 grid grid-cols-1 lg:grid-cols-3 gap-6">
-
-          {/* Insights */}
           <div className="lg:col-span-2 space-y-4">
             <div className="text-xs font-medium uppercase tracking-wider text-slate-500 mb-1">
-              Why it works for {industry.label}
+              {industry.isCustomApp ? "Why custom apps work" : `Why it works for ${industry.label}`}
             </div>
             {industry.insights.map((ins) => (
               <div key={ins.title} className="rounded-2xl border border-slate-200 bg-white p-5">
@@ -563,11 +1345,12 @@ export default function CRMSimulator() {
             ))}
           </div>
 
-          {/* Automations */}
           <div className="rounded-2xl border border-slate-200 bg-white p-5 h-fit">
             <div className="flex items-center gap-2 mb-4">
               <Zap className="h-4 w-4 text-emerald-500" strokeWidth={2.5} />
-              <span className="text-xs font-medium uppercase tracking-wider text-slate-500">Built-in automations</span>
+              <span className="text-xs font-medium uppercase tracking-wider text-slate-500">
+                {industry.isCustomApp ? "Delivery workflow" : "Built-in automations"}
+              </span>
             </div>
             <ul className="space-y-3">
               {industry.automations.map((a, i) => (
@@ -584,7 +1367,7 @@ export default function CRMSimulator() {
         <div className="mt-16">
           <div className="text-xs font-medium uppercase tracking-wider text-slate-500 mb-2">Works for any business</div>
           <h2 className="text-2xl font-semibold tracking-tight mb-7">
-            Three things every CRM system we build does, regardless of industry
+            Three things every system we build does, regardless of industry
           </h2>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
             {BENEFITS.map((b) => (
@@ -615,7 +1398,7 @@ export default function CRMSimulator() {
               Built for your workflow, not the other way around
             </h2>
             <p className="text-slate-400 leading-relaxed mb-6">
-              The system you see simulated here can be built on the platform that fits your team best.
+              Every system you see simulated here can be built on the platform that fits your team best.
               We default to Monday.com for most clients — it's fast to build on, easy for teams to adopt,
               and powerful enough for complex automations. But the architecture, logic, and automations
               we design are transferable. You own the system. The platform is just where it lives.
@@ -651,6 +1434,7 @@ export default function CRMSimulator() {
           <WordMark dark className="opacity-40 scale-75 origin-left" />
           <p className="text-xs text-slate-400">* CRM systems are built on Monday.com where applicable.</p>
         </div>
+
       </div>
     </div>
   );
