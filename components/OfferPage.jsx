@@ -83,8 +83,8 @@ export default function OfferPage() {
             <a href="/scope-lock" className="inline-flex items-center justify-center gap-2 rounded-lg bg-slate-900 px-6 py-3 text-sm font-semibold text-white hover:bg-slate-800">
               Start your Scope Lock <ArrowRight className="h-4 w-4" />
             </a>
-            <a href="#how" className="inline-flex items-center justify-center gap-2 rounded-lg border border-slate-300 bg-white px-6 py-3 text-sm font-semibold text-slate-900 hover:bg-slate-100">
-              See how it works <ArrowRight className="h-4 w-4" />
+            <a href="/crm-demo" className="inline-flex items-center justify-center gap-2 rounded-lg border border-slate-300 bg-white px-6 py-3 text-sm font-semibold text-slate-900 hover:bg-slate-100">
+              See it in action <ArrowRight className="h-4 w-4" />
             </a>
           </div>
           <p className="mt-3 flex items-center gap-1.5 text-xs text-slate-400">
