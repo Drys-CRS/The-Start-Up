@@ -3,16 +3,39 @@ import React, { useState } from "react";
 import { ArrowRight, Check, Loader2, ShieldCheck } from "lucide-react";
 import WordMark from "./WordMark";
 
-const TIERS = ["Foundational", "Core", "Premium"];
-const TIER_PRICE = {
-  USD: { Foundational: "$3,000/mo", Core: "$6,000/mo", Premium: "$10,000/mo" },
-  ZAR: { Foundational: "R40,000/mo", Core: "R60,000/mo", Premium: "R100,000/mo" },
-};
+const OFFER_DEADLINE = "30 Sep 2026";
+
+const TIERS = [
+  {
+    value: "PROMOTIONAL (Base + Free 2 Months)",
+    label: "Promotional",
+    sublabel: "Base + Free 2 Months",
+    price: { USD: "$3,000 flat", ZAR: "R60,000 flat" },
+    note: { USD: "30-day build · 60 days support FREE", ZAR: "30-day build · 60 days support FREE" },
+    promo: true,
+  },
+  {
+    value: "Core",
+    label: "Core",
+    sublabel: null,
+    price: { USD: "$6,000 /mo", ZAR: "R60,000 /mo" },
+    note: { USD: "$18,000 total · 3 months", ZAR: "R180,000 total · 3 months" },
+    promo: false,
+  },
+  {
+    value: "Premium",
+    label: "Premium",
+    sublabel: null,
+    price: { USD: "$10,000 /mo", ZAR: "R100,000 /mo" },
+    note: { USD: "$30,000 total · 3 months", ZAR: "R300,000 total · 3 months" },
+    promo: false,
+  },
+];
 
 export default function ScopeLockForm() {
   const [currency, setCurrency] = useState("USD");
   const [f, setF] = useState({
-    company: "", contact: "", email: "", tier: "Core",
+    company: "", contact: "", email: "", tier: "PROMOTIONAL (Base + Free 2 Months)",
     goal: "", bottleneck: "", workflow: "", musthaves: "",
     integrations: "", startDate: "",
   });
@@ -100,11 +123,60 @@ export default function ScopeLockForm() {
               <label className={label}>Work email</label>
               <input className={input} value={f.email} onChange={set("email")} placeholder="jane@acme.com" />
             </div>
-            <div>
-              <label className={label}>Tier</label>
-              <select className={input} value={f.tier} onChange={set("tier")}>
-                {TIERS.map((t) => <option key={t} value={t}>{t} — {TIER_PRICE[currency][t]}</option>)}
-              </select>
+          </div>
+
+          {/* Tier picker */}
+          <div>
+            <span className={label}>Select your tier</span>
+            <div className="space-y-2.5">
+              {TIERS.map((t) => {
+                const selected = f.tier === t.value;
+                return (
+                  <button
+                    type="button"
+                    key={t.value}
+                    onClick={() => setF({ ...f, tier: t.value })}
+                    className={`w-full text-left rounded-xl border-2 px-4 py-3.5 transition-all ${
+                      selected
+                        ? t.promo
+                          ? "border-emerald-500 bg-emerald-50"
+                          : "border-slate-900 bg-slate-50"
+                        : "border-slate-200 bg-white hover:border-slate-300"
+                    }`}
+                  >
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="flex items-center gap-2.5">
+                        <span className={`mt-0.5 flex h-4 w-4 flex-none items-center justify-center rounded-full border-2 ${
+                          selected
+                            ? t.promo ? "border-emerald-500 bg-emerald-500" : "border-slate-900 bg-slate-900"
+                            : "border-slate-300"
+                        }`}>
+                          {selected && <span className="h-1.5 w-1.5 rounded-full bg-white" />}
+                        </span>
+                        <div>
+                          <div className="flex items-center gap-2">
+                            <span className={`text-sm font-semibold ${selected && t.promo ? "text-emerald-700" : "text-slate-900"}`}>
+                              {t.label}
+                            </span>
+                            {t.sublabel && (
+                              <span className="text-xs font-medium text-slate-500">{t.sublabel}</span>
+                            )}
+                            {t.promo && (
+                              <span className="rounded-full bg-emerald-500 px-2 py-0.5 text-[10px] font-bold text-white uppercase tracking-wide">
+                                Ends {OFFER_DEADLINE}
+                              </span>
+                            )}
+                          </div>
+                          <p className="text-xs text-slate-500 mt-0.5">{t.note[currency]}</p>
+                        </div>
+                      </div>
+                      <span className={`font-mono text-sm font-semibold flex-none ${t.promo ? "text-emerald-600" : "text-slate-900"}`}>
+                        {t.price[currency]}
+                      </span>
+                    </div>
+                  </button>
+                );
+              })}
             </div>
           </div>
 
