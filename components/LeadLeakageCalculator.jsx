@@ -118,7 +118,7 @@ export default function LeadLeakageCalculator() {
     setLoadingReport(true);
     const r = RESPONSE[response].label;
     const cur = SYM[currency];
-    const prompt = `You are a senior revenue-operations consultant at "The Start Up", a firm that ships custom Monday.com lead-generation systems in 30 days. Write a sharp, personalized "Bottleneck Report" for a prospect who just ran our lead-leakage calculator.
+    const prompt = `You are a senior revenue-operations consultant at "The Start Up", a firm that ships custom CRM lead-generation systems in 30 days. Write a sharp, personalized "Bottleneck Report" for a prospect who just ran our lead-leakage calculator.
 
 Prospect details:
 - Company: ${company || "the company"}
@@ -138,7 +138,7 @@ Respond with ONLY valid JSON, no markdown fences, no preamble:
   "diagnosis": "2-3 sentences naming where leads leak for a company like this, specific to their industry and response time",
   "recommendations": ["three specific tactical fixes", "tailored to their numbers", "referencing real mechanics like response SLAs, automated routing, lead scoring, follow-up sequences"],
   "roi": "1-2 sentences on the upside of fixing this, referencing the annual leak figure",
-  "closingLine": "1 sentence soft invitation to see how a custom Monday.com lead system plugs this in 30 days"
+  "closingLine": "1 sentence soft invitation to see how a custom CRM lead system plugs this in 30 days"
 }
 Be concrete and non-generic. No flattery, no filler.`;
 
@@ -150,7 +150,7 @@ Be concrete and non-generic. No flattery, no filler.`;
         "Add automated scoring and a follow-up sequence so high-intent leads surface first and no one slips through after the first touch.",
       ],
       roi: `Closing even part of this gap puts an estimated ${fmt(calc.annualLeak, currency)} a year back in reach — without spending a cent more on lead generation.`,
-      closingLine: "A custom Monday.com lead system can capture, route, and score every one of these automatically — live in 30 days.",
+      closingLine: "A custom CRM lead system can capture, route, and score every one of these automatically — live in 30 days.",
     };
 
     try {
@@ -495,7 +495,7 @@ Be concrete and non-generic. No flattery, no filler.`;
             </div>
 
             <p className="mt-5 text-center text-xs text-slate-400">
-              Estimates based on lead-response benchmarks. Built by The Start Up on Monday.com + React.
+              Estimates based on lead-response benchmarks. Built by The Start Up · CRM powered by Monday.com.
             </p>
           </div>
         )}

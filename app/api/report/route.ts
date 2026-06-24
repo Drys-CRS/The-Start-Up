@@ -7,7 +7,7 @@ export async function POST(req: NextRequest) {
   const cur = b.currency === "ZAR" ? "R" : "$";
   const money = (n: number) => cur + Math.round(n || 0).toLocaleString("en-US");
 
-  const prompt = `You are a senior revenue-operations consultant at "The Start Up", a firm that ships custom Monday.com lead-generation systems in 30 days. Write a sharp, personalized "Bottleneck Report" for a prospect who just ran our lead-leakage calculator.
+  const prompt = `You are a senior revenue-operations consultant at "The Start Up", a firm that ships custom CRM lead-generation systems in 30 days. Write a sharp, personalized "Bottleneck Report" for a prospect who just ran our lead-leakage calculator.
 
 Prospect:
 - Company: ${b.company || "the company"}
@@ -27,7 +27,7 @@ Respond with ONLY valid JSON, no markdown fences, no preamble:
   "diagnosis": "2-3 sentences, specific to their industry and response time",
   "recommendations": ["three tactical fixes referencing real mechanics (response SLAs, automated routing, lead scoring, follow-up sequences)"],
   "roi": "1-2 sentences referencing the annual leak figure",
-  "closingLine": "1 sentence inviting them to see how a custom Monday.com lead system plugs this in 30 days"
+  "closingLine": "1 sentence inviting them to see how a custom CRM lead system plugs this in 30 days"
 }
 Be concrete, non-generic, no flattery.`;
 

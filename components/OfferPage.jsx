@@ -4,6 +4,17 @@ import {
   ArrowRight, Check, X, ShieldCheck, FileText, ChevronDown,
 } from "lucide-react";
 
+function WordMark({ dark = false, className = "" }) {
+  const color = dark ? "text-slate-900" : "text-white";
+  return (
+    <div className={`flex items-baseline gap-0 font-black uppercase tracking-tighter leading-none select-none ${color} ${className}`}>
+      <span className="text-2xl">Star</span>
+      <span className="text-[9px] font-bold tracking-[0.2em] self-end mb-0.5 mx-0.5 opacity-70">the</span>
+      <span className="text-2xl">tup</span>
+    </div>
+  );
+}
+
 
 const TIERS = {
   USD: {
@@ -26,7 +37,7 @@ const TIERS = {
 
 const INCLUDED = [
   "One core workflow built end-to-end (capture → score → route → report)",
-  "Monday.com board system your team already knows how to use",
+  "CRM board your team already knows how to use",
   "One reporting dashboard with the metrics leadership actually watches",
   "One third-party integration (your CRM, enrichment, or calendar)",
   "Team training, recorded and yours to keep",
@@ -59,7 +70,7 @@ export default function OfferPage() {
 
         {/* Brand */}
         <div className="flex items-center justify-between mb-12">
-          <img src="/logo-black.png" alt="The Start Up" className="h-8 w-auto" />
+          <WordMark dark />
           <a href="#pricing" className="hidden sm:inline-flex items-center gap-1.5 rounded-lg bg-slate-900 px-4 py-2 text-xs font-semibold text-white hover:bg-slate-800">
             See pricing <ArrowRight className="h-3.5 w-3.5" />
           </a>
@@ -68,14 +79,14 @@ export default function OfferPage() {
         {/* Hero */}
         <div className="max-w-2xl">
           <div className="inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-white px-3 py-1 text-xs font-medium text-slate-500 mb-5">
-            <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" /> Custom apps & Monday.com lead systems
+            <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" /> Custom apps & CRM lead systems
           </div>
           <h1 className="text-4xl sm:text-5xl font-semibold tracking-tight leading-tight">
             Shipped in <span className="font-mono tabular-nums">30</span>.
             <br className="hidden sm:block" /> Supported for <span className="font-mono tabular-nums">60</span>.
           </h1>
           <p className="mt-4 text-lg text-slate-600">
-            We turn your worst pipeline bottleneck into a working Monday.com system in one month —
+            We turn your worst pipeline bottleneck into a working CRM system in one month —
             then spend two more making sure your team runs it. No endless discovery. No disappearing act.
           </p>
           <div className="mt-7 flex flex-col sm:flex-row gap-3">
@@ -105,7 +116,7 @@ export default function OfferPage() {
                 { n: "01", label: "Free Audit", sub: "Run the calculator — instant Bottleneck Report, no call needed" },
                 { n: "02", label: "Bottleneck Report", sub: "AI analysis pinpoints exactly where revenue leaks and what to build" },
                 { n: "03", label: "Scope Lock", sub: "Short async questionnaire fixes scope, price, and ship date" },
-                { n: "04", label: "30-Day Build", sub: "Your Monday.com system built and live — fixed date, no delays" },
+                { n: "04", label: "30-Day Build", sub: "Your CRM system built and live — fixed date, no delays" },
                 { n: "05", label: "60-Day Support", sub: "Training, optimisation, and documentation so it sticks" },
               ].map((step, i) => (
                 <div key={step.n} className="flex flex-col items-center text-center">
@@ -124,7 +135,7 @@ export default function OfferPage() {
           </div>
           <div className="mt-8 pt-6 border-t border-slate-800 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
             <div className="flex items-center gap-3">
-              <img src="/logo-white.png" alt="The Start Up" className="h-5 w-auto opacity-60" />
+              <WordMark className="opacity-50 scale-75 origin-left" />
               <span className="text-xs text-slate-500">Shipped in 30 · Supported for 60</span>
             </div>
             <a href="/calculator" className="inline-flex items-center gap-1.5 rounded-lg bg-emerald-500 px-4 py-2 text-xs font-semibold text-slate-950 hover:bg-emerald-400">
@@ -268,8 +279,12 @@ export default function OfferPage() {
           </div>
         </div>
 
-        <div className="mt-14 border-t border-slate-200 pt-6 flex flex-col sm:flex-row items-center justify-between gap-3">
-          <img src="/logo-black.png" alt="The Start Up" className="h-5 w-auto opacity-40" />
+        <p className="mt-10 text-center text-xs text-slate-400">
+          * Our CRM systems are built on and powered by <a href="https://monday.com" target="_blank" rel="noopener noreferrer" className="underline hover:text-slate-600">Monday.com</a>.
+        </p>
+
+        <div className="mt-6 border-t border-slate-200 pt-6 flex flex-col sm:flex-row items-center justify-between gap-3">
+          <WordMark dark className="opacity-40 scale-75 origin-left" />
           <a href="/scope-lock" className="text-xs font-semibold text-slate-900 hover:text-emerald-600">Start your Scope Lock →</a>
         </div>
       </div>
