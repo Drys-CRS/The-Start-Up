@@ -779,7 +779,7 @@ const SERVICE_CARDS = [
   },
   {
     icon: Zap,
-    accent: "bg-emerald-50 text-emerald-600",
+    accent: "bg-teal-50 text-teal-600",
     title: "Workflow Automation",
     desc: "Replace the manual tasks your team repeats every day with automated flows that trigger on the right event at the right time — without anyone managing them.",
     points: [
@@ -829,8 +829,8 @@ const BENEFITS = [
 // ─── Lookups ───────────────────────────────────────────────────────────────────
 
 const HEAT = {
-  hot:  { dot: "bg-emerald-500", bar: "border-l-emerald-500", label: "Hot",  hex: "#10b981" },
-  warm: { dot: "bg-amber-400",   bar: "border-l-amber-400",   label: "Warm", hex: "#fbbf24" },
+  hot:  { dot: "bg-teal-500", bar: "border-l-teal-500", label: "Hot",  hex: "#14b8a6" },
+  warm: { dot: "bg-teal-300",    bar: "border-l-teal-300",    label: "Warm", hex: "#5eead4" },
   cold: { dot: "bg-slate-300",   bar: "border-l-slate-300",   label: "Cold", hex: "#cbd5e1" },
 };
 
@@ -855,7 +855,7 @@ function LeadCard({ lead }) {
         <span className={`h-2 w-2 rounded-full flex-none mt-1 ${h.dot}`} />
       </div>
       <div className="mt-2.5 flex items-center justify-between">
-        <span className="text-sm font-semibold text-emerald-600">{lead.value}</span>
+        <span className="text-sm font-semibold text-teal-600">{lead.value}</span>
         <span className="text-xs text-slate-400">{lead.days === 0 ? "Today" : `${lead.days}d in stage`}</span>
       </div>
       {lead.note && (
@@ -914,7 +914,7 @@ function KanbanBoard({ industry }) {
           <div key={m.label} className="flex items-center gap-2 flex-none text-xs">
             <span className="text-slate-500">{m.label}</span>
             <span className="font-semibold text-slate-900">{m.value}</span>
-            <span className="text-emerald-600">{m.gain}</span>
+            <span className="text-teal-600">{m.gain}</span>
           </div>
         ))}
       </div>
@@ -971,7 +971,7 @@ function TimelineView({ industry }) {
                 </div>
               </div>
               <div className="w-24 flex-none text-right">
-                <div className="text-sm font-semibold text-emerald-600">{lead.value}</div>
+                <div className="text-sm font-semibold text-teal-600">{lead.value}</div>
               </div>
             </div>
           );
@@ -983,7 +983,7 @@ function TimelineView({ industry }) {
           <div key={m.label} className="flex items-center gap-2 flex-none text-xs">
             <span className="text-slate-500">{m.label}</span>
             <span className="font-semibold text-slate-900">{m.value}</span>
-            <span className="text-emerald-600">{m.gain}</span>
+            <span className="text-teal-600">{m.gain}</span>
           </div>
         ))}
       </div>
@@ -995,10 +995,10 @@ function TimelineView({ industry }) {
 
 function KpiCard({ label, value, sub, accent }) {
   return (
-    <div className={`rounded-2xl border p-4 ${accent ? "border-emerald-200 bg-emerald-50" : "border-slate-200 bg-white"}`}>
-      <div className={`text-2xl font-bold tracking-tight ${accent ? "text-emerald-700" : "text-slate-900"}`}>{value}</div>
+    <div className={`rounded-2xl border p-4 ${accent ? "border-teal-200 bg-teal-50" : "border-slate-200 bg-white"}`}>
+      <div className={`text-2xl font-bold tracking-tight ${accent ? "text-teal-700" : "text-slate-900"}`}>{value}</div>
       <div className="text-xs font-medium text-slate-600 mt-0.5">{label}</div>
-      <div className={`text-xs mt-1 ${accent ? "text-emerald-600" : "text-slate-400"}`}>{sub}</div>
+      <div className={`text-xs mt-1 ${accent ? "text-teal-600" : "text-slate-400"}`}>{sub}</div>
     </div>
   );
 }
@@ -1054,14 +1054,14 @@ function DashboardView({ industry }) {
           <div className="space-y-3">
             {hotLeads.slice(0, 4).map((lead) => (
               <div key={lead.company + lead.contact} className="flex items-center gap-3">
-                <div className="flex h-8 w-8 flex-none items-center justify-center rounded-lg bg-emerald-50 text-xs font-bold text-emerald-600">
+                <div className="flex h-8 w-8 flex-none items-center justify-center rounded-lg bg-teal-50 text-xs font-bold text-teal-600">
                   {lead.company.charAt(0)}
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="text-sm font-semibold text-slate-900 truncate">{lead.company}</div>
                   <div className="text-xs text-slate-400 truncate">{lead.stageName}</div>
                 </div>
-                <div className="text-sm font-semibold text-emerald-600 flex-none">{lead.value}</div>
+                <div className="text-sm font-semibold text-teal-600 flex-none">{lead.value}</div>
               </div>
             ))}
           </div>
@@ -1071,7 +1071,7 @@ function DashboardView({ industry }) {
             <div className="space-y-2">
               {industry.automations.slice(0, 3).map((a, i) => (
                 <div key={i} className="flex items-start gap-2">
-                  <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 mt-1.5 flex-none" />
+                  <span className="h-1.5 w-1.5 rounded-full bg-teal-400 mt-1.5 flex-none" />
                   <span className="text-xs text-slate-500 leading-relaxed">{a}</span>
                 </div>
               ))}
@@ -1086,7 +1086,7 @@ function DashboardView({ industry }) {
           <div key={m.label} className="flex items-center gap-2 flex-none text-xs">
             <span className="text-slate-500">{m.label}</span>
             <span className="font-semibold text-slate-900">{m.value}</span>
-            <span className="text-emerald-600">{m.gain}</span>
+            <span className="text-teal-600">{m.gain}</span>
           </div>
         ))}
       </div>
@@ -1136,11 +1136,11 @@ function TableView({ industry }) {
                   <td className="px-4 py-3">
                     <span className="rounded-full bg-slate-100 px-2.5 py-0.5 text-xs font-medium text-slate-600 whitespace-nowrap">{lead.stageName}</span>
                   </td>
-                  <td className="px-4 py-3 font-semibold text-emerald-600 whitespace-nowrap">{lead.value}</td>
+                  <td className="px-4 py-3 font-semibold text-teal-600 whitespace-nowrap">{lead.value}</td>
                   <td className="px-4 py-3 text-slate-500 text-xs">{lead.days === 0 ? "Today" : `${lead.days}d`}</td>
                   <td className="px-4 py-3">
                     <span className={`flex items-center gap-1.5 text-xs font-medium whitespace-nowrap ${
-                      lead.heat === "hot" ? "text-emerald-600" : lead.heat === "warm" ? "text-amber-600" : "text-slate-400"
+                      lead.heat === "hot" ? "text-teal-600" : lead.heat === "warm" ? "text-teal-700" : "text-slate-400"
                     }`}>
                       <span className={`h-2 w-2 rounded-full flex-none ${h.dot}`} />
                       {h.label}
@@ -1159,7 +1159,7 @@ function TableView({ industry }) {
           <div key={m.label} className="flex items-center gap-2 flex-none text-xs">
             <span className="text-slate-500">{m.label}</span>
             <span className="font-semibold text-slate-900">{m.value}</span>
-            <span className="text-emerald-600">{m.gain}</span>
+            <span className="text-teal-600">{m.gain}</span>
           </div>
         ))}
       </div>
@@ -1178,14 +1178,14 @@ function CustomAppGrid() {
           className="rounded-2xl border border-slate-200 bg-white p-5 hover:border-slate-400 hover:shadow-sm transition-all"
         >
           <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-slate-900 mb-4">
-            <app.icon className="h-5 w-5 text-emerald-400" strokeWidth={2} />
+            <app.icon className="h-5 w-5 text-teal-400" strokeWidth={2} />
           </div>
           <div className="font-semibold tracking-tight text-slate-900 mb-2">{app.name}</div>
           <p className="text-sm leading-relaxed text-slate-600 mb-4">{app.desc}</p>
           <ul className="space-y-1.5">
             {app.examples.map((ex) => (
               <li key={ex} className="flex items-start gap-2 text-xs text-slate-600">
-                <Check className="h-3.5 w-3.5 flex-none text-emerald-500 mt-px" strokeWidth={3} />
+                <Check className="h-3.5 w-3.5 flex-none text-teal-500 mt-px" strokeWidth={3} />
                 {ex}
               </li>
             ))}
@@ -1223,7 +1223,7 @@ export default function CRMSimulator() {
         {/* Hero */}
         <div className="max-w-2xl mb-12">
           <div className="inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-white px-3 py-1 text-xs font-medium text-slate-500 mb-5">
-            <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" /> Interactive demo — pick your industry
+            <span className="h-1.5 w-1.5 rounded-full bg-teal-500" /> Interactive demo — pick your industry
           </div>
           <h1 className="text-4xl sm:text-5xl font-semibold tracking-tight leading-tight">
             See your pipeline.<br className="hidden sm:block" />
@@ -1253,7 +1253,7 @@ export default function CRMSimulator() {
                 <ul className="space-y-1.5">
                   {card.points.map((p) => (
                     <li key={p} className="flex items-start gap-2 text-xs text-slate-600">
-                      <Check className="h-3.5 w-3.5 flex-none text-emerald-500 mt-px" strokeWidth={3} />
+                      <Check className="h-3.5 w-3.5 flex-none text-teal-500 mt-px" strokeWidth={3} />
                       {p}
                     </li>
                   ))}
@@ -1333,8 +1333,8 @@ export default function CRMSimulator() {
             {industry.insights.map((ins) => (
               <div key={ins.title} className="rounded-2xl border border-slate-200 bg-white p-5">
                 <div className="flex items-start gap-3">
-                  <div className="flex h-8 w-8 flex-none items-center justify-center rounded-lg bg-emerald-50">
-                    <ins.icon className="h-4 w-4 text-emerald-600" strokeWidth={2.5} />
+                  <div className="flex h-8 w-8 flex-none items-center justify-center rounded-lg bg-teal-50">
+                    <ins.icon className="h-4 w-4 text-teal-600" strokeWidth={2.5} />
                   </div>
                   <div>
                     <div className="font-semibold tracking-tight text-slate-900">{ins.title}</div>
@@ -1347,7 +1347,7 @@ export default function CRMSimulator() {
 
           <div className="rounded-2xl border border-slate-200 bg-white p-5 h-fit">
             <div className="flex items-center gap-2 mb-4">
-              <Zap className="h-4 w-4 text-emerald-500" strokeWidth={2.5} />
+              <Zap className="h-4 w-4 text-teal-500" strokeWidth={2.5} />
               <span className="text-xs font-medium uppercase tracking-wider text-slate-500">
                 {industry.isCustomApp ? "Delivery workflow" : "Built-in automations"}
               </span>
@@ -1355,7 +1355,7 @@ export default function CRMSimulator() {
             <ul className="space-y-3">
               {industry.automations.map((a, i) => (
                 <li key={i} className="flex gap-2.5 text-sm text-slate-700">
-                  <ChevronRight className="h-4 w-4 flex-none text-emerald-500 mt-0.5" strokeWidth={2.5} />
+                  <ChevronRight className="h-4 w-4 flex-none text-teal-500 mt-0.5" strokeWidth={2.5} />
                   <span className="leading-relaxed">{a}</span>
                 </li>
               ))}
@@ -1373,14 +1373,14 @@ export default function CRMSimulator() {
             {BENEFITS.map((b) => (
               <div key={b.title} className="rounded-2xl border border-slate-200 bg-white p-6">
                 <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-slate-900 mb-4">
-                  <b.icon className="h-4 w-4 text-emerald-400" strokeWidth={2.5} />
+                  <b.icon className="h-4 w-4 text-teal-400" strokeWidth={2.5} />
                 </div>
                 <div className="font-semibold tracking-tight mb-2">{b.title}</div>
                 <p className="text-sm leading-relaxed text-slate-600 mb-4">{b.body}</p>
                 <ul className="space-y-1.5">
                   {b.points.map((p) => (
                     <li key={p} className="flex items-start gap-2 text-xs text-slate-600">
-                      <Check className="h-3.5 w-3.5 flex-none text-emerald-500 mt-px" strokeWidth={3} />
+                      <Check className="h-3.5 w-3.5 flex-none text-teal-500 mt-px" strokeWidth={3} />
                       {p}
                     </li>
                   ))}
@@ -1413,13 +1413,13 @@ export default function CRMSimulator() {
                 "Full documentation — you fully own it on day one",
               ].map((p) => (
                 <div key={p} className="flex items-start gap-2 text-sm text-slate-300">
-                  <Check className="h-4 w-4 flex-none text-emerald-400 mt-0.5" strokeWidth={2.5} />
+                  <Check className="h-4 w-4 flex-none text-teal-400 mt-0.5" strokeWidth={2.5} />
                   {p}
                 </div>
               ))}
             </div>
             <div className="flex flex-col sm:flex-row gap-3">
-              <a href="/scope-lock" className="inline-flex items-center justify-center gap-2 rounded-lg bg-emerald-500 px-6 py-3 text-sm font-semibold text-slate-950 hover:bg-emerald-400">
+              <a href="/scope-lock" className="inline-flex items-center justify-center gap-2 rounded-lg bg-teal-500 px-6 py-3 text-sm font-semibold text-slate-950 hover:bg-teal-400">
                 Start your Scope Lock <ArrowRight className="h-4 w-4" />
               </a>
               <a href="/calculator" className="inline-flex items-center justify-center gap-2 rounded-lg border border-slate-700 px-6 py-3 text-sm font-semibold text-slate-300 hover:border-slate-500 hover:text-white">

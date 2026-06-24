@@ -205,7 +205,7 @@ Be concrete and non-generic. No flattery, no filler.`;
   ];
 
   const inputBase =
-    "w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-slate-900 text-sm placeholder-slate-400 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-100";
+    "w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-slate-900 text-sm placeholder-slate-400 focus:border-teal-500 focus:outline-none focus:ring-2 focus:ring-teal-100";
   const labelBase =
     "block text-xs font-medium uppercase tracking-wider text-slate-500 mb-1.5";
 
@@ -225,7 +225,7 @@ Be concrete and non-generic. No flattery, no filler.`;
           <div>
             <h1 className="text-3xl sm:text-4xl font-semibold tracking-tight leading-tight">
               Find out how much revenue is
-              <span className="text-amber-500"> leaking out of your pipeline.</span>
+              <span className="text-teal-400"> leaking out of your pipeline.</span>
             </h1>
             <p className="mt-3 text-slate-600 text-base max-w-xl">
               Most B2B teams lose deals to slow follow-up, not to competitors — and never see it.
@@ -326,7 +326,7 @@ Be concrete and non-generic. No flattery, no filler.`;
 
             {/* Headline figure */}
             <div className="rounded-2xl border border-slate-200 bg-white p-6 sm:p-8 shadow-sm">
-              <div className="flex items-center gap-2 text-amber-600">
+              <div className="flex items-center gap-2 text-teal-700">
                 <TrendingDown className="h-4 w-4" strokeWidth={2.5} />
                 <span className="text-xs font-medium uppercase tracking-wider">
                   {calc.minimal ? "Estimated annual leak" : "You are likely losing, per year"}
@@ -335,7 +335,7 @@ Be concrete and non-generic. No flattery, no filler.`;
 
               {calc.minimal ? (
                 <div className="mt-3">
-                  <div className="font-mono text-4xl sm:text-5xl font-semibold tracking-tight tabular-nums text-emerald-600">
+                  <div className="font-mono text-4xl sm:text-5xl font-semibold tracking-tight tabular-nums text-teal-600">
                     {fmt(0, currency)}
                   </div>
                   <p className="mt-3 text-slate-600 max-w-lg">
@@ -397,7 +397,7 @@ Be concrete and non-generic. No flattery, no filler.`;
             <div className="mt-6 rounded-2xl border border-slate-200 bg-slate-950 p-6 sm:p-8 shadow-sm text-slate-100">
               {!leadCaptured && (
                 <div>
-                  <div className="flex items-center gap-2 text-emerald-400">
+                  <div className="flex items-center gap-2 text-teal-400">
                     <Zap className="h-4 w-4" strokeWidth={2.5} />
                     <span className="text-xs font-medium uppercase tracking-wider">Your Bottleneck Report</span>
                   </div>
@@ -412,7 +412,7 @@ Be concrete and non-generic. No flattery, no filler.`;
                     <div className="relative flex-1">
                       <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-500" />
                       <input
-                        className="w-full rounded-lg border border-slate-700 bg-slate-900 pl-9 pr-3 py-2.5 text-sm text-white placeholder-slate-500 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-900"
+                        className="w-full rounded-lg border border-slate-700 bg-slate-900 pl-9 pr-3 py-2.5 text-sm text-white placeholder-slate-500 focus:border-teal-500 focus:outline-none focus:ring-2 focus:ring-teal-900"
                         placeholder="you@company.com"
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
@@ -424,7 +424,7 @@ Be concrete and non-generic. No flattery, no filler.`;
                       className={
                         "inline-flex items-center justify-center gap-2 rounded-lg px-5 py-2.5 text-sm font-semibold transition-colors " +
                         (/.+@.+\..+/.test(email)
-                          ? "bg-emerald-500 text-slate-950 hover:bg-emerald-400"
+                          ? "bg-teal-500 text-slate-950 hover:bg-teal-400"
                           : "bg-slate-700 text-slate-400 cursor-not-allowed")
                       }
                     >
@@ -439,14 +439,14 @@ Be concrete and non-generic. No flattery, no filler.`;
 
               {leadCaptured && loadingReport && (
                 <div className="flex items-center gap-3 py-6 text-slate-300">
-                  <Loader2 className="h-5 w-5 animate-spin text-emerald-400" />
+                  <Loader2 className="h-5 w-5 animate-spin text-teal-400" />
                   <span className="text-sm">Writing your Bottleneck Report…</span>
                 </div>
               )}
 
               {leadCaptured && report && !loadingReport && (
                 <div>
-                  <div className="flex items-center gap-2 text-emerald-400">
+                  <div className="flex items-center gap-2 text-teal-400">
                     <Check className="h-4 w-4" strokeWidth={3} />
                     <span className="text-xs font-medium uppercase tracking-wider">
                       Bottleneck Report · {company || "Your team"}
@@ -463,7 +463,7 @@ Be concrete and non-generic. No flattery, no filler.`;
                     <ul className="space-y-2.5">
                       {report.recommendations.map((r, i) => (
                         <li key={i} className="flex gap-3 text-sm text-slate-200">
-                          <span className="mt-0.5 flex h-5 w-5 flex-none items-center justify-center rounded-full bg-emerald-500/15 text-emerald-400 font-mono text-xs">
+                          <span className="mt-0.5 flex h-5 w-5 flex-none items-center justify-center rounded-full bg-teal-500/15 text-teal-400 font-mono text-xs">
                             {i + 1}
                           </span>
                           <span className="leading-relaxed">{r}</span>
@@ -472,8 +472,8 @@ Be concrete and non-generic. No flattery, no filler.`;
                     </ul>
                   </div>
 
-                  <div className="mt-5 rounded-xl border border-emerald-500/20 bg-emerald-500/5 p-4">
-                    <div className="text-xs font-medium uppercase tracking-wider text-emerald-400 mb-1">The upside</div>
+                  <div className="mt-5 rounded-xl border border-teal-500/20 bg-teal-500/5 p-4">
+                    <div className="text-xs font-medium uppercase tracking-wider text-teal-400 mb-1">The upside</div>
                     <p className="text-sm leading-relaxed text-slate-100">{report.roi}</p>
                   </div>
 

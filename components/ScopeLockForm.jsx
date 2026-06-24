@@ -60,14 +60,14 @@ export default function ScopeLockForm() {
   }
 
   const input =
-    "w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-slate-900 text-sm placeholder-slate-400 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-100";
+    "w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-slate-900 text-sm placeholder-slate-400 focus:border-teal-500 focus:outline-none focus:ring-2 focus:ring-teal-100";
   const label = "block text-xs font-medium uppercase tracking-wider text-slate-500 mb-1.5";
 
   if (status === "done") {
     return (
       <div className="min-h-screen w-full bg-slate-50 font-sans flex items-center justify-center px-5">
         <div className="max-w-md text-center">
-          <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-emerald-500 mb-5">
+          <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-teal-500 mb-5">
             <Check className="h-6 w-6 text-white" strokeWidth={3} />
           </div>
           <h1 className="text-2xl font-semibold tracking-tight text-slate-900">Scope Lock received.</h1>
@@ -75,7 +75,7 @@ export default function ScopeLockForm() {
             We have everything to put together your fixed scope, timeline, and price. You will get it by
             email — no call needed. Approve it and the 30-day clock starts.
           </p>
-          <a href="/" className="mt-6 inline-flex items-center gap-2 text-sm font-semibold text-slate-900 hover:text-emerald-600">
+          <a href="/" className="mt-6 inline-flex items-center gap-2 text-sm font-semibold text-slate-900 hover:text-teal-600">
             Back to the start <ArrowRight className="h-4 w-4" />
           </a>
         </div>
@@ -139,7 +139,7 @@ export default function ScopeLockForm() {
                     className={`w-full text-left rounded-xl border-2 px-4 py-3.5 transition-all ${
                       selected
                         ? t.promo
-                          ? "border-emerald-500 bg-emerald-50"
+                          ? "border-teal-500 bg-teal-50"
                           : "border-slate-900 bg-slate-50"
                         : "border-slate-200 bg-white hover:border-slate-300"
                     }`}
@@ -148,21 +148,21 @@ export default function ScopeLockForm() {
                       <div className="flex items-center gap-2.5">
                         <span className={`mt-0.5 flex h-4 w-4 flex-none items-center justify-center rounded-full border-2 ${
                           selected
-                            ? t.promo ? "border-emerald-500 bg-emerald-500" : "border-slate-900 bg-slate-900"
+                            ? t.promo ? "border-teal-500 bg-teal-500" : "border-slate-900 bg-slate-900"
                             : "border-slate-300"
                         }`}>
                           {selected && <span className="h-1.5 w-1.5 rounded-full bg-white" />}
                         </span>
                         <div>
                           <div className="flex items-center gap-2">
-                            <span className={`text-sm font-semibold ${selected && t.promo ? "text-emerald-700" : "text-slate-900"}`}>
+                            <span className={`text-sm font-semibold ${selected && t.promo ? "text-teal-700" : "text-slate-900"}`}>
                               {t.label}
                             </span>
                             {t.sublabel && (
                               <span className="text-xs font-medium text-slate-500">{t.sublabel}</span>
                             )}
                             {t.promo && (
-                              <span className="rounded-full bg-emerald-500 px-2 py-0.5 text-[10px] font-bold text-white uppercase tracking-wide">
+                              <span className="rounded-full bg-teal-500 px-2 py-0.5 text-[10px] font-bold text-white uppercase tracking-wide">
                                 Ends {OFFER_DEADLINE}
                               </span>
                             )}
@@ -170,7 +170,7 @@ export default function ScopeLockForm() {
                           <p className="text-xs text-slate-500 mt-0.5">{t.note[currency]}</p>
                         </div>
                       </div>
-                      <span className={`font-mono text-sm font-semibold flex-none ${t.promo ? "text-emerald-600" : "text-slate-900"}`}>
+                      <span className={`font-mono text-sm font-semibold flex-none ${t.promo ? "text-teal-600" : "text-slate-900"}`}>
                         {t.price[currency]}
                       </span>
                     </div>
