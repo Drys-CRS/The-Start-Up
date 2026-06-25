@@ -91,26 +91,26 @@ export default function ScopeLockForm() {
   }
 
   const input =
-    "w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-slate-900 text-sm placeholder-slate-400 focus:border-teal-500 focus:outline-none focus:ring-2 focus:ring-teal-100";
-  const label = "block text-xs font-medium uppercase tracking-wider text-slate-500 mb-1.5";
+    "w-full rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 px-3 py-2.5 text-slate-900 dark:text-slate-100 text-sm placeholder-slate-400 dark:placeholder-slate-500 focus:border-teal-500 focus:outline-none focus:ring-2 focus:ring-teal-100 dark:focus:ring-teal-900 transition-colors";
+  const label = "block text-xs font-medium uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-1.5";
 
   if (status === "done") {
     const s = lastSubmission.current || {};
     const selectedTier = TIERS.find((t) => t.value === s.tier) || TIERS[0];
     const cur = s.currency || "USD";
     const tierKey = selectedTier.promo ? "promo" : "premium";
-    const signHref = `/sign?ref=${encodeURIComponent(s.refNo || "")}&item=${encodeURIComponent(s.mondayItemId || "")}&t=${tierKey}&c=${cur}`;
+    const signHref = `/sign?ref=${encodeURIComponent(s.refNo || "")}&item=${encodeURIComponent(s.mondayItemId || "")}&t=${tierKey}&c=${cur}&e=${encodeURIComponent(s.email || "")}`;
 
     const Row = ({ label: l, value: v }) =>
       v ? (
         <div>
-          <p className="text-[10px] font-semibold uppercase tracking-wider text-slate-400">{l}</p>
-          <p className="mt-0.5 text-sm text-slate-800">{v}</p>
+          <p className="text-[10px] font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500">{l}</p>
+          <p className="mt-0.5 text-sm text-slate-800 dark:text-slate-200">{v}</p>
         </div>
       ) : null;
 
     return (
-      <div className="min-h-screen w-full bg-slate-50 font-sans py-12 px-5">
+      <div className="min-h-screen w-full bg-slate-50 dark:bg-slate-950 font-sans py-12 px-5">
         <div className="mx-auto max-w-lg">
 
           {/* Header */}
@@ -118,14 +118,14 @@ export default function ScopeLockForm() {
             <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-teal-500">
               <Check className="h-6 w-6 text-white" strokeWidth={3} />
             </div>
-            <h1 className="text-2xl font-semibold tracking-tight text-slate-900">Scope Lock received.</h1>
-            <p className="mt-2 text-sm text-slate-500">
+            <h1 className="text-2xl font-semibold tracking-tight text-slate-900 dark:text-white">Scope Lock received.</h1>
+            <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">
               We will turn this into a fixed scope, price, and start date — sent to your email. No call needed.
             </p>
           </div>
 
           {/* Submission summary card */}
-          <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+          <div className="overflow-hidden rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 shadow-sm">
 
             {/* Tier banner */}
             <div className="flex items-center justify-between bg-slate-900 px-5 py-4">
@@ -150,7 +150,7 @@ export default function ScopeLockForm() {
               </div>
               <Row label="Email" value={s.email} />
               {(s.goal || s.bottleneck || s.workflow || s.musthaves || s.integrations || s.startDate) && (
-                <div className="border-t border-slate-100 pt-4 space-y-4">
+                <div className="border-t border-slate-100 dark:border-slate-800 pt-4 space-y-4">
                   <Row label="Business objective" value={s.goal} />
                   <Row label="Current bottleneck" value={s.bottleneck} />
                   <Row label="Core workflow" value={s.workflow} />
@@ -162,7 +162,7 @@ export default function ScopeLockForm() {
             </div>
 
             {/* Action strip */}
-            <div className="border-t border-slate-100 px-5 py-5 space-y-3">
+            <div className="border-t border-slate-100 dark:border-slate-800 px-5 py-5 space-y-3">
 
               {/* PRIMARY: Sign & Pay */}
               <a href={signHref} className="block">
@@ -216,19 +216,19 @@ export default function ScopeLockForm() {
   }
 
   return (
-    <div className="min-h-screen w-full bg-slate-50 text-slate-900 font-sans">
+    <div className="min-h-screen w-full bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 font-sans">
       <div className="mx-auto max-w-2xl px-5 py-10 sm:py-14">
         <a href="/" className="mb-10 inline-block">
           <WordMark dark />
         </a>
 
         <h1 className="text-3xl sm:text-4xl font-semibold tracking-tight">Start your Scope Lock</h1>
-        <p className="mt-3 text-slate-600 max-w-xl">
+        <p className="mt-3 text-slate-600 dark:text-slate-400 max-w-xl">
           A few questions pin down exactly what we will build and the date we will ship it. No call —
           we turn this into a fixed scope and price, you approve it, the build begins.
         </p>
 
-        <div className="mt-8 rounded-2xl border border-slate-200 bg-white p-5 sm:p-7 shadow-sm space-y-5">
+        <div className="mt-8 rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-5 sm:p-7 shadow-sm space-y-5">
           <div className="flex items-center justify-between">
             <span className={label + " mb-0"}>Your engagement</span>
             <div className="flex rounded-lg border border-slate-200 p-0.5 text-xs font-medium">
@@ -271,9 +271,9 @@ export default function ScopeLockForm() {
                     className={`w-full text-left rounded-xl border-2 px-4 py-3.5 transition-all ${
                       selected
                         ? t.promo
-                          ? "border-teal-500 bg-teal-50"
-                          : "border-slate-900 bg-slate-50"
-                        : "border-slate-200 bg-white hover:border-slate-300"
+                          ? "border-teal-500 bg-teal-50 dark:bg-teal-900/20"
+                          : "border-slate-900 dark:border-white bg-slate-50 dark:bg-slate-800"
+                        : "border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:border-slate-300 dark:hover:border-slate-500"
                     }`}
                   >
                     <div className="flex items-start justify-between gap-3">
@@ -281,13 +281,13 @@ export default function ScopeLockForm() {
                         <span className={`mt-0.5 flex h-4 w-4 flex-none items-center justify-center rounded-full border-2 ${
                           selected
                             ? t.promo ? "border-teal-500 bg-teal-500" : "border-slate-900 bg-slate-900"
-                            : "border-slate-300"
+                            : "border-slate-300 dark:border-slate-600"
                         }`}>
                           {selected && <span className="h-1.5 w-1.5 rounded-full bg-white" />}
                         </span>
                         <div>
                           <div className="flex items-center gap-2">
-                            <span className={`text-sm font-semibold ${selected && t.promo ? "text-teal-700" : "text-slate-900"}`}>
+                            <span className={`text-sm font-semibold ${selected && t.promo ? "text-teal-700 dark:text-teal-400" : "text-slate-900 dark:text-white"}`}>
                               {t.label}
                             </span>
                             {t.sublabel && (

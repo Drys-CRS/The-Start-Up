@@ -2,4 +2,35 @@
 @tailwind components;
 @tailwind utilities;
 
-html, body { background: #f8fafc; }
+/* ── CSS custom properties — theme-aware colours used by inline-styled pages ── */
+:root {
+  --c-page:       #f1f5f9;
+  --c-card:       #ffffff;
+  --c-dark:       #0f172a;
+  --c-mid:        #475569;
+  --c-light:      #94a3b8;
+  --c-border:     #e2e8f0;
+  --c-input-bg:   #ffffff;
+  --c-teal-soft:  #f0fdfa;
+  --c-teal-text:  #0f766e;
+  --c-subtle:     #f8fafc;
+}
+
+.dark {
+  --c-page:       #0f172a;
+  --c-card:       #1e293b;
+  --c-dark:       #f1f5f9;
+  --c-mid:        #94a3b8;
+  --c-light:      #475569;
+  --c-border:     #334155;
+  --c-input-bg:   #1e293b;
+  --c-teal-soft:  rgba(20,184,166,0.10);
+  --c-teal-text:  #5eead4;
+  --c-subtle:     #0f172a;
+}
+
+html, body {
+  background: var(--c-page);
+  color: var(--c-dark);
+  transition: background 0.15s, color 0.15s;
+}

@@ -91,6 +91,27 @@ export async function createItem(
 
 export const today = () => new Date().toISOString().slice(0, 10);
 
+// Set any simple (text/status/label) column value — creates the label if missing.
+export async function setSimpleColumn(
+  boardId: string,
+  itemId: string,
+  columnId: string,
+  value: string,
+): Promise<string> {
+  const query = `mutation ($boardId: ID!, $itemId: ID!, $columnId: String!, $value: String!) {
+    change_simple_column_value(board_id: $boardId, item_id: $itemId,
+      column_id: $columnId, value: $value, create_labels_if_missing: true) { id }
+  }`;
+  const res = await fetch(MONDAY_API, {
+    method: "POST",
+    headers: { Authorization: TOKEN, "Content-Type": "application/json", "API-Version": "2024-10" },
+    body: JSON.stringify({ query, variables: { boardId, itemId, columnId, value } }),
+  });
+  const data = await res.json();
+  if (data.errors) throw new Error(JSON.stringify(data.errors));
+  return data.data.change_simple_column_value.id;
+}
+
 // Post a plain-text update on a Monday.com item.
 export async function addUpdateToItem(itemId: string, body: string): Promise<string | null> {
   if (!TOKEN) return null;

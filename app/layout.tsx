@@ -1,6 +1,8 @@
 import "./globals.css";
 import type { Metadata } from "next";
 import { Analytics } from "@vercel/analytics/next";
+import ThemeProvider from "@/components/ThemeProvider";
+import ThemeToggle from "@/components/ThemeToggle";
 
 export const metadata: Metadata = {
   title: "The Start Up — Shipped in 30. Supported for 60.",
@@ -9,9 +11,12 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <body className="antialiased">
-        {children}
+        <ThemeProvider>
+          {children}
+          <ThemeToggle />
+        </ThemeProvider>
         <Analytics />
       </body>
     </html>
