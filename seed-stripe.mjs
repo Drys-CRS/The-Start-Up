@@ -99,7 +99,6 @@ async function run() {
       line_items: [{ price: priceObj.id, quantity: 1 }],
       currency,
       customer_creation: "if_required",
-      payment_method_collection: "if_required",
       billing_address_collection: "auto",
       metadata: { tier, currency, payment_type: paymentType },
     });
