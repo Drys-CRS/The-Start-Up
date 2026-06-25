@@ -151,6 +151,35 @@ const TOOL_DECLARATIONS = [
     },
   },
   {
+    name: "post_claude_code_prompt",
+    description: "Generate and post a ready-to-use Claude Code prompt as a Monday.com update on the scope lock item. This is the LAST step before advance_scope_stage. The prompt must be detailed enough that a developer can paste it into Claude Code and immediately start building the full application.",
+    parameters: {
+      type: "OBJECT",
+      properties: {
+        scope_lock_item_id: { type: "STRING" },
+        prompt: {
+          type: "STRING",
+          description: `A complete Claude Code prompt covering:
+1. Project name and one-paragraph description
+2. Tech stack (framework, language, DB, hosting, auth)
+3. Exact directory/file structure to scaffold
+4. Environment variables required (name + purpose)
+5. Data models / schema (tables, fields, types)
+6. API routes (method, path, what it does)
+7. UI pages/components (route, purpose, key interactions)
+8. Third-party integrations (how to connect each)
+9. Ordered build steps — what to build first through last
+10. Definition of done for the MVP
+
+Write it in second-person imperative ("Build...", "Create...", "Set up...").
+Be specific — include real field names, column types, endpoint paths.
+No vague placeholders. End with: "Start by scaffolding the project and environment, then follow the build steps in order."`,
+        },
+      },
+      required: ["scope_lock_item_id", "prompt"],
+    },
+  },
+  {
     name: "mark_tracker_item_done",
     description: "Find an item on the Build Tracker board by partial name and mark it Done.",
     parameters: {
@@ -277,6 +306,10 @@ async function executeTool(name: string, args: Record<string, string>): Promise<
       }
       return { matched: matches.length };
     }
+
+    case "post_claude_code_prompt":
+      await postUpdate(args.scope_lock_item_id, `## 🤖 Claude Code Prompt — Copy & Paste to Start Building\n\n${args.prompt}`);
+      return { posted: true };
 
     case "post_plan_summary":
       await postUpdate(args.scope_lock_item_id, args.summary);
@@ -413,7 +446,8 @@ REQUIRED SEQUENCE — follow this EXACTLY:
    - The client is responsible for ALL of these costs — they are NOT included in The Startup's fee
 10. Call mark_tracker_item_done for any matched Build Tracker items.
 11. Call post_plan_summary with a markdown summary: client goal, requirements, MVP scope, post-MVP backlog, timeline overview, and a subscription cost summary from the budget board.
-12. Call advance_scope_stage to move the scope lock to "Planning".
+12. Call post_claude_code_prompt — generate a complete, developer-ready Claude Code prompt the client can copy and paste to start building. It must include: project description, exact tech stack, directory structure, environment variables, data models, API routes, UI pages, integrations, ordered build steps, and MVP definition of done. Write it so a developer can paste it into Claude Code with zero extra context and start immediately.
+13. Call advance_scope_stage to move the scope lock to "Planning".
 
 Cover all layers: auth, data model, API routes, UI pages, integrations, deployment, testing, documentation.`;
 
