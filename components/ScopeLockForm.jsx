@@ -35,8 +35,10 @@ export default function ScopeLockForm() {
   const [downloading, setDownloading] = useState(false);
   const [dlError, setDlError] = useState(false);
 
-  // Domain auto-fill
+  // Auto-fill
+  const [fillMode, setFillMode] = useState("website"); // "website" | "description"
   const [domain, setDomain] = useState("");
+  const [description, setDescription] = useState("");
   const [analyzing, setAnalyzing] = useState(false);
   const [analyzeError, setAnalyzeError] = useState("");
   const [prefilled, setPrefilled] = useState(new Set());
@@ -47,6 +49,19 @@ export default function ScopeLockForm() {
     // Clear prefill highlight once user edits
     if (prefilled.has(k)) setPrefilled(prev => { const n = new Set(prev); n.delete(k); return n; });
   };
+
+  async function applyFillResult(res) {
+    if (!res.ok) throw new Error(await res.text());
+    const suggestions = await res.json();
+    const FILLABLE = ["company", "goal", "bottleneck", "workflow", "musthaves", "integrations"];
+    const filled = {};
+    for (const k of FILLABLE) {
+      if (suggestions[k] && suggestions[k].trim()) filled[k] = suggestions[k].trim();
+    }
+    setF(prev => ({ ...prev, ...filled }));
+    setPrefilled(new Set(Object.keys(filled)));
+    if (suggestions.vertical) setVertical(suggestions.vertical);
+  }
 
   async function analyzeDomain() {
     const d = domain.trim().replace(/^https?:\/\//, "").replace(/\/.*$/, "");
@@ -59,18 +74,27 @@ export default function ScopeLockForm() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ domain: d }),
       });
-      if (!res.ok) throw new Error(await res.text());
-      const suggestions = await res.json();
-      const FILLABLE = ["company", "goal", "bottleneck", "workflow", "musthaves", "integrations"];
-      const filled = {};
-      for (const k of FILLABLE) {
-        if (suggestions[k] && suggestions[k].trim()) filled[k] = suggestions[k].trim();
-      }
-      setF(prev => ({ ...prev, ...filled }));
-      setPrefilled(new Set(Object.keys(filled)));
-      if (suggestions.vertical) setVertical(suggestions.vertical);
-    } catch (e) {
+      await applyFillResult(res);
+    } catch {
       setAnalyzeError("Could not analyse that domain — fill in the form manually below.");
+    } finally {
+      setAnalyzing(false);
+    }
+  }
+
+  async function analyzeDescription() {
+    if (!description.trim()) return;
+    setAnalyzing(true);
+    setAnalyzeError("");
+    try {
+      const res = await fetch("/api/fill-from-description", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ description: description.trim() }),
+      });
+      await applyFillResult(res);
+    } catch {
+      setAnalyzeError("Could not expand that description — fill in the form manually below.");
     } finally {
       setAnalyzing(false);
     }
@@ -271,38 +295,90 @@ export default function ScopeLockForm() {
           we turn this into a fixed scope and price, you approve it, the build begins.
         </p>
 
-        {/* Domain auto-fill */}
+        {/* Auto-fill — tabbed: Website URL | Quick Description */}
         <div className="mt-6 rounded-2xl border border-teal-200 dark:border-teal-800 bg-teal-50 dark:bg-teal-950/40 p-4 sm:p-5">
           <div className="flex items-center gap-2 mb-3">
             <Sparkles className="h-4 w-4 text-teal-600 dark:text-teal-400 flex-shrink-0" />
             <span className="text-sm font-semibold text-teal-800 dark:text-teal-300">
-              Not sure what to write? Enter your website and we&apos;ll pre-fill the form.
+              Pre-fill the form automatically
             </span>
           </div>
-          <div className="flex gap-2">
-            <div className="relative flex-1">
-              <Globe className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
-              <input
-                value={domain}
-                onChange={e => setDomain(e.target.value)}
-                onKeyDown={e => e.key === "Enter" && analyzeDomain()}
-                placeholder="yourbusiness.com"
-                className="w-full pl-9 pr-3 py-2.5 rounded-lg border border-teal-300 dark:border-teal-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 text-sm placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-teal-400 transition-colors"
-              />
-            </div>
-            <button
-              onClick={analyzeDomain}
-              disabled={analyzing || !domain.trim()}
-              className={"flex-shrink-0 px-4 py-2.5 rounded-lg text-sm font-semibold transition-colors " +
-                (analyzing || !domain.trim()
-                  ? "bg-teal-200 dark:bg-teal-900 text-teal-400 cursor-not-allowed"
-                  : "bg-teal-600 hover:bg-teal-700 text-white cursor-pointer")}
-            >
-              {analyzing
-                ? <span className="flex items-center gap-1.5"><Loader2 className="h-3.5 w-3.5 animate-spin" />Analysing…</span>
-                : "Analyse"}
-            </button>
+
+          {/* Tab toggle */}
+          <div className="flex rounded-lg border border-teal-200 dark:border-teal-700 bg-white dark:bg-slate-800 p-0.5 mb-3 w-fit text-xs font-semibold">
+            {[
+              { id: "website",     label: "Website URL",       icon: Globe },
+              { id: "description", label: "Quick Description", icon: Sparkles },
+            ].map(({ id, label, icon: Icon }) => (
+              <button
+                key={id}
+                onClick={() => { setFillMode(id); setAnalyzeError(""); }}
+                className={"flex items-center gap-1.5 px-3 py-1.5 rounded-md transition-colors " +
+                  (fillMode === id
+                    ? "bg-teal-600 text-white"
+                    : "text-teal-700 dark:text-teal-300 hover:bg-teal-50 dark:hover:bg-slate-700")}
+              >
+                <Icon className="h-3 w-3" />
+                {label}
+              </button>
+            ))}
           </div>
+
+          {fillMode === "website" ? (
+            <div className="flex gap-2">
+              <div className="relative flex-1">
+                <Globe className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+                <input
+                  value={domain}
+                  onChange={e => setDomain(e.target.value)}
+                  onKeyDown={e => e.key === "Enter" && analyzeDomain()}
+                  placeholder="yourbusiness.com"
+                  className="w-full pl-9 pr-3 py-2.5 rounded-lg border border-teal-300 dark:border-teal-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 text-sm placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-teal-400 transition-colors"
+                />
+              </div>
+              <button
+                onClick={analyzeDomain}
+                disabled={analyzing || !domain.trim()}
+                className={"flex-shrink-0 px-4 py-2.5 rounded-lg text-sm font-semibold transition-colors " +
+                  (analyzing || !domain.trim()
+                    ? "bg-teal-200 dark:bg-teal-900 text-teal-400 cursor-not-allowed"
+                    : "bg-teal-600 hover:bg-teal-700 text-white cursor-pointer")}
+              >
+                {analyzing
+                  ? <span className="flex items-center gap-1.5"><Loader2 className="h-3.5 w-3.5 animate-spin" />Analysing…</span>
+                  : "Analyse"}
+              </button>
+            </div>
+          ) : (
+            <div className="space-y-2">
+              <textarea
+                value={description}
+                onChange={e => setDescription(e.target.value)}
+                onKeyDown={e => e.key === "Enter" && e.metaKey && analyzeDescription()}
+                rows={3}
+                maxLength={600}
+                placeholder="Describe your app in 1–3 sentences. e.g. &quot;A booking platform for mobile dog groomers — customers book online, groomers manage their schedule and get paid on completion.&quot;"
+                className="w-full rounded-lg border border-teal-300 dark:border-teal-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 text-sm placeholder-slate-400 px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-teal-400 transition-colors resize-none"
+              />
+              <div className="flex items-center justify-between gap-2">
+                <span className="text-[11px] text-teal-600 dark:text-teal-500">
+                  {description.length}/600 · Keep it short — 1–3 sentences is enough
+                </span>
+                <button
+                  onClick={analyzeDescription}
+                  disabled={analyzing || !description.trim()}
+                  className={"flex-shrink-0 px-4 py-2 rounded-lg text-sm font-semibold transition-colors " +
+                    (analyzing || !description.trim()
+                      ? "bg-teal-200 dark:bg-teal-900 text-teal-400 cursor-not-allowed"
+                      : "bg-teal-600 hover:bg-teal-700 text-white cursor-pointer")}
+                >
+                  {analyzing
+                    ? <span className="flex items-center gap-1.5"><Loader2 className="h-3.5 w-3.5 animate-spin" />Expanding…</span>
+                    : "Fill form"}
+                </button>
+              </div>
+            </div>
+          )}
 
           {analyzeError && (
             <p className="mt-2 text-xs text-rose-600 dark:text-rose-400">{analyzeError}</p>
@@ -314,7 +390,7 @@ export default function ScopeLockForm() {
                 <span className="font-semibold">Detected:</span> {vertical} — {prefilled.size} fields pre-filled below. Review and edit before submitting.
               </p>
               <button
-                onClick={() => { setPrefilled(new Set()); setVertical(""); setDomain(""); }}
+                onClick={() => { setPrefilled(new Set()); setVertical(""); setDomain(""); setDescription(""); }}
                 className="text-teal-500 hover:text-teal-700"
               >
                 <X className="h-3.5 w-3.5" />
