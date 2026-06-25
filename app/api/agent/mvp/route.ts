@@ -12,8 +12,8 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "scopeLockItemId is required" }, { status: 400 });
   }
 
-  if (!process.env.GOOGLE_AI_API_KEY) {
-    return NextResponse.json({ error: "GOOGLE_AI_API_KEY is not configured" }, { status: 500 });
+  if (!process.env.ANTHROPIC_API_KEY) {
+    return NextResponse.json({ error: "ANTHROPIC_API_KEY is not configured" }, { status: 500 });
   }
 
   try {
