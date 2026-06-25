@@ -226,6 +226,19 @@ No vague placeholders. End with: "Start by scaffolding the project and environme
     },
   },
   {
+    name: "post_monthly_estimate",
+    description: "After all add_budget_item calls are done, call this ONCE to sum the monthly tool costs and post a monthly plan estimate to the scope lock. This generates the '?mtools=NNN' URL param the admin needs to add to the sign link so the client sees their monthly commitment before paying the deposit.",
+    parameters: {
+      type: "OBJECT",
+      properties: {
+        scope_lock_item_id: { type: "STRING" },
+        tools_monthly_usd:  { type: "STRING", description: "Sum of all monthly tool costs in USD (as a number string, e.g. '127')" },
+        breakdown:          { type: "STRING", description: "Bullet list of the main tool costs, e.g. '• Monday.com: $36/mo\\n• Vercel Pro: $20/mo\\n• SendGrid: $15/mo'" },
+      },
+      required: ["scope_lock_item_id", "tools_monthly_usd", "breakdown"],
+    },
+  },
+  {
     name: "mark_tracker_item_done",
     description: "Find an item on the Build Tracker board by partial name and mark it Done.",
     parameters: {
@@ -362,6 +375,26 @@ async function executeTool(name: string, args: Record<string, string>): Promise<
       if (args.category_col_id && args.category)      colVals[args.category_col_id] = args.category;
       const id = await createItemInGroup(args.board_id, args.group_id, args.tool_name, colVals);
       return { item_id: id, tool: args.tool_name, monthly: args.monthly_cost, annual: args.annual_cost };
+    }
+
+    case "post_monthly_estimate": {
+      const toolsUsd    = parseInt(args.tools_monthly_usd, 10) || 0;
+      const supportUsd  = 150;
+      const totalUsd    = toolsUsd + supportUsd;
+      const msg =
+        `## 📅 Monthly Recurring Plan Estimate\n\n` +
+        `| Line Item | Monthly (USD) |\n` +
+        `|-----------|---------------|\n` +
+        `| Tools & Subscriptions | ~$${toolsUsd}/mo |\n` +
+        `| Ongoing Support | $${supportUsd}/mo |\n` +
+        `| **Total** | **~$${totalUsd}/mo** |\n\n` +
+        `### Tool Breakdown\n${args.breakdown}\n\n` +
+        `---\n` +
+        `**To show this on the client's sign page**, append \`&mtools=${toolsUsd}\` to the sign link:\n` +
+        `\`/sign?...&mtools=${toolsUsd}\`\n\n` +
+        `The client will see an opt-in toggle for the monthly plan (tools + $${supportUsd}/mo support) before they pay their deposit.`;
+      await postUpdate(args.scope_lock_item_id, msg);
+      return { tools_monthly_usd: toolsUsd, support_monthly_usd: supportUsd, total_monthly_usd: totalUsd };
     }
 
     case "mark_tracker_item_done": {
@@ -512,10 +545,11 @@ REQUIRED SEQUENCE — follow this EXACTLY:
    - Add any third-party API subscriptions from the integrations list (e.g. OpenAI, Twilio, SendGrid, HubSpot, etc.)
    - Add any SaaS tools mentioned in the scope
    - The client is responsible for ALL of these costs — they are NOT included in The Startup's fee
-10. Call mark_tracker_item_done for any matched Build Tracker items.
-11. Call post_plan_summary with a markdown summary: client goal, requirements, MVP scope, post-MVP backlog, timeline overview, and a subscription cost summary from the budget board.
-12. Call post_claude_code_prompt — generate a complete, developer-ready Claude Code prompt the client can copy and paste to start building. It must include: project description, exact tech stack, directory structure, environment variables, data models, API routes, UI pages, integrations, ordered build steps, and MVP definition of done. Write it so a developer can paste it into Claude Code with zero extra context and start immediately.
-13. Call advance_scope_stage to move the scope lock to "Planning".
+10. Call post_monthly_estimate — sum ALL monthly costs from the budget items you added and post to the scope lock. This generates the sign-link snippet the admin needs so the client sees their monthly commitment before paying the deposit.
+11. Call mark_tracker_item_done for any matched Build Tracker items.
+12. Call post_plan_summary with a markdown summary: client goal, requirements, MVP scope, post-MVP backlog, timeline overview, and a subscription cost summary from the budget board.
+13. Call post_claude_code_prompt — generate a complete, developer-ready Claude Code prompt the client can copy and paste to start building. It must include: project description, exact tech stack, directory structure, environment variables, data models, API routes, UI pages, integrations, ordered build steps, and MVP definition of done. Write it so a developer can paste it into Claude Code with zero extra context and start immediately.
+14. Call advance_scope_stage to move the scope lock to "Planning".
 
 Cover all layers: auth, data model, API routes, UI pages, integrations, deployment, testing, documentation.`;
 
