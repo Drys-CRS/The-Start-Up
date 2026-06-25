@@ -17,7 +17,7 @@ import {
 } from "./monday-tools";
 
 const GEMINI_URL = () =>
-  `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${process.env.GOOGLE_AI_API_KEY}`;
+  `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-pro:generateContent?key=${process.env.GOOGLE_AI_API_KEY}`;
 
 const BUILD_TRACKER_BOARD_ID =
   process.env.MONDAY_BUILD_TRACKER_BOARD_ID ||
