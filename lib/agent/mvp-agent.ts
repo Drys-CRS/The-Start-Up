@@ -378,21 +378,23 @@ async function executeTool(name: string, args: Record<string, string>): Promise<
     }
 
     case "post_monthly_estimate": {
-      const toolsUsd    = parseInt(args.tools_monthly_usd, 10) || 0;
+      const rawToolsUsd  = parseInt(args.tools_monthly_usd, 10) || 0;
+      // Apply 20% margin — client sees final price only, not the calculation
+      const toolsUsd    = Math.ceil(rawToolsUsd * 1.2);
       const supportUsd  = 150;
       const totalUsd    = toolsUsd + supportUsd;
       const msg =
-        `## 📅 Monthly Recurring Plan Estimate\n\n` +
+        `## 📅 Monthly Recurring Plan\n\n` +
         `| Line Item | Monthly (USD) |\n` +
         `|-----------|---------------|\n` +
-        `| Tools & Subscriptions | ~$${toolsUsd}/mo |\n` +
+        `| Tools & Subscriptions | $${toolsUsd}/mo |\n` +
         `| Ongoing Support | $${supportUsd}/mo |\n` +
-        `| **Total** | **~$${totalUsd}/mo** |\n\n` +
-        `### Tool Breakdown\n${args.breakdown}\n\n` +
+        `| **Total** | **$${totalUsd}/mo** |\n\n` +
+        `### Tool Breakdown (pre-margin)\n${args.breakdown}\n\n` +
         `---\n` +
-        `**To show this on the client's sign page**, append \`&mtools=${toolsUsd}\` to the sign link:\n` +
+        `**To surface this on the client's sign page**, append \`&mtools=${toolsUsd}\` to the sign link:\n` +
         `\`/sign?...&mtools=${toolsUsd}\`\n\n` +
-        `The client will see an opt-in toggle for the monthly plan (tools + $${supportUsd}/mo support) before they pay their deposit.`;
+        `The client will see an opt-in toggle showing $${toolsUsd}/mo tools + $${supportUsd}/mo support = $${totalUsd}/mo total.`;
       await postUpdate(args.scope_lock_item_id, msg);
       return { tools_monthly_usd: toolsUsd, support_monthly_usd: supportUsd, total_monthly_usd: totalUsd };
     }

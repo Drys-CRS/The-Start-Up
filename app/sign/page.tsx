@@ -216,46 +216,52 @@ export default function SignPage() {
               </div>
             </div>
 
-            {/* Monthly plan opt-in (only shown when mtools param is present) */}
-            {monthlyTools !== null && (
-              <div style={{ border: `1.5px solid ${monthlyOptIn ? TEAL : "var(--c-border)"}`,
-                borderRadius: 10, padding: "0.85rem 1rem", marginBottom: "1rem", transition: "border-color 0.2s" }}>
-                <label style={{ display: "flex", alignItems: "flex-start", gap: 10, cursor: "pointer" }}>
-                  <input type="checkbox" checked={monthlyOptIn} onChange={e => setMonthlyOptIn(e.target.checked)}
-                    style={{ marginTop: 3, accentColor: TEAL, width: 15, height: 15, flexShrink: 0 }} />
-                  <div>
-                    <div style={{ fontSize: 13, fontWeight: 700, color: "var(--c-dark)", marginBottom: 2 }}>
-                      Add Ongoing Support &amp; Tools Coverage
-                    </div>
-                    <div style={{ fontSize: 12, color: "var(--c-mid)", lineHeight: 1.5 }}>
-                      Keep your app running after delivery — includes monthly support and all required tool subscriptions.
-                    </div>
-                  </div>
-                </label>
-
-                {monthlyOptIn && (
-                  <div style={{ marginTop: "0.85rem", paddingTop: "0.75rem", borderTop: `1px solid var(--c-border)` }}>
-                    {[
-                      { label: "Tools & Subscriptions", amount: `~$${monthlyTools}/mo`, note: "Hosting, APIs, and platform costs estimated from your scope", active: false },
-                      { label: "Ongoing Support",       amount: "$150/mo",               note: "Priority support, maintenance, and guidance",                 active: true  },
-                    ].map((row, i) => (
-                      <div key={i} style={{ display: "flex", justifyContent: "space-between", alignItems: "center",
-                        padding: "0.45rem 0", borderBottom: i === 0 ? `1px solid var(--c-border)` : "none" }}>
-                        <div>
-                          <span style={{ fontSize: 12, fontWeight: 600, color: row.active ? TEAL : "var(--c-mid)" }}>{row.label}</span>
-                          <div style={{ fontSize: 11, color: "var(--c-light)", marginTop: 1 }}>{row.note}</div>
-                        </div>
-                        <span style={{ fontSize: 13, fontWeight: 700, color: row.active ? TEAL : "var(--c-mid)" }}>{row.amount}</span>
+            {/* Monthly plan opt-in — always visible; tools line added when mtools param present */}
+            {(() => {
+              const monthlyTotal = 150 + (monthlyTools ?? 0);
+              const toolsLine = monthlyTools !== null
+                ? { label: "Tools & Subscriptions", amount: `$${monthlyTools}/mo`, note: "Hosting, APIs, and platform costs based on your scope" }
+                : null;
+              return (
+                <div style={{ border: `1.5px solid ${monthlyOptIn ? TEAL : "var(--c-border)"}`,
+                  borderRadius: 10, padding: "0.85rem 1rem", marginBottom: "1rem", transition: "border-color 0.2s" }}>
+                  <label style={{ display: "flex", alignItems: "flex-start", gap: 10, cursor: "pointer" }}>
+                    <input type="checkbox" checked={monthlyOptIn} onChange={e => setMonthlyOptIn(e.target.checked)}
+                      style={{ marginTop: 3, accentColor: TEAL, width: 15, height: 15, flexShrink: 0 }} />
+                    <div>
+                      <div style={{ fontSize: 13, fontWeight: 700, color: "var(--c-dark)", marginBottom: 2 }}>
+                        Add Ongoing Support &amp; Tools Coverage
                       </div>
-                    ))}
-                    <div style={{ display: "flex", justifyContent: "space-between", paddingTop: "0.5rem" }}>
-                      <span style={{ fontSize: 11, color: "var(--c-light)", fontWeight: 600 }}>MONTHLY TOTAL</span>
-                      <span style={{ fontSize: 13, fontWeight: 700, color: TEAL }}>~${monthlyTools + 150}/mo</span>
+                      <div style={{ fontSize: 12, color: "var(--c-mid)", lineHeight: 1.5 }}>
+                        Keep your app running after delivery — priority support, maintenance, and all tool subscriptions covered.
+                      </div>
                     </div>
-                  </div>
-                )}
-              </div>
-            )}
+                  </label>
+
+                  {monthlyOptIn && (
+                    <div style={{ marginTop: "0.85rem", paddingTop: "0.75rem", borderTop: `1px solid var(--c-border)` }}>
+                      {[
+                        ...(toolsLine ? [toolsLine] : []),
+                        { label: "Ongoing Support", amount: "$150/mo", note: "Priority support, guidance, and maintenance" },
+                      ].map((row, i, arr) => (
+                        <div key={i} style={{ display: "flex", justifyContent: "space-between", alignItems: "center",
+                          padding: "0.45rem 0", borderBottom: i < arr.length - 1 ? `1px solid var(--c-border)` : "none" }}>
+                          <div>
+                            <span style={{ fontSize: 12, fontWeight: 600, color: "var(--c-mid)" }}>{row.label}</span>
+                            <div style={{ fontSize: 11, color: "var(--c-light)", marginTop: 1 }}>{row.note}</div>
+                          </div>
+                          <span style={{ fontSize: 13, fontWeight: 700, color: "var(--c-mid)" }}>{row.amount}</span>
+                        </div>
+                      ))}
+                      <div style={{ display: "flex", justifyContent: "space-between", paddingTop: "0.5rem" }}>
+                        <span style={{ fontSize: 11, color: "var(--c-light)", fontWeight: 600 }}>MONTHLY TOTAL</span>
+                        <span style={{ fontSize: 14, fontWeight: 800, color: TEAL }}>${monthlyTotal}/mo</span>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              );
+            })()}
 
             <button
               onClick={startPayment}
@@ -275,7 +281,7 @@ export default function SignPage() {
               >
                 {stage === "paying"
                   ? <><Loader2 size={17} style={{ animation: "spin 1s linear infinite" }} /> Redirecting…</>
-                  : <><RefreshCw size={17} /> Set up monthly plan (~${(monthlyTools ?? 0) + 150}/mo)</>}
+                  : <><RefreshCw size={17} /> Set up monthly plan (${150 + (monthlyTools ?? 0)}/mo)</>}
               </button>
             )}
 
@@ -344,31 +350,34 @@ export default function SignPage() {
           </div>
         </div>
 
-        {/* Monthly plan preview — only shown when mtools param present */}
-        {monthlyTools !== null && (
-          <div style={{ background: "var(--c-subtle)", border: `1.5px solid var(--c-border)`,
-            borderRadius: 10, padding: "0.85rem 1.25rem", marginBottom: "1.5rem" }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
-              <RefreshCw size={14} color={TEAL} />
-              <span style={{ fontSize: 12, fontWeight: 700, color: TEAL, letterSpacing: 0.5 }}>OPTIONAL: ONGOING SUPPORT &amp; TOOLS</span>
-            </div>
+        {/* Monthly plan preview — always visible; tools line only shown when mtools param present */}
+        <div style={{ background: "var(--c-subtle)", border: `1.5px solid var(--c-border)`,
+          borderRadius: 10, padding: "0.85rem 1.25rem", marginBottom: "1.5rem" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
+            <RefreshCw size={14} color={TEAL} />
+            <span style={{ fontSize: 12, fontWeight: 700, color: TEAL, letterSpacing: 0.5 }}>OPTIONAL: ONGOING SUPPORT &amp; TOOLS</span>
+          </div>
+          {monthlyTools !== null && (
             <div style={{ display: "flex", justifyContent: "space-between", padding: "0.35rem 0", borderBottom: `1px solid var(--c-border)` }}>
               <span style={{ fontSize: 12, color: "var(--c-mid)" }}>Tools &amp; Subscriptions</span>
-              <span style={{ fontSize: 12, fontWeight: 600, color: "var(--c-mid)" }}>~${monthlyTools}/mo</span>
+              <span style={{ fontSize: 12, fontWeight: 600, color: "var(--c-mid)" }}>${monthlyTools}/mo</span>
             </div>
-            <div style={{ display: "flex", justifyContent: "space-between", padding: "0.35rem 0", borderBottom: `1px solid var(--c-border)` }}>
-              <span style={{ fontSize: 12, color: "var(--c-mid)" }}>Ongoing Support</span>
-              <span style={{ fontSize: 12, fontWeight: 600, color: "var(--c-mid)" }}>$150/mo</span>
-            </div>
+          )}
+          <div style={{ display: "flex", justifyContent: "space-between", padding: "0.35rem 0",
+            borderBottom: monthlyTools !== null ? `1px solid var(--c-border)` : "none" }}>
+            <span style={{ fontSize: 12, color: "var(--c-mid)" }}>Ongoing Support</span>
+            <span style={{ fontSize: 12, fontWeight: 600, color: "var(--c-mid)" }}>$150/mo</span>
+          </div>
+          {monthlyTools !== null && (
             <div style={{ display: "flex", justifyContent: "space-between", paddingTop: "0.5rem" }}>
               <span style={{ fontSize: 11, color: "var(--c-light)", fontWeight: 600 }}>MONTHLY TOTAL</span>
-              <span style={{ fontSize: 13, fontWeight: 700, color: TEAL }}>~${monthlyTools + 150}/mo</span>
+              <span style={{ fontSize: 13, fontWeight: 800, color: TEAL }}>${monthlyTools + 150}/mo</span>
             </div>
-            <p style={{ fontSize: 11, color: "var(--c-light)", margin: "0.5rem 0 0", lineHeight: 1.5 }}>
-              You can opt in to the monthly plan after signing — no commitment required at this stage.
-            </p>
-          </div>
-        )}
+          )}
+          <p style={{ fontSize: 11, color: "var(--c-light)", margin: "0.5rem 0 0", lineHeight: 1.5 }}>
+            You can opt in to the monthly plan after signing — no commitment required at this stage.
+          </p>
+        </div>
 
         {/* Key terms */}
         <p style={{ fontSize: 13, color: "var(--c-mid)", margin: "0 0 0.75rem", fontWeight: 600 }}>By signing, you agree to:</p>
