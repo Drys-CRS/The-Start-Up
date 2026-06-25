@@ -159,6 +159,20 @@ export async function setSimpleValue(
   );
 }
 
+export async function setLongText(
+  boardId: string,
+  itemId: string,
+  columnId: string,
+  text: string,
+): Promise<void> {
+  await gql(
+    `mutation ($boardId: ID!, $itemId: ID!, $columnId: String!, $value: JSON!) {
+      change_column_value(board_id: $boardId, item_id: $itemId, column_id: $columnId, value: $value) { id }
+    }`,
+    { boardId, itemId, columnId, value: JSON.stringify({ text }) },
+  );
+}
+
 export async function findItemsByName(
   boardId: string,
   searchTerm: string,

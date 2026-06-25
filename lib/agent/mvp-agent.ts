@@ -15,6 +15,7 @@ import {
   moveItemToGroup,
   setSimpleValue,
   setItemStatus,
+  setLongText,
   findItemsByName,
   postUpdate,
   advanceScopeStage,
@@ -65,13 +66,27 @@ const TOOL_DECLARATIONS = [
   },
   {
     name: "initialize_board_columns",
-    description: "After creating the board and its groups, call this ONCE to add a Status column, a Due Date column, and a 'Completed Tasks' group at the bottom. Returns the column IDs you MUST use for every subsequent create_task and complete_task call.",
+    description: "After creating the board and its groups, call this ONCE to add a Status column, a Due Date column, a Build Notes column (long text), and a 'Completed Tasks' group at the bottom. Returns the column IDs you MUST use for every subsequent create_task, add_task_note, and complete_task call.",
     parameters: {
       type: "OBJECT",
       properties: {
         board_id: { type: "STRING" },
       },
       required: ["board_id"],
+    },
+  },
+  {
+    name: "add_task_note",
+    description: "Add or update the Build Notes field on any task — use this to capture design decisions, technical rationale, acceptance criteria, edge cases, completion details, or anything useful for handover documentation. Call it when creating tasks AND again when marking tasks complete.",
+    parameters: {
+      type: "OBJECT",
+      properties: {
+        board_id:     { type: "STRING" },
+        item_id:      { type: "STRING", description: "Item ID returned by create_task" },
+        notes_col_id: { type: "STRING", description: "notes_col_id from initialize_board_columns" },
+        note:         { type: "STRING", description: "The note to write — be specific. Include: what was built, key decisions made, any caveats or follow-up items." },
+      },
+      required: ["board_id", "item_id", "notes_col_id", "note"],
     },
   },
   {
@@ -114,7 +129,7 @@ const TOOL_DECLARATIONS = [
   },
   {
     name: "create_task",
-    description: "Create a task item in a group with a due date and starting status. Always pass status_col_id, date_col_id (from initialize_board_columns), and a due_date in YYYY-MM-DD format based on which phase the task belongs to.",
+    description: "Create a task item in a group with a due date, starting status, and build notes. Always pass status_col_id, date_col_id, notes_col_id (from initialize_board_columns), and a due_date in YYYY-MM-DD format based on which phase the task belongs to.",
     parameters: {
       type: "OBJECT",
       properties: {
@@ -126,14 +141,15 @@ const TOOL_DECLARATIONS = [
         due_date:      { type: "STRING", description: "Due date in YYYY-MM-DD format. Requirements: start+3 days. MVP Phase 1: spread across days 1-30. Post-MVP: days 31-60. Planning: today." },
         status_col_id: { type: "STRING", description: "Status column ID from initialize_board_columns" },
         date_col_id:   { type: "STRING", description: "Date column ID from initialize_board_columns" },
-        notes:         { type: "STRING", description: "Optional acceptance criteria" },
+        notes_col_id:  { type: "STRING", description: "notes_col_id from initialize_board_columns" },
+        notes:         { type: "STRING", description: "Build notes for this task: what needs to be built, acceptance criteria, key technical decisions, dependencies, or anything useful for handover documentation." },
       },
-      required: ["board_id", "group_id", "task_name", "priority", "category", "due_date", "status_col_id", "date_col_id"],
+      required: ["board_id", "group_id", "task_name", "priority", "category", "due_date", "status_col_id", "date_col_id", "notes_col_id"],
     },
   },
   {
     name: "complete_task",
-    description: "Mark a task as Done and move it to the Completed Tasks group. Use this for Planning group tasks after creating them, and for any task you confirm is already finished.",
+    description: "Mark a task as Done, add a completion note to Build Notes, then move it to the Completed Tasks group. Use this for Planning group tasks after creating them, and for any task that is confirmed finished.",
     parameters: {
       type: "OBJECT",
       properties: {
@@ -141,6 +157,8 @@ const TOOL_DECLARATIONS = [
         item_id:             { type: "STRING" },
         completed_group_id:  { type: "STRING", description: "Completed Tasks group ID from initialize_board_columns" },
         status_col_id:       { type: "STRING", description: "Status column ID from initialize_board_columns" },
+        notes_col_id:        { type: "STRING", description: "notes_col_id from initialize_board_columns" },
+        completion_note:     { type: "STRING", description: "What was done / how it was completed — goes into Build Notes for handover context." },
       },
       required: ["board_id", "item_id", "completed_group_id", "status_col_id"],
     },
@@ -259,15 +277,13 @@ async function executeTool(name: string, args: Record<string, string>): Promise<
       return { board_id: await createBoard(args.board_name, args.workspace_id) };
 
     case "initialize_board_columns": {
-      // Columns can be created in parallel; group must come after columns
-      // so we know the board already has Planning group — Completed Tasks anchors below it
-      const [statusColId, dateColId] = await Promise.all([
-        addBoardColumn(args.board_id, "Status",   "status"),
-        addBoardColumn(args.board_id, "Due Date", "date"),
+      const [statusColId, dateColId, notesColId] = await Promise.all([
+        addBoardColumn(args.board_id, "Status",      "status"),
+        addBoardColumn(args.board_id, "Due Date",    "date"),
+        addBoardColumn(args.board_id, "Build Notes", "long_text"),
       ]);
-      // relative_to not passed here — Monday.com places it at bottom when called last
       const completedGroupId = await createGroup(args.board_id, "Completed Tasks");
-      return { status_col_id: statusColId, date_col_id: dateColId, completed_group_id: completedGroupId };
+      return { status_col_id: statusColId, date_col_id: dateColId, notes_col_id: notesColId, completed_group_id: completedGroupId };
     }
 
     case "create_group":
@@ -288,14 +304,22 @@ async function executeTool(name: string, args: Record<string, string>): Promise<
 
     case "create_task": {
       const colVals: Record<string, unknown> = {};
-      if (args.date_col_id && args.due_date) colVals[args.date_col_id]   = { date: args.due_date };
-      if (args.status_col_id)                colVals[args.status_col_id] = { label: "Working on it" };
+      if (args.date_col_id   && args.due_date) colVals[args.date_col_id]   = { date: args.due_date };
+      if (args.status_col_id)                  colVals[args.status_col_id] = { label: "Working on it" };
+      if (args.notes_col_id  && args.notes)    colVals[args.notes_col_id]  = { text: args.notes };
       const id = await createItemInGroup(args.board_id, args.group_id, args.task_name, colVals);
       return { item_id: id, task: args.task_name, priority: args.priority, category: args.category, due_date: args.due_date };
     }
 
+    case "add_task_note": {
+      await setLongText(args.board_id, args.item_id, args.notes_col_id, args.note);
+      return { updated: true, item_id: args.item_id };
+    }
+
     case "complete_task": {
-      // Set status to Done then move to Completed Tasks group
+      if (args.notes_col_id && args.completion_note) {
+        await setLongText(args.board_id, args.item_id, args.notes_col_id, args.completion_note);
+      }
       if (args.status_col_id) {
         await setItemStatus(args.board_id, args.item_id, args.status_col_id, "Done");
       }
@@ -472,11 +496,13 @@ REQUIRED SEQUENCE — follow this EXACTLY:
    d. "Planning" (relative_to = Post-MVP group_id)
 5. Call initialize_board_columns(board_id) — this creates the Status column, Due Date column, AND the Completed Tasks group at the bottom. SAVE all three IDs returned — you must pass them to every create_task and complete_task call.
 6. Populate groups with specific, actionable tasks via create_task. ALWAYS pass:
-   - status_col_id and date_col_id (from step 5)
+   - status_col_id, date_col_id, AND notes_col_id (all from step 5)
    - due_date in YYYY-MM-DD format based on the phase rules above
+   - notes: a meaningful build note for EVERY task — capture what needs to be built, acceptance criteria, key technical decisions, dependencies, and anything useful for handover documentation. Bad note: "Build the UI". Good note: "Build lead capture form at /leads/new — fields: name, email, company, message. On submit POST to /api/leads, create Monday.com item in Sales Pipeline board, send confirmation email via SendGrid. Validation: all fields required, email format check."
    Bad task name: "Build frontend". Good: "Build lead capture form with email validation and webhook trigger".
    Assign correct priority (P0/P1/P2) and category to every task.
-7. For every task you create in the "Planning" group: immediately call complete_task to mark it Done and move it to Completed Tasks.
+7. For every task you create in the "Planning" group: immediately call complete_task with a completion_note explaining what was planned/decided, then move it to Completed Tasks. For any other task you can confirm is done during the agent run, call complete_task the same way.
+   Use add_task_note any time you need to append additional context to a task after it was created.
 8. Call create_budget_board(client_name, workspace_id) — creates a "[ClientName] — Budget & Subscriptions" board in the same workspace. SAVE all returned IDs. After creating it, call create_board_link to connect the build plan board and budget board bidirectionally.
 9. Call add_budget_item for EVERY tool, platform, or API the client will need to pay for ongoing after the build. Be thorough:
    - If Monday.com is used as the CRM/platform: add it to the "monday.com Subscription" group. Standard plan is ~$12/seat/month (3 seats min = $36/month, $432/year). Adjust if Pro features are needed.
