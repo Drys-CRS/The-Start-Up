@@ -13,14 +13,15 @@ const TIER_LABEL: Record<string, string> = {
   premium: "Premium",
 };
 
-const AMOUNTS: Record<string, Record<string, { amount: string; label: string }>> = {
+// Payment structure: 10% deposit now → 80% on MVP plan approval → 10% on delivery
+const AMOUNTS: Record<string, Record<string, { total: string; deposit: string; mvp: string; balance: string }>> = {
   promo: {
-    USD: { amount: "$3,000",  label: "Full investment (flat fee)" },
-    ZAR: { amount: "R60,000", label: "Full investment (flat fee)" },
+    USD: { total: "$3,000",   deposit: "$300",    mvp: "$2,400",   balance: "$300"    },
+    ZAR: { total: "R60,000",  deposit: "R6,000",  mvp: "R48,000",  balance: "R6,000"  },
   },
   premium: {
-    USD: { amount: "$2,500",  label: "50% deposit — balance on delivery" },
-    ZAR: { amount: "R50,000", label: "50% deposit — balance on delivery" },
+    USD: { total: "$5,000",   deposit: "$500",    mvp: "$4,000",   balance: "$500"    },
+    ZAR: { total: "R100,000", deposit: "R10,000", mvp: "R80,000",  balance: "R10,000" },
   },
 };
 
@@ -140,6 +141,7 @@ export default function SignPage() {
   }
 
   const amountInfo = AMOUNTS[tier]?.[cur] ?? AMOUNTS.premium.USD;
+  const ai = amountInfo; // shorthand
   const canSign    = name.trim().length > 0 && drawn && agreed;
 
   // ── Signed success + payment ───────────────────────────────────────────────
@@ -165,18 +167,35 @@ export default function SignPage() {
           </div>
 
           <div style={{ borderTop: `1.5px solid var(--c-border)`, paddingTop: "1.5rem" }}>
-            <h2 style={{ fontSize: 15, fontWeight: 700, color: "var(--c-dark)", margin: "0 0 0.4rem" }}>
-              Complete Your Payment
+            <h2 style={{ fontSize: 15, fontWeight: 700, color: "var(--c-dark)", margin: "0 0 0.5rem" }}>
+              Pay Your 10% Deposit to Start
             </h2>
-            <p style={{ color: "var(--c-mid)", fontSize: 13, margin: "0 0 1rem" }}>
-              {amountInfo.label}
+            <p style={{ color: "var(--c-mid)", fontSize: 13, margin: "0 0 1rem", lineHeight: 1.5 }}>
+              This secures your start date and kicks off planning. The remaining payments are tied to build milestones.
             </p>
-            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between",
-              background: "var(--c-teal-soft)", border: `1.5px solid ${TEAL}40`, borderRadius: 10,
-              padding: "0.85rem 1.25rem", marginBottom: "1rem" }}>
-              <span style={{ fontSize: 26, fontWeight: 800, color: TEAL }}>{amountInfo.amount}</span>
-              <span style={{ fontSize: 12, color: "var(--c-mid)" }}>{cur}</span>
+
+            {/* Payment milestone breakdown */}
+            <div style={{ background: "var(--c-subtle)", borderRadius: 10, padding: "0.85rem 1rem", marginBottom: "1rem" }}>
+              {[
+                { phase: "10% now",         amount: ai.deposit, note: "Deposit — secures your start date",        active: true  },
+                { phase: "80% on approval", amount: ai.mvp,     note: "After MVP plan is reviewed and approved",   active: false },
+                { phase: "10% on delivery", amount: ai.balance,  note: "Final balance at end of 30-day build",    active: false },
+              ].map((row, i) => (
+                <div key={i} style={{ display: "flex", justifyContent: "space-between", alignItems: "center",
+                  padding: "0.5rem 0", borderBottom: i < 2 ? `1px solid var(--c-border)` : "none" }}>
+                  <div>
+                    <span style={{ fontSize: 12, fontWeight: 700, color: row.active ? TEAL : "var(--c-mid)" }}>{row.phase}</span>
+                    <div style={{ fontSize: 11, color: "var(--c-light)", marginTop: 1 }}>{row.note}</div>
+                  </div>
+                  <span style={{ fontSize: 14, fontWeight: 700, color: row.active ? TEAL : "var(--c-mid)" }}>{row.amount}</span>
+                </div>
+              ))}
+              <div style={{ display: "flex", justifyContent: "space-between", paddingTop: "0.5rem" }}>
+                <span style={{ fontSize: 11, color: "var(--c-light)", fontWeight: 600 }}>TOTAL INVESTMENT</span>
+                <span style={{ fontSize: 13, fontWeight: 700, color: "var(--c-dark)" }}>{ai.total}</span>
+              </div>
             </div>
+
             <button
               onClick={startPayment}
               disabled={stage === "paying"}
@@ -184,7 +203,7 @@ export default function SignPage() {
             >
               {stage === "paying"
                 ? <><Loader2 size={17} style={{ animation: "spin 1s linear infinite" }} /> Redirecting…</>
-                : <><CreditCard size={17} /> Pay {amountInfo.amount}</>}
+                : <><CreditCard size={17} /> Pay {ai.deposit} deposit</>}
             </button>
             <p style={{ color: "var(--c-light)", fontSize: 11, textAlign: "center", marginTop: "0.6rem" }}>
               Secured by Stripe — SSL encrypted
@@ -225,16 +244,29 @@ export default function SignPage() {
         </div>
 
         {/* Package summary */}
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between",
-          background: "var(--c-teal-soft)", border: `1.5px solid ${TEAL}40`, borderRadius: 10,
+        <div style={{ background: "var(--c-teal-soft)", border: `1.5px solid ${TEAL}40`, borderRadius: 10,
           padding: "0.85rem 1.25rem", marginBottom: "1.5rem" }}>
-          <div>
-            <div style={{ fontSize: 11, fontWeight: 700, color: TEAL, marginBottom: 2 }}>SELECTED PACKAGE</div>
-            <div style={{ fontSize: 15, fontWeight: 700, color: "var(--c-dark)" }}>{TIER_LABEL[tier] ?? tier}</div>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
+            <div>
+              <div style={{ fontSize: 11, fontWeight: 700, color: TEAL, marginBottom: 2 }}>SELECTED PACKAGE</div>
+              <div style={{ fontSize: 15, fontWeight: 700, color: "var(--c-dark)" }}>{TIER_LABEL[tier] ?? tier}</div>
+            </div>
+            <div style={{ textAlign: "right" }}>
+              <div style={{ fontSize: 22, fontWeight: 800, color: TEAL }}>{ai.total}</div>
+              <div style={{ fontSize: 11, color: "var(--c-mid)" }}>total investment</div>
+            </div>
           </div>
-          <div style={{ textAlign: "right" }}>
-            <div style={{ fontSize: 22, fontWeight: 800, color: TEAL }}>{amountInfo.amount}</div>
-            <div style={{ fontSize: 11, color: "var(--c-mid)" }}>{amountInfo.label}</div>
+          <div style={{ borderTop: `1px solid ${TEAL}30`, paddingTop: 8, display: "flex", gap: 8, justifyContent: "space-between" }}>
+            {[
+              { label: "10% deposit today", value: ai.deposit },
+              { label: "80% on MVP approval", value: ai.mvp },
+              { label: "10% on delivery", value: ai.balance },
+            ].map((s, i) => (
+              <div key={i} style={{ textAlign: "center", flex: 1 }}>
+                <div style={{ fontSize: 13, fontWeight: 700, color: i === 0 ? TEAL : "var(--c-mid)" }}>{s.value}</div>
+                <div style={{ fontSize: 10, color: "var(--c-light)", marginTop: 2 }}>{s.label}</div>
+              </div>
+            ))}
           </div>
         </div>
 
