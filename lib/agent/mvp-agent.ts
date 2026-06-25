@@ -5,6 +5,7 @@
 
 import {
   readScopeLock,
+  listWorkspaces,
   listWorkspaceBoards,
   createBoard,
   createGroup,
@@ -36,17 +37,25 @@ const TOOL_DECLARATIONS = [
     },
   },
   {
+    name: "list_workspaces",
+    description: "List all Monday.com workspaces. Call this first to find 'The Start Up' workspace ID before creating a board.",
+    parameters: { type: "OBJECT", properties: {} },
+  },
+  {
     name: "list_boards",
-    description: "List all boards in the Monday.com workspace.",
+    description: "List all boards in the Monday.com account.",
     parameters: { type: "OBJECT", properties: {} },
   },
   {
     name: "create_project_board",
-    description: "Create a new Monday.com board for this client, e.g. 'Acme Corp — Build Plan'.",
+    description: "Create a new Monday.com board inside a specific workspace. Always call list_workspaces first to get the correct workspace_id for 'The Start Up'.",
     parameters: {
       type: "OBJECT",
-      properties: { board_name: { type: "STRING" } },
-      required: ["board_name"],
+      properties: {
+        board_name:   { type: "STRING", description: "e.g. 'Acme Corp — Build Plan'" },
+        workspace_id: { type: "STRING", description: "ID of 'The Start Up' workspace from list_workspaces" },
+      },
+      required: ["board_name", "workspace_id"],
     },
   },
   {
@@ -118,10 +127,12 @@ async function executeTool(name: string, args: Record<string, string>): Promise<
   switch (name) {
     case "read_scope_lock":
       return readScopeLock(args.item_id);
+    case "list_workspaces":
+      return listWorkspaces();
     case "list_boards":
       return listWorkspaceBoards();
     case "create_project_board":
-      return { board_id: await createBoard(args.board_name) };
+      return { board_id: await createBoard(args.board_name, args.workspace_id) };
     case "create_group":
       return { group_id: await createGroup(args.board_id, args.group_name) };
     case "create_task": {
@@ -171,8 +182,8 @@ async function callGemini(contents: GeminiContent[]): Promise<GeminiContent> {
 
 When given a scope lock item ID:
 1. Call read_scope_lock to get the full scope data
-2. Call list_boards to see what already exists
-3. Call create_project_board to create "[ClientName] — Build Plan"
+2. Call list_workspaces to find "The Start Up" workspace ID — you MUST use this ID when creating the board
+3. Call create_project_board with the workspace_id from step 2 to create "[ClientName] — Build Plan" inside "The Start Up" workspace
 4. Create these groups in order:
    - "Requirements" — all functional requirements from the scope
    - "MVP — Phase 1 (Days 1–30)" — every task needed to ship

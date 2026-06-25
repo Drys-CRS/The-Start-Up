@@ -44,15 +44,19 @@ export async function readScopeLock(itemId: string) {
 
 // ── Boards ──────────────────────────────────────────────────────────────────
 
+export async function listWorkspaces(): Promise<{ id: string; name: string }[]> {
+  const data = await gql(`query { workspaces { id name } }`);
+  return data.workspaces;
+}
+
 export async function listWorkspaceBoards(): Promise<{ id: string; name: string }[]> {
   const data = await gql(`query { boards(limit: 50, order_by: created_at) { id name } }`);
   return data.boards;
 }
 
-export async function createBoard(name: string, workspaceId?: string): Promise<string> {
-  const wsClause = workspaceId ? `, workspace_id: ${workspaceId}` : "";
+export async function createBoard(name: string, workspaceId: string): Promise<string> {
   const data = await gql(
-    `mutation { create_board(board_name: ${JSON.stringify(name)}, board_kind: public${wsClause}) { id } }`,
+    `mutation { create_board(board_name: ${JSON.stringify(name)}, board_kind: public, workspace_id: ${workspaceId}) { id } }`,
   );
   return data.create_board.id;
 }
