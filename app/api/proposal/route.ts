@@ -283,13 +283,16 @@ export async function POST(req: NextRequest) {
   // ── INVESTMENT SUMMARY ─────────────────────────────────────────────────────
   sectionTitle("Investment Summary");
   type IRow = [string, string, string];
-  const invRows: IRow[] = pkg.isPromo
-    ? [["Total - all-in, fixed price", price, "Full payment due on signature"]]
-    : [
-        ["First Payment - 50%", currency === "ZAR" ? "R50,000" : "$2,500", "Due on signature to initiate build"],
-        ["Final Payment - 50%", currency === "ZAR" ? "R50,000" : "$2,500", "Due on system handover"],
-        ["Total Investment",    price,                                       "Fixed price - no overruns"],
-      ];
+  const isZar = currency === "ZAR";
+  const invDeposit = pkg.isPromo ? (isZar ? "R6,000"  : "$300")    : (isZar ? "R10,000" : "$500");
+  const invMvp     = pkg.isPromo ? (isZar ? "R48,000" : "$2,400")  : (isZar ? "R80,000" : "$4,000");
+  const invBalance = pkg.isPromo ? (isZar ? "R6,000"  : "$300")    : (isZar ? "R10,000" : "$500");
+  const invRows: IRow[] = [
+    ["Deposit - 10%",          invDeposit, "Due on signature - secures your start date"],
+    ["MVP Approval - 80%",     invMvp,     "Due once MVP plan is reviewed and approved by client"],
+    ["Final Balance - 10%",    invBalance, "Due at end of 30-day build on delivery"],
+    ["Total Investment",       price,      "Fixed price - no overruns"],
+  ];
   const i1W = CW * 0.44;
   const i2W = CW * 0.22;
   const i3X = ML + i1W + i2W + 6;
@@ -309,7 +312,7 @@ export async function POST(req: NextRequest) {
   const tcs: [string, string][] = [
     ["1. Scope & Agreement", "This document constitutes a binding service proposal between The Startup (service provider) and the client named herein. Scope is limited to what is described; changes require written amendment and may affect timeline and price."],
     ["2. 30-Day Build Guarantee", "We commit to delivering a working system within 30 calendar days of the confirmed build start. If we miss this for reasons attributable solely to us, the client receives an additional 30 days of support at no cost."],
-    ["3. Payment Terms", "Promotional tier: full payment due on signature. Premium tier: 50% on signature; 50% on handover. Invoices are due within 5 business days. Overdue payments may pause the build."],
+    ["3. Payment Terms", "All tiers follow a three-stage schedule: 10% deposit on signature (secures your start date); 80% on MVP plan approval (client must review and approve before build continues); 10% final balance on delivery at end of the 30-day build. Invoices are due within 5 business days. Overdue payments may pause the build."],
     ["4. Ownership of Deliverables", "All custom configurations, automations, dashboards, and documentation become the client's property upon final payment. The Startup retains rights to its reusable internal frameworks and methodologies."],
     ["5. Support Period", "The support period covers active system support, bug fixes, optimisation, and training. It begins on handover and does not include new feature development."],
     ["6. Confidentiality", "Both parties agree to keep all project details, business information, and proprietary data confidential and will not disclose to third parties without prior written consent."],
@@ -353,7 +356,7 @@ export async function POST(req: NextRequest) {
     "The information provided in the Scope Lock form is accurate and complete to the best of my knowledge.",
     "I have read and understood the Terms & Conditions stated in this document.",
     "I agree to the investment amount, payment schedule, and pricing as outlined in this proposal.",
-    "I understand this agreement becomes legally binding upon my signature and receipt of initial payment.",
+    "I understand this agreement becomes legally binding upon my signature and receipt of the 10% deposit.",
   ];
   acks.forEach((ack) => {
     const aLines = wrapText(ack, (s) => fontR.widthOfTextAtSize(s, 9), CW - 16);
