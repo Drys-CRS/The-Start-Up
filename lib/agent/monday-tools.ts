@@ -61,6 +61,16 @@ export async function createBoard(name: string, workspaceId: string): Promise<st
   return data.create_board.id;
 }
 
+// ── Columns ─────────────────────────────────────────────────────────────────
+
+export async function addBoardColumn(boardId: string, title: string, columnType: string): Promise<string> {
+  const data = await gql(
+    // column_type is a GraphQL enum — must not be quoted
+    `mutation { create_column(board_id: ${boardId}, title: ${JSON.stringify(title)}, column_type: ${columnType}) { id } }`,
+  );
+  return data.create_column.id;
+}
+
 // ── Groups ──────────────────────────────────────────────────────────────────
 
 export async function createGroup(boardId: string, groupName: string): Promise<string> {
@@ -68,6 +78,12 @@ export async function createGroup(boardId: string, groupName: string): Promise<s
     `mutation { create_group(board_id: ${boardId}, group_name: ${JSON.stringify(groupName)}) { id } }`,
   );
   return data.create_group.id;
+}
+
+export async function moveItemToGroup(itemId: string, groupId: string): Promise<void> {
+  await gql(
+    `mutation { move_item_to_group(item_id: ${itemId}, group_id: ${JSON.stringify(groupId)}) { id } }`,
+  );
 }
 
 // ── Items ───────────────────────────────────────────────────────────────────

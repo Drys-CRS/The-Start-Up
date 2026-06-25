@@ -8,9 +8,12 @@ import {
   listWorkspaces,
   listWorkspaceBoards,
   createBoard,
+  addBoardColumn,
   createGroup,
   createItemInGroup,
+  moveItemToGroup,
   setSimpleValue,
+  setItemStatus,
   findItemsByName,
   postUpdate,
   advanceScopeStage,
@@ -59,6 +62,17 @@ const TOOL_DECLARATIONS = [
     },
   },
   {
+    name: "initialize_board_columns",
+    description: "After creating the board and its groups, call this ONCE to add a Status column, a Due Date column, and a 'Completed Tasks' group at the bottom. Returns the column IDs you MUST use for every subsequent create_task and complete_task call.",
+    parameters: {
+      type: "OBJECT",
+      properties: {
+        board_id: { type: "STRING" },
+      },
+      required: ["board_id"],
+    },
+  },
+  {
     name: "create_group",
     description: "Create a group (section) inside a Monday.com board.",
     parameters: {
@@ -72,23 +86,40 @@ const TOOL_DECLARATIONS = [
   },
   {
     name: "create_task",
-    description: "Create a task item in a group. P0 = MVP critical, P1 = post-MVP, P2 = nice to have.",
+    description: "Create a task item in a group with a due date and starting status. Always pass status_col_id, date_col_id (from initialize_board_columns), and a due_date in YYYY-MM-DD format based on which phase the task belongs to.",
     parameters: {
       type: "OBJECT",
       properties: {
-        board_id:  { type: "STRING" },
-        group_id:  { type: "STRING" },
-        task_name: { type: "STRING", description: "Concise, actionable task — specific not vague" },
-        priority:  { type: "STRING", description: "P0 — MVP, P1 — Post-MVP, or P2 — Nice to Have" },
-        category:  { type: "STRING", description: "Frontend, Backend, Integration, Infrastructure, Design, Testing, or Discovery" },
-        notes:     { type: "STRING", description: "Optional acceptance criteria or detail" },
+        board_id:      { type: "STRING" },
+        group_id:      { type: "STRING" },
+        task_name:     { type: "STRING", description: "Concise, actionable task name" },
+        priority:      { type: "STRING", description: "P0 — MVP, P1 — Post-MVP, or P2 — Nice to Have" },
+        category:      { type: "STRING", description: "Frontend, Backend, Integration, Infrastructure, Design, Testing, or Discovery" },
+        due_date:      { type: "STRING", description: "Due date in YYYY-MM-DD format. Requirements: start+3 days. MVP Phase 1: spread across days 1-30. Post-MVP: days 31-60. Planning: today." },
+        status_col_id: { type: "STRING", description: "Status column ID from initialize_board_columns" },
+        date_col_id:   { type: "STRING", description: "Date column ID from initialize_board_columns" },
+        notes:         { type: "STRING", description: "Optional acceptance criteria" },
       },
-      required: ["board_id", "group_id", "task_name", "priority", "category"],
+      required: ["board_id", "group_id", "task_name", "priority", "category", "due_date", "status_col_id", "date_col_id"],
+    },
+  },
+  {
+    name: "complete_task",
+    description: "Mark a task as Done and move it to the Completed Tasks group. Use this for Planning group tasks after creating them, and for any task you confirm is already finished.",
+    parameters: {
+      type: "OBJECT",
+      properties: {
+        board_id:            { type: "STRING" },
+        item_id:             { type: "STRING" },
+        completed_group_id:  { type: "STRING", description: "Completed Tasks group ID from initialize_board_columns" },
+        status_col_id:       { type: "STRING", description: "Status column ID from initialize_board_columns" },
+      },
+      required: ["board_id", "item_id", "completed_group_id", "status_col_id"],
     },
   },
   {
     name: "mark_tracker_item_done",
-    description: "Find an item on the Build Tracker by partial name and mark it Done.",
+    description: "Find an item on the Build Tracker board by partial name and mark it Done.",
     parameters: {
       type: "OBJECT",
       properties: { item_name_contains: { type: "STRING" } },
@@ -127,18 +158,45 @@ async function executeTool(name: string, args: Record<string, string>): Promise<
   switch (name) {
     case "read_scope_lock":
       return readScopeLock(args.item_id);
+
     case "list_workspaces":
       return listWorkspaces();
+
     case "list_boards":
       return listWorkspaceBoards();
+
     case "create_project_board":
       return { board_id: await createBoard(args.board_name, args.workspace_id) };
+
+    case "initialize_board_columns": {
+      const [statusColId, dateColId, completedGroupId] = await Promise.all([
+        addBoardColumn(args.board_id, "Status",   "color"),
+        addBoardColumn(args.board_id, "Due Date", "date"),
+        createGroup(args.board_id, "Completed Tasks"),
+      ]);
+      return { status_col_id: statusColId, date_col_id: dateColId, completed_group_id: completedGroupId };
+    }
+
     case "create_group":
       return { group_id: await createGroup(args.board_id, args.group_name) };
+
     case "create_task": {
-      const id = await createItemInGroup(args.board_id, args.group_id, args.task_name);
-      return { item_id: id, task: args.task_name, priority: args.priority, category: args.category };
+      const colVals: Record<string, unknown> = {};
+      if (args.date_col_id && args.due_date) colVals[args.date_col_id]   = { date: args.due_date };
+      if (args.status_col_id)                colVals[args.status_col_id] = { label: "Not Started" };
+      const id = await createItemInGroup(args.board_id, args.group_id, args.task_name, colVals);
+      return { item_id: id, task: args.task_name, priority: args.priority, category: args.category, due_date: args.due_date };
     }
+
+    case "complete_task": {
+      // Set status to Done then move to Completed Tasks group
+      if (args.status_col_id) {
+        await setItemStatus(args.board_id, args.item_id, args.status_col_id, "Done");
+      }
+      await moveItemToGroup(args.item_id, args.completed_group_id);
+      return { done: true, moved_to: args.completed_group_id };
+    }
+
     case "mark_tracker_item_done": {
       const matches = await findItemsByName(BUILD_TRACKER_BOARD_ID, args.item_name_contains);
       for (const m of matches) {
@@ -147,9 +205,11 @@ async function executeTool(name: string, args: Record<string, string>): Promise<
       }
       return { matched: matches.length };
     }
+
     case "post_plan_summary":
       await postUpdate(args.scope_lock_item_id, args.summary);
       return { posted: true };
+
     case "advance_scope_stage":
       await advanceScopeStage(
         process.env.MONDAY_SCOPE_BOARD_ID || "18419179036",
@@ -157,6 +217,7 @@ async function executeTool(name: string, args: Record<string, string>): Promise<
         args.stage,
       );
       return { stage: args.stage };
+
     default:
       throw new Error(`Unknown tool: ${name}`);
   }
@@ -171,34 +232,12 @@ type GeminiPart =
 
 type GeminiContent = { role: string; parts: GeminiPart[] };
 
-async function callGemini(contents: GeminiContent[]): Promise<GeminiContent> {
+async function callGemini(contents: GeminiContent[], systemText: string): Promise<GeminiContent> {
   const res = await fetch(GEMINI_URL(), {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
-      systemInstruction: {
-        parts: [{
-          text: `You are The Startup's project planning agent. You build structured MVP plans for client builds in Monday.com.
-
-When given a scope lock item ID:
-1. Call read_scope_lock to get the full scope data
-2. Call list_workspaces to find "The Start Up" workspace ID — you MUST use this ID when creating the board
-3. Call create_project_board with the workspace_id from step 2 to create "[ClientName] — Build Plan" inside "The Start Up" workspace
-4. Create these groups in order:
-   - "Requirements" — all functional requirements from the scope
-   - "MVP — Phase 1 (Days 1–30)" — every task needed to ship
-   - "Post-MVP — Phase 2" — deferred P1/P2 items
-   - "Planning" — create items here then mark them Done
-5. Populate groups with specific, actionable tasks via create_task.
-   Bad: "Build frontend". Good: "Build lead capture form with email validation and auto-assign logic".
-   Assign correct priority (P0/P1/P2) and category to every task.
-6. Call mark_tracker_item_done for any matched tracker items.
-7. Call post_plan_summary with a markdown summary: client goal, requirements list, MVP scope, post-MVP backlog, key technical decisions.
-8. Call advance_scope_stage to move the scope lock to "Planning".
-
-Cover everything: auth, data model, API routes, UI pages, integrations, deployment, testing.`,
-        }],
-      },
+      systemInstruction: { parts: [{ text: systemText }] },
       contents,
       tools: [{ functionDeclarations: TOOL_DECLARATIONS }],
       generationConfig: { temperature: 0.3 },
@@ -216,6 +255,14 @@ Cover everything: auth, data model, API routes, UI pages, integrations, deployme
   return candidate.content as GeminiContent;
 }
 
+// ── Date helpers ──────────────────────────────────────────────────────────────
+
+function addDays(base: Date, days: number): string {
+  const d = new Date(base);
+  d.setDate(d.getDate() + days);
+  return d.toISOString().split("T")[0];
+}
+
 // ── Agent loop ────────────────────────────────────────────────────────────────
 
 export type AgentResult = {
@@ -228,16 +275,63 @@ export type AgentResult = {
 export async function runMvpAgent(scopeLockItemId: string): Promise<AgentResult> {
   if (!process.env.GOOGLE_AI_API_KEY) throw new Error("GOOGLE_AI_API_KEY is not set");
 
+  const today = new Date();
+  const startDate      = addDays(today, 0);   // today
+  const reqDeadline    = addDays(today, 3);   // requirements locked by day 3
+  const mvpMidpoint    = addDays(today, 15);  // mid-sprint checkpoint
+  const mvpDeadline    = addDays(today, 30);  // end of sprint
+  const postMvpMid     = addDays(today, 45);  // post-MVP midpoint
+  const postMvpDeadline = addDays(today, 60); // post-MVP deadline
+
+  const SYSTEM = `You are The Startup's project planning agent. You build structured MVP plans for client builds in Monday.com.
+
+Today's date is ${startDate}. Use this to calculate all due dates.
+
+PHASE DUE DATE RULES (always assign a due date to every task):
+- Requirements group tasks: due ${reqDeadline} (day 3)
+- Planning group tasks: due ${startDate} (today — mark them Done after creating)
+- MVP Phase 1 tasks: spread due dates between ${startDate} and ${mvpDeadline}
+  - Early tasks (setup, architecture, data model): ${addDays(today, 5)} – ${addDays(today, 8)}
+  - Core feature tasks: ${addDays(today, 9)} – ${addDays(today, 20)}
+  - Integration and final tasks: ${addDays(today, 21)} – ${addDays(today, 28)}
+  - Testing and deployment: ${addDays(today, 29)} – ${mvpDeadline}
+- Post-MVP Phase 2 tasks: spread due dates between ${addDays(today, 31)} and ${postMvpDeadline}
+
+REQUIRED SEQUENCE — follow this EXACTLY:
+1. Call read_scope_lock to get the full scope data
+2. Call list_workspaces to find "The Start Up" workspace ID
+3. Call create_project_board with that workspace_id — name it "[ClientName] — Build Plan"
+4. Create groups IN THIS ORDER (do not create Completed Tasks manually — it is created by initialize_board_columns):
+   a. "Requirements"
+   b. "MVP — Phase 1 (Days 1–30)"
+   c. "Post-MVP — Phase 2"
+   d. "Planning"
+5. Call initialize_board_columns(board_id) — this creates the Status column, Due Date column, AND the Completed Tasks group at the bottom. SAVE all three IDs returned — you must pass them to every create_task and complete_task call.
+6. Populate groups with specific, actionable tasks via create_task. ALWAYS pass:
+   - status_col_id and date_col_id (from step 5)
+   - due_date in YYYY-MM-DD format based on the phase rules above
+   Bad task name: "Build frontend". Good: "Build lead capture form with email validation and webhook trigger".
+   Assign correct priority (P0/P1/P2) and category to every task.
+7. For every task you create in the "Planning" group: immediately call complete_task to mark it Done and move it to Completed Tasks.
+8. Call mark_tracker_item_done for any matched Build Tracker items.
+9. Call post_plan_summary with a markdown summary: client goal, requirements, MVP scope, post-MVP backlog, timeline overview.
+10. Call advance_scope_stage to move the scope lock to "Planning".
+
+Cover all layers: auth, data model, API routes, UI pages, integrations, deployment, testing, documentation.`;
+
   const log: string[] = [];
   let tasksCreated = 0;
   let boardId: string | undefined;
 
   const contents: GeminiContent[] = [
-    { role: "user", parts: [{ text: `Process scope lock item ID: ${scopeLockItemId}. Build the full MVP plan in Monday.com.` }] },
+    {
+      role: "user",
+      parts: [{ text: `Process scope lock item ID: ${scopeLockItemId}. Build the full MVP plan in Monday.com. Today is ${startDate}.` }],
+    },
   ];
 
-  for (let turn = 0; turn < 40; turn++) {
-    const modelContent = await callGemini(contents);
+  for (let turn = 0; turn < 60; turn++) {
+    const modelContent = await callGemini(contents, SYSTEM);
     contents.push(modelContent);
 
     const functionCalls = modelContent.parts.filter(
@@ -252,14 +346,13 @@ export async function runMvpAgent(scopeLockItemId: string): Promise<AgentResult>
 
     const responseParts: GeminiPart[] = [];
     for (const { functionCall } of functionCalls) {
-      log.push(`→ ${functionCall.name}(${JSON.stringify(functionCall.args).slice(0, 120)})`);
+      log.push(`→ ${functionCall.name}(${JSON.stringify(functionCall.args).slice(0, 140)})`);
       try {
         const result = await executeTool(functionCall.name, functionCall.args);
         if (functionCall.name === "create_project_board" && result && typeof result === "object")
           boardId = (result as { board_id: string }).board_id;
         if (functionCall.name === "create_task") tasksCreated++;
-        log.push(`  ✓ ${JSON.stringify(result).slice(0, 180)}`);
-        // Gemini requires functionResponse.response to be a plain object, never an array
+        log.push(`  ✓ ${JSON.stringify(result).slice(0, 200)}`);
         const safeResult = Array.isArray(result) ? { items: result } : (result ?? {});
         responseParts.push({ functionResponse: { name: functionCall.name, response: safeResult } });
       } catch (err) {
