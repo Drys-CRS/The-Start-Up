@@ -1,6 +1,6 @@
 "use client";
 import React, { useState, useRef } from "react";
-import { ArrowRight, Check, Download, FileText, Loader2, PenLine, ShieldCheck } from "lucide-react";
+import { ArrowRight, Check, Download, FileText, Globe, Loader2, PenLine, ShieldCheck, Sparkles, X } from "lucide-react";
 import WordMark from "./WordMark";
 
 const OFFER_DEADLINE = "30 Sep 2026";
@@ -34,8 +34,47 @@ export default function ScopeLockForm() {
   const [status, setStatus] = useState("idle"); // idle | sending | done | error
   const [downloading, setDownloading] = useState(false);
   const [dlError, setDlError] = useState(false);
+
+  // Domain auto-fill
+  const [domain, setDomain] = useState("");
+  const [analyzing, setAnalyzing] = useState(false);
+  const [analyzeError, setAnalyzeError] = useState("");
+  const [prefilled, setPrefilled] = useState(new Set());
+  const [vertical, setVertical] = useState("");
   const lastSubmission = useRef(null);
-  const set = (k) => (e) => setF({ ...f, [k]: e.target.value });
+  const set = (k) => (e) => {
+    setF({ ...f, [k]: e.target.value });
+    // Clear prefill highlight once user edits
+    if (prefilled.has(k)) setPrefilled(prev => { const n = new Set(prev); n.delete(k); return n; });
+  };
+
+  async function analyzeDomain() {
+    const d = domain.trim().replace(/^https?:\/\//, "").replace(/\/.*$/, "");
+    if (!d) return;
+    setAnalyzing(true);
+    setAnalyzeError("");
+    try {
+      const res = await fetch("/api/analyze-domain", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ domain: d }),
+      });
+      if (!res.ok) throw new Error(await res.text());
+      const suggestions = await res.json();
+      const FILLABLE = ["company", "goal", "bottleneck", "workflow", "musthaves", "integrations"];
+      const filled = {};
+      for (const k of FILLABLE) {
+        if (suggestions[k] && suggestions[k].trim()) filled[k] = suggestions[k].trim();
+      }
+      setF(prev => ({ ...prev, ...filled }));
+      setPrefilled(new Set(Object.keys(filled)));
+      if (suggestions.vertical) setVertical(suggestions.vertical);
+    } catch (e) {
+      setAnalyzeError("Could not analyse that domain — fill in the form manually below.");
+    } finally {
+      setAnalyzing(false);
+    }
+  }
 
   const valid = f.company && /.+@.+\..+/.test(f.email) && f.goal && f.bottleneck;
 
@@ -92,6 +131,10 @@ export default function ScopeLockForm() {
 
   const input =
     "w-full rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 px-3 py-2.5 text-slate-900 dark:text-slate-100 text-sm placeholder-slate-400 dark:placeholder-slate-500 focus:border-teal-500 focus:outline-none focus:ring-2 focus:ring-teal-100 dark:focus:ring-teal-900 transition-colors";
+  // Ring variant applied to pre-filled fields
+  const inputFilled =
+    "w-full rounded-lg border border-teal-400 dark:border-teal-600 bg-teal-50/40 dark:bg-teal-950/20 ring-1 ring-teal-300 dark:ring-teal-700 px-3 py-2.5 text-slate-900 dark:text-slate-100 text-sm focus:outline-none focus:ring-2 focus:ring-teal-400 transition-colors";
+  const inp = (k) => prefilled.has(k) ? inputFilled : input;
   const label = "block text-xs font-medium uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-1.5";
 
   if (status === "done") {
@@ -228,7 +271,59 @@ export default function ScopeLockForm() {
           we turn this into a fixed scope and price, you approve it, the build begins.
         </p>
 
-        <div className="mt-8 rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-5 sm:p-7 shadow-sm space-y-5">
+        {/* Domain auto-fill */}
+        <div className="mt-6 rounded-2xl border border-teal-200 dark:border-teal-800 bg-teal-50 dark:bg-teal-950/40 p-4 sm:p-5">
+          <div className="flex items-center gap-2 mb-3">
+            <Sparkles className="h-4 w-4 text-teal-600 dark:text-teal-400 flex-shrink-0" />
+            <span className="text-sm font-semibold text-teal-800 dark:text-teal-300">
+              Not sure what to write? Enter your website and we&apos;ll pre-fill the form.
+            </span>
+          </div>
+          <div className="flex gap-2">
+            <div className="relative flex-1">
+              <Globe className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+              <input
+                value={domain}
+                onChange={e => setDomain(e.target.value)}
+                onKeyDown={e => e.key === "Enter" && analyzeDomain()}
+                placeholder="yourbusiness.com"
+                className="w-full pl-9 pr-3 py-2.5 rounded-lg border border-teal-300 dark:border-teal-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 text-sm placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-teal-400 transition-colors"
+              />
+            </div>
+            <button
+              onClick={analyzeDomain}
+              disabled={analyzing || !domain.trim()}
+              className={"flex-shrink-0 px-4 py-2.5 rounded-lg text-sm font-semibold transition-colors " +
+                (analyzing || !domain.trim()
+                  ? "bg-teal-200 dark:bg-teal-900 text-teal-400 cursor-not-allowed"
+                  : "bg-teal-600 hover:bg-teal-700 text-white cursor-pointer")}
+            >
+              {analyzing
+                ? <span className="flex items-center gap-1.5"><Loader2 className="h-3.5 w-3.5 animate-spin" />Analysing…</span>
+                : "Analyse"}
+            </button>
+          </div>
+
+          {analyzeError && (
+            <p className="mt-2 text-xs text-rose-600 dark:text-rose-400">{analyzeError}</p>
+          )}
+
+          {vertical && prefilled.size > 0 && (
+            <div className="mt-3 flex items-center justify-between">
+              <p className="text-xs text-teal-700 dark:text-teal-400">
+                <span className="font-semibold">Detected:</span> {vertical} — {prefilled.size} fields pre-filled below. Review and edit before submitting.
+              </p>
+              <button
+                onClick={() => { setPrefilled(new Set()); setVertical(""); setDomain(""); }}
+                className="text-teal-500 hover:text-teal-700"
+              >
+                <X className="h-3.5 w-3.5" />
+              </button>
+            </div>
+          )}
+        </div>
+
+        <div className="mt-4 rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-5 sm:p-7 shadow-sm space-y-5">
           <div className="flex items-center justify-between">
             <span className={label + " mb-0"}>Your engagement</span>
             <div className="flex rounded-lg border border-slate-200 p-0.5 text-xs font-medium">
@@ -245,7 +340,7 @@ export default function ScopeLockForm() {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className={label}>Company</label>
-              <input className={input} value={f.company} onChange={set("company")} placeholder="Acme Co." />
+              <input className={inp("company")} value={f.company} onChange={set("company")} placeholder="Acme Co." />
             </div>
             <div>
               <label className={label}>Your name</label>
@@ -314,28 +409,28 @@ export default function ScopeLockForm() {
 
           <div>
             <label className={label}>What outcome are you buying? *</label>
-            <textarea className={input} rows={2} value={f.goal} onChange={set("goal")}
+            <textarea className={inp("goal")} rows={2} value={f.goal} onChange={set("goal")}
               placeholder="e.g. Stop losing inbound leads to slow follow-up; give leadership real pipeline visibility." />
           </div>
           <div>
             <label className={label}>Your single biggest bottleneck right now *</label>
-            <textarea className={input} rows={2} value={f.bottleneck} onChange={set("bottleneck")}
+            <textarea className={inp("bottleneck")} rows={2} value={f.bottleneck} onChange={set("bottleneck")}
               placeholder="e.g. Leads sit in a shared inbox; reps update a CRM nobody trusts." />
           </div>
           <div>
             <label className={label}>The one core workflow this must handle</label>
-            <textarea className={input} rows={2} value={f.workflow} onChange={set("workflow")}
+            <textarea className={inp("workflow")} rows={2} value={f.workflow} onChange={set("workflow")}
               placeholder="e.g. Lead arrives → scored → routed to an owner → appears on a rep's Monday board → reported weekly." />
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className={label}>Must-have features</label>
-              <textarea className={input} rows={2} value={f.musthaves} onChange={set("musthaves")}
+              <textarea className={inp("musthaves")} rows={2} value={f.musthaves} onChange={set("musthaves")}
                 placeholder="The non-negotiables." />
             </div>
             <div>
               <label className={label}>Integrations needed</label>
-              <input className={input} value={f.integrations} onChange={set("integrations")}
+              <input className={inp("integrations")} value={f.integrations} onChange={set("integrations")}
                 placeholder="CRM, calendar, enrichment…" />
             </div>
           </div>
