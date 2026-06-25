@@ -1,9 +1,8 @@
 /**
- * MVP planning agent powered by Claude claude-sonnet-4-6 via Anthropic SDK.
- * Requires ANTHROPIC_API_KEY in environment.
+ * MVP planning agent powered by Gemini 2.5 Pro via REST API.
+ * Requires GOOGLE_AI_API_KEY in environment.
  */
 
-import Anthropic from "@anthropic-ai/sdk";
 import {
   readScopeLock,
   listWorkspaceBoards,
@@ -16,45 +15,48 @@ import {
   advanceScopeStage,
 } from "./monday-tools";
 
+const GEMINI_URL = () =>
+  `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-pro:generateContent?key=${process.env.GOOGLE_AI_API_KEY}`;
+
 const BUILD_TRACKER_BOARD_ID =
   process.env.MONDAY_BUILD_TRACKER_BOARD_ID ||
   process.env.MONDAY_DELIVERY_BOARD_ID ||
   "18419179069";
 
-// ── Tool definitions ─────────────────────────────────────────────────────────
+// ── Tool declarations (Gemini format) ────────────────────────────────────────
 
-const TOOLS: Anthropic.Tool[] = [
+const TOOL_DECLARATIONS = [
   {
     name: "read_scope_lock",
     description: "Read all fields from a Scope Lock item in Monday.com — client name, goal, bottleneck, workflow, must-haves, integrations.",
-    input_schema: {
-      type: "object" as const,
-      properties: { item_id: { type: "string", description: "The Monday.com Scope Lock item ID" } },
+    parameters: {
+      type: "OBJECT",
+      properties: { item_id: { type: "STRING", description: "The Monday.com Scope Lock item ID" } },
       required: ["item_id"],
     },
   },
   {
     name: "list_boards",
     description: "List all boards in the Monday.com workspace.",
-    input_schema: { type: "object" as const, properties: {} },
+    parameters: { type: "OBJECT", properties: {} },
   },
   {
     name: "create_project_board",
     description: "Create a new Monday.com board for this client, e.g. 'Acme Corp — Build Plan'.",
-    input_schema: {
-      type: "object" as const,
-      properties: { board_name: { type: "string" } },
+    parameters: {
+      type: "OBJECT",
+      properties: { board_name: { type: "STRING" } },
       required: ["board_name"],
     },
   },
   {
     name: "create_group",
     description: "Create a group (section) inside a Monday.com board.",
-    input_schema: {
-      type: "object" as const,
+    parameters: {
+      type: "OBJECT",
       properties: {
-        board_id:   { type: "string" },
-        group_name: { type: "string", description: "e.g. 'MVP Tasks' or 'Requirements'" },
+        board_id:   { type: "STRING" },
+        group_name: { type: "STRING", description: "e.g. 'MVP Tasks' or 'Requirements'" },
       },
       required: ["board_id", "group_name"],
     },
@@ -62,15 +64,15 @@ const TOOLS: Anthropic.Tool[] = [
   {
     name: "create_task",
     description: "Create a task item in a group. P0 = MVP critical, P1 = post-MVP, P2 = nice to have.",
-    input_schema: {
-      type: "object" as const,
+    parameters: {
+      type: "OBJECT",
       properties: {
-        board_id:  { type: "string" },
-        group_id:  { type: "string" },
-        task_name: { type: "string", description: "Concise, actionable task — specific not vague" },
-        priority:  { type: "string", enum: ["P0 — MVP", "P1 — Post-MVP", "P2 — Nice to Have"] },
-        category:  { type: "string", enum: ["Frontend", "Backend", "Integration", "Infrastructure", "Design", "Testing", "Discovery"] },
-        notes:     { type: "string", description: "Optional acceptance criteria or detail" },
+        board_id:  { type: "STRING" },
+        group_id:  { type: "STRING" },
+        task_name: { type: "STRING", description: "Concise, actionable task — specific not vague" },
+        priority:  { type: "STRING", description: "P0 — MVP, P1 — Post-MVP, or P2 — Nice to Have" },
+        category:  { type: "STRING", description: "Frontend, Backend, Integration, Infrastructure, Design, Testing, or Discovery" },
+        notes:     { type: "STRING", description: "Optional acceptance criteria or detail" },
       },
       required: ["board_id", "group_id", "task_name", "priority", "category"],
     },
@@ -78,22 +80,20 @@ const TOOLS: Anthropic.Tool[] = [
   {
     name: "mark_tracker_item_done",
     description: "Find an item on the Build Tracker by partial name and mark it Done.",
-    input_schema: {
-      type: "object" as const,
-      properties: {
-        item_name_contains: { type: "string" },
-      },
+    parameters: {
+      type: "OBJECT",
+      properties: { item_name_contains: { type: "STRING" } },
       required: ["item_name_contains"],
     },
   },
   {
     name: "post_plan_summary",
     description: "Post the MVP plan summary as an update on the Scope Lock item.",
-    input_schema: {
-      type: "object" as const,
+    parameters: {
+      type: "OBJECT",
       properties: {
-        scope_lock_item_id: { type: "string" },
-        summary: { type: "string", description: "Markdown summary of the full plan" },
+        scope_lock_item_id: { type: "STRING" },
+        summary: { type: "STRING", description: "Markdown summary of the full plan" },
       },
       required: ["scope_lock_item_id", "summary"],
     },
@@ -101,11 +101,11 @@ const TOOLS: Anthropic.Tool[] = [
   {
     name: "advance_scope_stage",
     description: "Advance the Scope Lock stage in Monday.com (e.g. 'Planning' or 'Build Active').",
-    input_schema: {
-      type: "object" as const,
+    parameters: {
+      type: "OBJECT",
       properties: {
-        scope_lock_item_id: { type: "string" },
-        stage: { type: "string" },
+        scope_lock_item_id: { type: "STRING" },
+        stage: { type: "STRING" },
       },
       required: ["scope_lock_item_id", "stage"],
     },
@@ -114,22 +114,22 @@ const TOOLS: Anthropic.Tool[] = [
 
 // ── Tool executor ─────────────────────────────────────────────────────────────
 
-async function executeTool(name: string, input: Record<string, string>): Promise<unknown> {
+async function executeTool(name: string, args: Record<string, string>): Promise<unknown> {
   switch (name) {
     case "read_scope_lock":
-      return readScopeLock(input.item_id);
+      return readScopeLock(args.item_id);
     case "list_boards":
       return listWorkspaceBoards();
     case "create_project_board":
-      return { board_id: await createBoard(input.board_name) };
+      return { board_id: await createBoard(args.board_name) };
     case "create_group":
-      return { group_id: await createGroup(input.board_id, input.group_name) };
+      return { group_id: await createGroup(args.board_id, args.group_name) };
     case "create_task": {
-      const id = await createItemInGroup(input.board_id, input.group_id, input.task_name);
-      return { item_id: id, task: input.task_name, priority: input.priority, category: input.category };
+      const id = await createItemInGroup(args.board_id, args.group_id, args.task_name);
+      return { item_id: id, task: args.task_name, priority: args.priority, category: args.category };
     }
     case "mark_tracker_item_done": {
-      const matches = await findItemsByName(BUILD_TRACKER_BOARD_ID, input.item_name_contains);
+      const matches = await findItemsByName(BUILD_TRACKER_BOARD_ID, args.item_name_contains);
       for (const m of matches) {
         await setSimpleValue(BUILD_TRACKER_BOARD_ID, m.id, "color_mm4mbccy", "Done").catch(() => null);
         await setSimpleValue(BUILD_TRACKER_BOARD_ID, m.id, "color_mm4mmf9n", "Done").catch(() => null);
@@ -137,18 +137,72 @@ async function executeTool(name: string, input: Record<string, string>): Promise
       return { matched: matches.length };
     }
     case "post_plan_summary":
-      await postUpdate(input.scope_lock_item_id, input.summary);
+      await postUpdate(args.scope_lock_item_id, args.summary);
       return { posted: true };
     case "advance_scope_stage":
       await advanceScopeStage(
         process.env.MONDAY_SCOPE_BOARD_ID || "18419179036",
-        input.scope_lock_item_id,
-        input.stage,
+        args.scope_lock_item_id,
+        args.stage,
       );
-      return { stage: input.stage };
+      return { stage: args.stage };
     default:
       throw new Error(`Unknown tool: ${name}`);
   }
+}
+
+// ── Gemini REST call ──────────────────────────────────────────────────────────
+
+type GeminiPart =
+  | { text: string }
+  | { functionCall: { name: string; args: Record<string, string> } }
+  | { functionResponse: { name: string; response: unknown } };
+
+type GeminiContent = { role: string; parts: GeminiPart[] };
+
+async function callGemini(contents: GeminiContent[]): Promise<GeminiContent> {
+  const res = await fetch(GEMINI_URL(), {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      systemInstruction: {
+        parts: [{
+          text: `You are The Startup's project planning agent. You build structured MVP plans for client builds in Monday.com.
+
+When given a scope lock item ID:
+1. Call read_scope_lock to get the full scope data
+2. Call list_boards to see what already exists
+3. Call create_project_board to create "[ClientName] — Build Plan"
+4. Create these groups in order:
+   - "Requirements" — all functional requirements from the scope
+   - "MVP — Phase 1 (Days 1–30)" — every task needed to ship
+   - "Post-MVP — Phase 2" — deferred P1/P2 items
+   - "Planning" — create items here then mark them Done
+5. Populate groups with specific, actionable tasks via create_task.
+   Bad: "Build frontend". Good: "Build lead capture form with email validation and auto-assign logic".
+   Assign correct priority (P0/P1/P2) and category to every task.
+6. Call mark_tracker_item_done for any matched tracker items.
+7. Call post_plan_summary with a markdown summary: client goal, requirements list, MVP scope, post-MVP backlog, key technical decisions.
+8. Call advance_scope_stage to move the scope lock to "Planning".
+
+Cover everything: auth, data model, API routes, UI pages, integrations, deployment, testing.`,
+        }],
+      },
+      contents,
+      tools: [{ functionDeclarations: TOOL_DECLARATIONS }],
+      generationConfig: { temperature: 0.3 },
+    }),
+  });
+
+  if (!res.ok) {
+    const err = await res.text();
+    throw new Error(`Gemini API error ${res.status}: ${err}`);
+  }
+
+  const data = await res.json();
+  const candidate = data.candidates?.[0];
+  if (!candidate) throw new Error("No candidates in Gemini response");
+  return candidate.content as GeminiContent;
 }
 
 // ── Agent loop ────────────────────────────────────────────────────────────────
@@ -160,75 +214,48 @@ export type AgentResult = {
   log: string[];
 };
 
-const SYSTEM = `You are The Startup's project planning agent. You build structured MVP plans for client builds in Monday.com.
-
-When given a scope lock item ID:
-1. Call read_scope_lock to get the full scope data
-2. Call list_boards to see what already exists
-3. Call create_project_board to create "[ClientName] — Build Plan"
-4. Create these groups in order:
-   - "Requirements" — all functional requirements extracted from the scope
-   - "MVP — Phase 1 (Days 1–30)" — every task needed to ship the MVP
-   - "Post-MVP — Phase 2" — P1/P2 items deferred after launch
-   - "Planning" — your own checklist; create items here and mark them Done
-5. Populate each group with specific, actionable tasks via create_task.
-   Bad: "Build frontend". Good: "Build lead capture form with email validation and auto-assign logic".
-   Assign correct priority (P0/P1/P2) and category to every task.
-6. Call mark_tracker_item_done for any matching tracker items.
-7. Call post_plan_summary with a clear markdown summary: client goal, requirements list, MVP scope, post-MVP backlog, key technical decisions.
-8. Call advance_scope_stage to move the scope lock to "Planning".
-
-Cover everything: auth, data model, API routes, UI pages, integrations, deployment, testing.`;
-
 export async function runMvpAgent(scopeLockItemId: string): Promise<AgentResult> {
-  if (!process.env.ANTHROPIC_API_KEY) throw new Error("ANTHROPIC_API_KEY is not set");
+  if (!process.env.GOOGLE_AI_API_KEY) throw new Error("GOOGLE_AI_API_KEY is not set");
 
-  const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
   const log: string[] = [];
   let tasksCreated = 0;
   let boardId: string | undefined;
 
-  const messages: Anthropic.MessageParam[] = [
-    { role: "user", content: `Process scope lock item ID: ${scopeLockItemId}. Build the full MVP plan in Monday.com.` },
+  const contents: GeminiContent[] = [
+    { role: "user", parts: [{ text: `Process scope lock item ID: ${scopeLockItemId}. Build the full MVP plan in Monday.com.` }] },
   ];
 
   for (let turn = 0; turn < 40; turn++) {
-    const response = await client.messages.create({
-      model: "claude-sonnet-4-6",
-      max_tokens: 4096,
-      system: SYSTEM,
-      tools: TOOLS,
-      messages,
-    });
+    const modelContent = await callGemini(contents);
+    contents.push(modelContent);
 
-    for (const block of response.content) {
-      if (block.type === "text" && block.text.trim()) log.push(block.text.trim());
+    const functionCalls = modelContent.parts.filter(
+      (p): p is { functionCall: { name: string; args: Record<string, string> } } => "functionCall" in p,
+    );
+
+    for (const p of modelContent.parts) {
+      if ("text" in p && p.text.trim()) log.push(p.text.trim());
     }
 
-    if (response.stop_reason === "end_turn") break;
+    if (functionCalls.length === 0) break;
 
-    const toolResults: Anthropic.ToolResultBlockParam[] = [];
-    for (const block of response.content) {
-      if (block.type !== "tool_use") continue;
-      log.push(`→ ${block.name}(${JSON.stringify(block.input).slice(0, 120)})`);
-      let result: unknown;
-      let isError = false;
+    const responseParts: GeminiPart[] = [];
+    for (const { functionCall } of functionCalls) {
+      log.push(`→ ${functionCall.name}(${JSON.stringify(functionCall.args).slice(0, 120)})`);
       try {
-        result = await executeTool(block.name, block.input as Record<string, string>);
-        if (block.name === "create_project_board" && result && typeof result === "object")
+        const result = await executeTool(functionCall.name, functionCall.args);
+        if (functionCall.name === "create_project_board" && result && typeof result === "object")
           boardId = (result as { board_id: string }).board_id;
-        if (block.name === "create_task") tasksCreated++;
+        if (functionCall.name === "create_task") tasksCreated++;
         log.push(`  ✓ ${JSON.stringify(result).slice(0, 180)}`);
+        responseParts.push({ functionResponse: { name: functionCall.name, response: result } });
       } catch (err) {
-        result = { error: String(err) };
-        isError = true;
         log.push(`  ✗ ${String(err)}`);
+        responseParts.push({ functionResponse: { name: functionCall.name, response: { error: String(err) } } });
       }
-      toolResults.push({ type: "tool_result", tool_use_id: block.id, content: JSON.stringify(result), is_error: isError });
     }
 
-    messages.push({ role: "assistant", content: response.content });
-    messages.push({ role: "user", content: toolResults });
+    contents.push({ role: "user", parts: responseParts });
   }
 
   const summary = log.filter(l => !l.startsWith("→") && !l.startsWith("  ")).join("\n") || "MVP plan created.";

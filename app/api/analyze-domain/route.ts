@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
-import Anthropic from "@anthropic-ai/sdk";
 
 export const runtime = "nodejs";
+
+const GEMINI_KEY = () => process.env.GOOGLE_AI_API_KEY || "";
 
 function stripHtml(html: string): string {
   return html
@@ -29,17 +30,15 @@ async function fetchSiteText(domain: string): Promise<string> {
 export async function POST(req: NextRequest) {
   const { domain } = await req.json().catch(() => ({}));
   if (!domain) return NextResponse.json({ error: "domain is required" }, { status: 400 });
-  if (!process.env.ANTHROPIC_API_KEY)
-    return NextResponse.json({ error: "ANTHROPIC_API_KEY not configured" }, { status: 500 });
+  if (!GEMINI_KEY()) return NextResponse.json({ error: "GOOGLE_AI_API_KEY not configured" }, { status: 500 });
 
   const siteText = await fetchSiteText(domain.trim());
-  const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 
   const prompt = `You are a startup consulting agent helping pre-fill a software project scope form.
 
 ${siteText
-  ? `Here is text scraped from the website "${domain}":\n\n${siteText}`
-  : `The domain is "${domain}" — the site could not be fetched, so infer from the domain name alone.`}
+    ? `Here is text scraped from the website "${domain}":\n\n${siteText}`
+    : `The domain is "${domain}" — the site could not be fetched, so infer from the domain name alone.`}
 
 Return a JSON object with EXACTLY these string keys (no arrays):
 
@@ -56,14 +55,20 @@ Return a JSON object with EXACTLY these string keys (no arrays):
 Be specific to THEIR business. Return ONLY valid JSON, no markdown fences.`;
 
   try {
-    const msg = await client.messages.create({
-      model: "claude-haiku-4-5-20251001",
-      max_tokens: 1024,
-      messages: [{ role: "user", content: prompt }],
-    });
-    const text = msg.content[0].type === "text" ? msg.content[0].text : "{}";
-    const parsed = JSON.parse(text.replace(/```json|```/g, "").trim());
-    return NextResponse.json(parsed);
+    const res = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_KEY()}`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          contents: [{ role: "user", parts: [{ text: prompt }] }],
+          generationConfig: { responseMimeType: "application/json", temperature: 0.4 },
+        }),
+      },
+    );
+    const data = await res.json();
+    const raw = data.candidates?.[0]?.content?.parts?.[0]?.text ?? "{}";
+    return NextResponse.json(JSON.parse(raw));
   } catch {
     return NextResponse.json({ error: "Could not parse AI response" }, { status: 500 });
   }
