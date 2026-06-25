@@ -203,7 +203,7 @@ async function executeTool(name: string, args: Record<string, string>): Promise<
 
     case "initialize_board_columns": {
       const [statusColId, dateColId, completedGroupId] = await Promise.all([
-        addBoardColumn(args.board_id, "Status",   "color"),
+        addBoardColumn(args.board_id, "Status",   "status"),
         addBoardColumn(args.board_id, "Due Date", "date"),
         createGroup(args.board_id, "Completed Tasks"),
       ]);
@@ -236,7 +236,7 @@ async function executeTool(name: string, args: Record<string, string>): Promise<
         addBoardColumn(budgetBoardId, "Monthly Cost (USD)", "numbers"),
         addBoardColumn(budgetBoardId, "Annual Cost (USD)",  "numbers"),
         addBoardColumn(budgetBoardId, "Notes / Plan",       "text"),
-        addBoardColumn(budgetBoardId, "Category",           "color"),
+        addBoardColumn(budgetBoardId, "Category",           "status"),
       ]);
       const [infraGroupId, intGroupId, mondayGroupId, otherGroupId] = await Promise.all([
         createGroup(budgetBoardId, "Platform & Infrastructure"),
