@@ -248,7 +248,9 @@ export async function runMvpAgent(scopeLockItemId: string): Promise<AgentResult>
           boardId = (result as { board_id: string }).board_id;
         if (functionCall.name === "create_task") tasksCreated++;
         log.push(`  ✓ ${JSON.stringify(result).slice(0, 180)}`);
-        responseParts.push({ functionResponse: { name: functionCall.name, response: result } });
+        // Gemini requires functionResponse.response to be a plain object, never an array
+        const safeResult = Array.isArray(result) ? { items: result } : (result ?? {});
+        responseParts.push({ functionResponse: { name: functionCall.name, response: safeResult } });
       } catch (err) {
         log.push(`  ✗ ${String(err)}`);
         responseParts.push({ functionResponse: { name: functionCall.name, response: { error: String(err) } } });
