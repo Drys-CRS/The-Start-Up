@@ -216,7 +216,7 @@ async function executeTool(name: string, args: Record<string, string>): Promise<
     case "create_task": {
       const colVals: Record<string, unknown> = {};
       if (args.date_col_id && args.due_date) colVals[args.date_col_id]   = { date: args.due_date };
-      if (args.status_col_id)                colVals[args.status_col_id] = { label: "Not Started" };
+      if (args.status_col_id)                colVals[args.status_col_id] = { label: "Working on it" };
       const id = await createItemInGroup(args.board_id, args.group_id, args.task_name, colVals);
       return { item_id: id, task: args.task_name, priority: args.priority, category: args.category, due_date: args.due_date };
     }
