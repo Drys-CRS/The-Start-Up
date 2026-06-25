@@ -73,9 +73,13 @@ export async function addBoardColumn(boardId: string, title: string, columnType:
 
 // ── Groups ──────────────────────────────────────────────────────────────────
 
-export async function createGroup(boardId: string, groupName: string): Promise<string> {
+export async function createGroup(boardId: string, groupName: string, relativeTo?: string): Promise<string> {
+  // relativeTo: ID of the group to position AFTER — ensures correct top-to-bottom order
+  const posClause = relativeTo
+    ? `, position_relative_method: after_at, relative_to: ${JSON.stringify(relativeTo)}`
+    : "";
   const data = await gql(
-    `mutation { create_group(board_id: ${boardId}, group_name: ${JSON.stringify(groupName)}) { id } }`,
+    `mutation { create_group(board_id: ${boardId}, group_name: ${JSON.stringify(groupName)}${posClause}) { id } }`,
   );
   return data.create_group.id;
 }
@@ -84,6 +88,29 @@ export async function moveItemToGroup(itemId: string, groupId: string): Promise<
   await gql(
     `mutation { move_item_to_group(item_id: ${itemId}, group_id: ${JSON.stringify(groupId)}) { id } }`,
   );
+}
+
+// ── Bidirectional board link ─────────────────────────────────────────────────
+
+export async function createBoardLink(
+  boardAId: string, titleA: string,
+  boardBId: string, titleB: string,
+): Promise<{ colA: string; colB: string }> {
+  const [dA, dB] = await Promise.all([
+    gql(`mutation { create_column(board_id: ${boardAId}, title: ${JSON.stringify(titleA)}, column_type: board_relation, defaults: "{\\\"boardIds\\\": [${boardBId}]}") { id } }`),
+    gql(`mutation { create_column(board_id: ${boardBId}, title: ${JSON.stringify(titleB)}, column_type: board_relation, defaults: "{\\\"boardIds\\\": [${boardAId}]}") { id } }`),
+  ]);
+  return { colA: dA.create_column.id, colB: dB.create_column.id };
+}
+
+// ── Dashboard widgets ────────────────────────────────────────────────────────
+
+export async function addDashboardWidget(dashboardId: string, widgetKind: string): Promise<string> {
+  const data = await gql(
+    // widget_kind is a GraphQL enum — must not be quoted
+    `mutation { create_widget(board_id: ${dashboardId}, widget_kind: ${widgetKind}) { id } }`,
+  );
+  return data.create_widget?.id ?? "ok";
 }
 
 // ── Items ───────────────────────────────────────────────────────────────────

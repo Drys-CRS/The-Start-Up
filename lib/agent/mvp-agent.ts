@@ -10,6 +10,7 @@ import {
   createBoard,
   addBoardColumn,
   createGroup,
+  createBoardLink,
   createItemInGroup,
   moveItemToGroup,
   setSimpleValue,
@@ -17,6 +18,7 @@ import {
   findItemsByName,
   postUpdate,
   advanceScopeStage,
+  addDashboardWidget,
 } from "./monday-tools";
 
 const GEMINI_URL = () =>
@@ -74,14 +76,40 @@ const TOOL_DECLARATIONS = [
   },
   {
     name: "create_group",
-    description: "Create a group (section) inside a Monday.com board.",
+    description: "Create a group (section) inside a Monday.com board. ALWAYS pass relative_to = the ID returned by the previous create_group call so groups appear in the correct top-to-bottom order. Without it, each new group is inserted at the top and the order will be reversed.",
     parameters: {
       type: "OBJECT",
       properties: {
-        board_id:   { type: "STRING" },
-        group_name: { type: "STRING", description: "e.g. 'MVP Tasks' or 'Requirements'" },
+        board_id:    { type: "STRING" },
+        group_name:  { type: "STRING", description: "e.g. 'MVP — Phase 1 (Days 1–30)'" },
+        relative_to: { type: "STRING", description: "Group ID of the group that should appear ABOVE this one. Pass the ID returned by the previous create_group call. Omit only for the very first group." },
       },
       required: ["board_id", "group_name"],
+    },
+  },
+  {
+    name: "create_board_link",
+    description: "Create a bidirectional board_relation link between two boards — adds a connect column on BOTH boards pointing to each other. Use this instead of manually creating two separate board_relation columns.",
+    parameters: {
+      type: "OBJECT",
+      properties: {
+        board_a_id:  { type: "STRING", description: "First board ID" },
+        title_a:     { type: "STRING", description: "Column title on board A, e.g. 'Budget Items'" },
+        board_b_id:  { type: "STRING", description: "Second board ID" },
+        title_b:     { type: "STRING", description: "Column title on board B, e.g. 'Build Plan'" },
+      },
+      required: ["board_a_id", "title_a", "board_b_id", "title_b"],
+    },
+  },
+  {
+    name: "setup_dashboard_widgets",
+    description: "Add a standard set of useful widgets to a dashboard after creating it — summary (task counts), chart (by priority), table (all tasks), and battery (completion %). Call this immediately after creating any dashboard.",
+    parameters: {
+      type: "OBJECT",
+      properties: {
+        dashboard_id: { type: "STRING", description: "Dashboard ID returned by create_project_board or create_budget_board" },
+      },
+      required: ["dashboard_id"],
     },
   },
   {
@@ -231,16 +259,32 @@ async function executeTool(name: string, args: Record<string, string>): Promise<
       return { board_id: await createBoard(args.board_name, args.workspace_id) };
 
     case "initialize_board_columns": {
-      const [statusColId, dateColId, completedGroupId] = await Promise.all([
+      // Columns can be created in parallel; group must come after columns
+      // so we know the board already has Planning group — Completed Tasks anchors below it
+      const [statusColId, dateColId] = await Promise.all([
         addBoardColumn(args.board_id, "Status",   "status"),
         addBoardColumn(args.board_id, "Due Date", "date"),
-        createGroup(args.board_id, "Completed Tasks"),
       ]);
+      // relative_to not passed here — Monday.com places it at bottom when called last
+      const completedGroupId = await createGroup(args.board_id, "Completed Tasks");
       return { status_col_id: statusColId, date_col_id: dateColId, completed_group_id: completedGroupId };
     }
 
     case "create_group":
-      return { group_id: await createGroup(args.board_id, args.group_name) };
+      return { group_id: await createGroup(args.board_id, args.group_name, args.relative_to) };
+
+    case "create_board_link":
+      return createBoardLink(args.board_a_id, args.title_a, args.board_b_id, args.title_b);
+
+    case "setup_dashboard_widgets": {
+      const kinds = ["summary", "chart", "table", "battery"];
+      const ids: string[] = [];
+      for (const kind of kinds) {
+        const id = await addDashboardWidget(args.dashboard_id, kind).catch(() => "skipped");
+        ids.push(id);
+      }
+      return { widgets_added: ids.filter(i => i !== "skipped").length, kinds };
+    }
 
     case "create_task": {
       const colVals: Record<string, unknown> = {};
@@ -267,12 +311,10 @@ async function executeTool(name: string, args: Record<string, string>): Promise<
         addBoardColumn(budgetBoardId, "Notes / Plan",       "text"),
         addBoardColumn(budgetBoardId, "Category",           "text"),
       ]);
-      const [infraGroupId, intGroupId, mondayGroupId, otherGroupId] = await Promise.all([
-        createGroup(budgetBoardId, "Platform & Infrastructure"),
-        createGroup(budgetBoardId, "Integrations & APIs"),
-        createGroup(budgetBoardId, "monday.com Subscription"),
-        createGroup(budgetBoardId, "Other Subscriptions"),
-      ]);
+      const infraGroupId  = await createGroup(budgetBoardId, "Platform & Infrastructure");
+      const intGroupId    = await createGroup(budgetBoardId, "Integrations & APIs",       infraGroupId);
+      const mondayGroupId = await createGroup(budgetBoardId, "monday.com Subscription",   intGroupId);
+      const otherGroupId  = await createGroup(budgetBoardId, "Other Subscriptions",       mondayGroupId);
       return {
         board_id: budgetBoardId,
         monthly_col_id:  monthlyCid,
@@ -423,11 +465,11 @@ REQUIRED SEQUENCE — follow this EXACTLY:
 1. Call read_scope_lock to get the full scope data
 2. Call list_workspaces to find "The Start Up" workspace ID
 3. Call create_project_board with that workspace_id — name it "[ClientName] — Build Plan"
-4. Create groups IN THIS ORDER (do not create Completed Tasks manually — it is created by initialize_board_columns):
-   a. "Requirements"
-   b. "MVP — Phase 1 (Days 1–30)"
-   c. "Post-MVP — Phase 2"
-   d. "Planning"
+4. Create groups IN THIS ORDER — CRITICAL: pass relative_to = the group_id returned by the PREVIOUS create_group call so they appear top-to-bottom in the correct order. Without relative_to, Monday.com inserts each group at the top, reversing the order.
+   a. "Requirements" (no relative_to — first group)
+   b. "MVP — Phase 1 (Days 1–30)" (relative_to = Requirements group_id)
+   c. "Post-MVP — Phase 2" (relative_to = MVP Phase 1 group_id)
+   d. "Planning" (relative_to = Post-MVP group_id)
 5. Call initialize_board_columns(board_id) — this creates the Status column, Due Date column, AND the Completed Tasks group at the bottom. SAVE all three IDs returned — you must pass them to every create_task and complete_task call.
 6. Populate groups with specific, actionable tasks via create_task. ALWAYS pass:
    - status_col_id and date_col_id (from step 5)
@@ -435,7 +477,7 @@ REQUIRED SEQUENCE — follow this EXACTLY:
    Bad task name: "Build frontend". Good: "Build lead capture form with email validation and webhook trigger".
    Assign correct priority (P0/P1/P2) and category to every task.
 7. For every task you create in the "Planning" group: immediately call complete_task to mark it Done and move it to Completed Tasks.
-8. Call create_budget_board(client_name, workspace_id) — creates a "[ClientName] — Budget & Subscriptions" board in the same workspace. SAVE all returned IDs.
+8. Call create_budget_board(client_name, workspace_id) — creates a "[ClientName] — Budget & Subscriptions" board in the same workspace. SAVE all returned IDs. After creating it, call create_board_link to connect the build plan board and budget board bidirectionally.
 9. Call add_budget_item for EVERY tool, platform, or API the client will need to pay for ongoing after the build. Be thorough:
    - If Monday.com is used as the CRM/platform: add it to the "monday.com Subscription" group. Standard plan is ~$12/seat/month (3 seats min = $36/month, $432/year). Adjust if Pro features are needed.
    - Add hosting (e.g. Vercel Pro $20/month = $240/year, or similar based on stack)
