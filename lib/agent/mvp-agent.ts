@@ -118,6 +118,39 @@ const TOOL_DECLARATIONS = [
     },
   },
   {
+    name: "create_budget_board",
+    description: "Create a Budget & Subscriptions board in the same workspace as the build plan. Creates the board, adds Monthly Cost, Annual Cost, Category, and Notes columns, and creates groups for Platform, Integrations, and monday.com. Returns all IDs needed for add_budget_item calls.",
+    parameters: {
+      type: "OBJECT",
+      properties: {
+        client_name:  { type: "STRING", description: "Client name for the board title, e.g. 'Acme Corp'" },
+        workspace_id: { type: "STRING", description: "Same workspace ID used for the build plan board" },
+      },
+      required: ["client_name", "workspace_id"],
+    },
+  },
+  {
+    name: "add_budget_item",
+    description: "Add a tool or subscription row to the Budget board. Include any paid tool the client will need to maintain after the build — Monday.com subscription, hosting, domain, API fees, SaaS tools, etc.",
+    parameters: {
+      type: "OBJECT",
+      properties: {
+        board_id:       { type: "STRING" },
+        group_id:       { type: "STRING", description: "Group ID from create_budget_board result" },
+        tool_name:      { type: "STRING", description: "Name of the tool or service" },
+        monthly_cost:   { type: "STRING", description: "Estimated monthly cost as a number string, e.g. '29' or '0' if annual only" },
+        annual_cost:    { type: "STRING", description: "Estimated annual cost as a number string, e.g. '348'. If monthly * 12 is a fair estimate, use that." },
+        category:       { type: "STRING", description: "e.g. 'Platform', 'Integration', 'CRM', 'Payments', 'Communication', 'AI', 'Infrastructure'" },
+        notes:          { type: "STRING", description: "Pricing plan, URL, or context — e.g. 'Monday.com Standard: $12/seat/month, min 3 seats'" },
+        monthly_col_id: { type: "STRING", description: "monthly_col_id from create_budget_board" },
+        annual_col_id:  { type: "STRING", description: "annual_col_id from create_budget_board" },
+        notes_col_id:   { type: "STRING", description: "notes_col_id from create_budget_board" },
+        category_col_id:{ type: "STRING", description: "category_col_id from create_budget_board" },
+      },
+      required: ["board_id", "group_id", "tool_name", "monthly_cost", "annual_cost", "monthly_col_id", "annual_col_id", "notes_col_id", "category_col_id"],
+    },
+  },
+  {
     name: "mark_tracker_item_done",
     description: "Find an item on the Build Tracker board by partial name and mark it Done.",
     parameters: {
@@ -195,6 +228,45 @@ async function executeTool(name: string, args: Record<string, string>): Promise<
       }
       await moveItemToGroup(args.item_id, args.completed_group_id);
       return { done: true, moved_to: args.completed_group_id };
+    }
+
+    case "create_budget_board": {
+      const budgetBoardId = await createBoard(`${args.client_name} — Budget & Subscriptions`, args.workspace_id);
+      const [monthlyCid, annualCid, notesCid, categoryCid] = await Promise.all([
+        addBoardColumn(budgetBoardId, "Monthly Cost (USD)", "numbers"),
+        addBoardColumn(budgetBoardId, "Annual Cost (USD)",  "numbers"),
+        addBoardColumn(budgetBoardId, "Notes / Plan",       "text"),
+        addBoardColumn(budgetBoardId, "Category",           "color"),
+      ]);
+      const [infraGroupId, intGroupId, mondayGroupId, otherGroupId] = await Promise.all([
+        createGroup(budgetBoardId, "Platform & Infrastructure"),
+        createGroup(budgetBoardId, "Integrations & APIs"),
+        createGroup(budgetBoardId, "monday.com Subscription"),
+        createGroup(budgetBoardId, "Other Subscriptions"),
+      ]);
+      return {
+        board_id: budgetBoardId,
+        monthly_col_id:  monthlyCid,
+        annual_col_id:   annualCid,
+        notes_col_id:    notesCid,
+        category_col_id: categoryCid,
+        groups: {
+          platform:    infraGroupId,
+          integrations: intGroupId,
+          monday:      mondayGroupId,
+          other:       otherGroupId,
+        },
+      };
+    }
+
+    case "add_budget_item": {
+      const colVals: Record<string, unknown> = {};
+      if (args.monthly_col_id  && args.monthly_cost)  colVals[args.monthly_col_id]  = args.monthly_cost;
+      if (args.annual_col_id   && args.annual_cost)   colVals[args.annual_col_id]   = args.annual_cost;
+      if (args.notes_col_id    && args.notes)         colVals[args.notes_col_id]    = args.notes;
+      if (args.category_col_id && args.category)      colVals[args.category_col_id] = { label: args.category };
+      const id = await createItemInGroup(args.board_id, args.group_id, args.tool_name, colVals);
+      return { item_id: id, tool: args.tool_name, monthly: args.monthly_cost, annual: args.annual_cost };
     }
 
     case "mark_tracker_item_done": {
@@ -313,9 +385,18 @@ REQUIRED SEQUENCE — follow this EXACTLY:
    Bad task name: "Build frontend". Good: "Build lead capture form with email validation and webhook trigger".
    Assign correct priority (P0/P1/P2) and category to every task.
 7. For every task you create in the "Planning" group: immediately call complete_task to mark it Done and move it to Completed Tasks.
-8. Call mark_tracker_item_done for any matched Build Tracker items.
-9. Call post_plan_summary with a markdown summary: client goal, requirements, MVP scope, post-MVP backlog, timeline overview.
-10. Call advance_scope_stage to move the scope lock to "Planning".
+8. Call create_budget_board(client_name, workspace_id) — creates a "[ClientName] — Budget & Subscriptions" board in the same workspace. SAVE all returned IDs.
+9. Call add_budget_item for EVERY tool, platform, or API the client will need to pay for ongoing after the build. Be thorough:
+   - If Monday.com is used as the CRM/platform: add it to the "monday.com Subscription" group. Standard plan is ~$12/seat/month (3 seats min = $36/month, $432/year). Adjust if Pro features are needed.
+   - Add hosting (e.g. Vercel Pro $20/month = $240/year, or similar based on stack)
+   - Add domain registration (~$15–$20/year, $0/month)
+   - Add any payment processor (Stripe: 2.9% + $0.30/transaction — note as "per-transaction fee" in notes, $0 monthly)
+   - Add any third-party API subscriptions from the integrations list (e.g. OpenAI, Twilio, SendGrid, HubSpot, etc.)
+   - Add any SaaS tools mentioned in the scope
+   - The client is responsible for ALL of these costs — they are NOT included in The Startup's fee
+10. Call mark_tracker_item_done for any matched Build Tracker items.
+11. Call post_plan_summary with a markdown summary: client goal, requirements, MVP scope, post-MVP backlog, timeline overview, and a subscription cost summary from the budget board.
+12. Call advance_scope_stage to move the scope lock to "Planning".
 
 Cover all layers: auth, data model, API routes, UI pages, integrations, deployment, testing, documentation.`;
 

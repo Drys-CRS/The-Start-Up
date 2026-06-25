@@ -312,7 +312,7 @@ export default function SignPage() {
           <input type="checkbox" checked={agreed} onChange={e => setAgreed(e.target.checked)}
             style={{ marginTop: 3, accentColor: TEAL, width: 15, height: 15, flexShrink: 0 }} />
           <span style={{ fontSize: 13, color: "var(--c-mid)", lineHeight: 1.5 }}>
-            I have read and understood the Terms &amp; Conditions in this proposal and agree that this digital signature constitutes a legally binding acceptance of all terms.
+            I have read and understood the Terms &amp; Conditions in this proposal, including that third-party subscriptions and tool costs (hosting, Monday.com, APIs, etc.) are my responsibility and are not included in the project fee. I agree that this digital signature constitutes a legally binding acceptance of all terms.
           </span>
         </label>
 

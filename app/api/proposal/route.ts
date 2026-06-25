@@ -314,12 +314,13 @@ export async function POST(req: NextRequest) {
     ["2. 30-Day Build Guarantee", "We commit to delivering a working system within 30 calendar days of the confirmed build start. If we miss this for reasons attributable solely to us, the client receives an additional 30 days of support at no cost."],
     ["3. Payment Terms", "All tiers follow a three-stage schedule: 10% deposit on signature (secures your start date); 80% on MVP plan approval (client must review and approve before build continues); 10% final balance on delivery at end of the 30-day build. Invoices are due within 5 business days. Overdue payments may pause the build."],
     ["4. Ownership of Deliverables", "All custom configurations, automations, dashboards, and documentation become the client's property upon final payment. The Startup retains rights to its reusable internal frameworks and methodologies."],
-    ["5. Support Period", "The support period covers active system support, bug fixes, optimisation, and training. It begins on handover and does not include new feature development."],
-    ["6. Confidentiality", "Both parties agree to keep all project details, business information, and proprietary data confidential and will not disclose to third parties without prior written consent."],
-    ["7. Cancellation Policy", "Before build start: full refund minus 10% scoping and admin fee. After build start: deposit is non-refundable; remaining work invoiced at a pro-rata day rate."],
-    ["8. Limitation of Liability", "The Startup's total liability is limited to the fees paid under this agreement. We are not liable for indirect, consequential, or incidental losses."],
-    ["9. Force Majeure", "Neither party is liable for delays caused by circumstances beyond reasonable control, including natural disasters, government actions, or infrastructure failure."],
-    ["10. Governing Law", "This agreement is governed by the laws of the Republic of South Africa. Disputes are subject to the exclusive jurisdiction of the South African courts."],
+    ["5. Third-Party Subscriptions & Tools", "The client is solely responsible for the cost of all third-party tools, platforms, APIs, and software subscriptions required to operate and maintain the delivered system. This includes — but is not limited to — Monday.com workspace subscriptions, cloud hosting fees, domain registration, payment processing fees, API usage costs, and any SaaS tools integrated during the build. A Budget & Subscriptions board is provided with the project outlining estimated monthly and annual costs. These ongoing costs are entirely separate from The Startup's service fee and are not included in the project price."],
+    ["6. Support Period", "The support period covers active system support, bug fixes, optimisation, and training. It begins on handover and does not include new feature development."],
+    ["7. Confidentiality", "Both parties agree to keep all project details, business information, and proprietary data confidential and will not disclose to third parties without prior written consent."],
+    ["8. Cancellation Policy", "Before build start: full refund minus 10% scoping and admin fee. After build start: deposit is non-refundable; remaining work invoiced at a pro-rata day rate."],
+    ["9. Limitation of Liability", "The Startup's total liability is limited to the fees paid under this agreement. We are not liable for indirect, consequential, or incidental losses."],
+    ["10. Force Majeure", "Neither party is liable for delays caused by circumstances beyond reasonable control, including natural disasters, government actions, or infrastructure failure."],
+    ["11. Governing Law", "This agreement is governed by the laws of the Republic of South Africa. Disputes are subject to the exclusive jurisdiction of the South African courts."],
   ];
   tcs.forEach(([title, body]) => {
     const bodyLines = wrapText(body, (s) => fontR.widthOfTextAtSize(s, 7.5), CW);
