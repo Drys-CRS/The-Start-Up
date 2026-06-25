@@ -305,26 +305,43 @@ type GeminiPart =
 type GeminiContent = { role: string; parts: GeminiPart[] };
 
 async function callGemini(contents: GeminiContent[], systemText: string): Promise<GeminiContent> {
-  const res = await fetch(GEMINI_URL(), {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      systemInstruction: { parts: [{ text: systemText }] },
-      contents,
-      tools: [{ functionDeclarations: TOOL_DECLARATIONS }],
-      generationConfig: { temperature: 0.3 },
-    }),
+  const body = JSON.stringify({
+    systemInstruction: { parts: [{ text: systemText }] },
+    contents,
+    tools: [{ functionDeclarations: TOOL_DECLARATIONS }],
+    generationConfig: { temperature: 0.3 },
   });
 
-  if (!res.ok) {
-    const err = await res.text();
-    throw new Error(`Gemini API error ${res.status}: ${err}`);
+  const RETRYABLE = new Set([429, 500, 502, 503, 504]);
+  let delay = 8000;
+
+  for (let attempt = 0; attempt < 8; attempt++) {
+    const res = await fetch(GEMINI_URL(), {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body,
+    });
+
+    if (RETRYABLE.has(res.status)) {
+      const errText = await res.text();
+      if (attempt === 7) throw new Error(`Gemini API error ${res.status} after retries: ${errText}`);
+      await new Promise(r => setTimeout(r, delay));
+      delay = Math.min(delay * 2, 60_000);
+      continue;
+    }
+
+    if (!res.ok) {
+      const err = await res.text();
+      throw new Error(`Gemini API error ${res.status}: ${err}`);
+    }
+
+    const data = await res.json();
+    const candidate = data.candidates?.[0];
+    if (!candidate) throw new Error("No candidates in Gemini response");
+    return candidate.content as GeminiContent;
   }
 
-  const data = await res.json();
-  const candidate = data.candidates?.[0];
-  if (!candidate) throw new Error("No candidates in Gemini response");
-  return candidate.content as GeminiContent;
+  throw new Error("Gemini API unavailable after 8 attempts");
 }
 
 // ── Date helpers ──────────────────────────────────────────────────────────────
