@@ -236,7 +236,7 @@ async function executeTool(name: string, args: Record<string, string>): Promise<
         addBoardColumn(budgetBoardId, "Monthly Cost (USD)", "numbers"),
         addBoardColumn(budgetBoardId, "Annual Cost (USD)",  "numbers"),
         addBoardColumn(budgetBoardId, "Notes / Plan",       "text"),
-        addBoardColumn(budgetBoardId, "Category",           "status"),
+        addBoardColumn(budgetBoardId, "Category",           "text"),
       ]);
       const [infraGroupId, intGroupId, mondayGroupId, otherGroupId] = await Promise.all([
         createGroup(budgetBoardId, "Platform & Infrastructure"),
@@ -264,7 +264,7 @@ async function executeTool(name: string, args: Record<string, string>): Promise<
       if (args.monthly_col_id  && args.monthly_cost)  colVals[args.monthly_col_id]  = args.monthly_cost;
       if (args.annual_col_id   && args.annual_cost)   colVals[args.annual_col_id]   = args.annual_cost;
       if (args.notes_col_id    && args.notes)         colVals[args.notes_col_id]    = args.notes;
-      if (args.category_col_id && args.category)      colVals[args.category_col_id] = { label: args.category };
+      if (args.category_col_id && args.category)      colVals[args.category_col_id] = args.category;
       const id = await createItemInGroup(args.board_id, args.group_id, args.tool_name, colVals);
       return { item_id: id, tool: args.tool_name, monthly: args.monthly_cost, annual: args.annual_cost };
     }
