@@ -1,0 +1,155 @@
+/**
+ * Monday.com tool implementations for the MVP planning agent.
+ * Each function maps to a Claude tool call.
+ */
+
+const MONDAY_API = "https://api.monday.com/v2";
+
+function headers() {
+  return {
+    Authorization: process.env.MONDAY_API_TOKEN || "",
+    "Content-Type": "application/json",
+    "API-Version": "2024-10",
+  };
+}
+
+async function gql(query: string, variables?: Record<string, unknown>) {
+  const res = await fetch(MONDAY_API, {
+    method: "POST",
+    headers: headers(),
+    body: JSON.stringify({ query, variables }),
+  });
+  const json = await res.json();
+  if (json.errors) throw new Error(JSON.stringify(json.errors));
+  return json.data;
+}
+
+// ── Scope Lock ──────────────────────────────────────────────────────────────
+
+export async function readScopeLock(itemId: string) {
+  const data = await gql(`query {
+    items(ids: [${itemId}]) {
+      name
+      column_values { id text }
+    }
+  }`);
+  const item = data.items[0];
+  if (!item) throw new Error(`Scope lock item ${itemId} not found`);
+  const cols: Record<string, string> = {};
+  for (const cv of item.column_values) {
+    if (cv.text) cols[cv.id] = cv.text;
+  }
+  return { name: item.name, columns: cols };
+}
+
+// ── Boards ──────────────────────────────────────────────────────────────────
+
+export async function listWorkspaceBoards(): Promise<{ id: string; name: string }[]> {
+  const data = await gql(`query { boards(limit: 50, order_by: created_at) { id name } }`);
+  return data.boards;
+}
+
+export async function createBoard(name: string, workspaceId?: string): Promise<string> {
+  const wsClause = workspaceId ? `, workspace_id: ${workspaceId}` : "";
+  const data = await gql(
+    `mutation { create_board(board_name: ${JSON.stringify(name)}, board_kind: public${wsClause}) { id } }`,
+  );
+  return data.create_board.id;
+}
+
+// ── Groups ──────────────────────────────────────────────────────────────────
+
+export async function createGroup(boardId: string, groupName: string): Promise<string> {
+  const data = await gql(
+    `mutation { create_group(board_id: ${boardId}, group_name: ${JSON.stringify(groupName)}) { id } }`,
+  );
+  return data.create_group.id;
+}
+
+// ── Items ───────────────────────────────────────────────────────────────────
+
+export async function createItemInGroup(
+  boardId: string,
+  groupId: string,
+  name: string,
+  columnValues: Record<string, unknown> = {},
+): Promise<string> {
+  const data = await gql(
+    `mutation ($boardId: ID!, $groupId: String!, $itemName: String!, $columnValues: JSON!) {
+      create_item(board_id: $boardId, group_id: $groupId, item_name: $itemName, column_values: $columnValues) { id }
+    }`,
+    { boardId, groupId, itemName: name, columnValues: JSON.stringify(columnValues) },
+  );
+  return data.create_item.id;
+}
+
+export async function setItemStatus(
+  boardId: string,
+  itemId: string,
+  columnId: string,
+  label: string,
+): Promise<void> {
+  await gql(
+    `mutation ($boardId: ID!, $itemId: ID!, $columnId: String!, $value: JSON!) {
+      change_column_value(board_id: $boardId, item_id: $itemId, column_id: $columnId, value: $value) { id }
+    }`,
+    { boardId, itemId, columnId, value: JSON.stringify({ label }) },
+  );
+}
+
+export async function setSimpleValue(
+  boardId: string,
+  itemId: string,
+  columnId: string,
+  value: string,
+): Promise<void> {
+  await gql(
+    `mutation ($boardId: ID!, $itemId: ID!, $columnId: String!, $value: String!) {
+      change_simple_column_value(board_id: $boardId, item_id: $itemId,
+        column_id: $columnId, value: $value, create_labels_if_missing: true) { id }
+    }`,
+    { boardId, itemId, columnId, value },
+  );
+}
+
+export async function findItemsByName(
+  boardId: string,
+  searchTerm: string,
+): Promise<{ id: string; name: string; groupId: string }[]> {
+  const data = await gql(
+    `query { boards(ids: [${boardId}]) {
+      items_page(limit: 100) { items { id name group { id } } }
+    }}`,
+  );
+  const items = data.boards[0]?.items_page?.items ?? [];
+  return items
+    .filter((i: { name: string }) => i.name.toLowerCase().includes(searchTerm.toLowerCase()))
+    .map((i: { id: string; name: string; group: { id: string } }) => ({
+      id: i.id, name: i.name, groupId: i.group.id,
+    }));
+}
+
+// ── Updates / Comments ──────────────────────────────────────────────────────
+
+export async function postUpdate(itemId: string, body: string): Promise<string> {
+  const data = await gql(
+    `mutation { create_update(item_id: ${itemId}, body: ${JSON.stringify(body)}) { id } }`,
+  );
+  return data.create_update.id;
+}
+
+// ── Scope Lock helpers ──────────────────────────────────────────────────────
+
+export async function advanceScopeStage(
+  scopeBoardId: string,
+  itemId: string,
+  stageLabel: string,
+): Promise<void> {
+  await gql(
+    `mutation ($boardId: ID!, $itemId: ID!, $columnId: String!, $value: String!) {
+      change_simple_column_value(board_id: $boardId, item_id: $itemId,
+        column_id: $columnId, value: $value, create_labels_if_missing: true) { id }
+    }`,
+    { boardId: scopeBoardId, itemId, columnId: "color_mm4m4qbe", value: stageLabel },
+  );
+}
