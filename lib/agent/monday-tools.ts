@@ -190,6 +190,42 @@ export async function findItemsByName(
     }));
 }
 
+// ── Automations ─────────────────────────────────────────────────────────────
+
+/**
+ * Creates a "When status changes to Done → move item to group" automation.
+ * Errors are caught and returned as { skipped } so a failure never aborts the agent.
+ */
+export async function createStatusMoveAutomation(
+  boardId: string,
+  statusColumnId: string,
+  targetGroupId: string,
+): Promise<{ automation_id: string } | { skipped: boolean; reason: string }> {
+  try {
+    const triggerConfig = JSON.stringify(JSON.stringify({ columnId: statusColumnId, columnValue: "Done" }));
+    const actionConfig  = JSON.stringify(JSON.stringify({ groupId: targetGroupId }));
+    const data = await gql(`
+      mutation {
+        create_or_update_custom_automation_rule(input: {
+          board_id: ${boardId},
+          is_active: true,
+          trigger: {
+            type: STATUS_CHANGED_TO_VALUE,
+            config: ${triggerConfig}
+          },
+          actions: [{
+            type: MOVE_ITEM_TO_GROUP,
+            config: ${actionConfig}
+          }]
+        }) { id }
+      }
+    `);
+    return { automation_id: data.create_or_update_custom_automation_rule?.id ?? "created" };
+  } catch (err) {
+    return { skipped: true, reason: String(err) };
+  }
+}
+
 // ── Updates / Comments ──────────────────────────────────────────────────────
 
 export async function postUpdate(itemId: string, body: string): Promise<string> {

@@ -20,6 +20,7 @@ import {
   postUpdate,
   advanceScopeStage,
   addDashboardWidget,
+  createStatusMoveAutomation,
 } from "./monday-tools";
 
 const GEMINI_URL = () =>
@@ -239,6 +240,19 @@ No vague placeholders. End with: "Start by scaffolding the project and environme
     },
   },
   {
+    name: "setup_board_automations",
+    description: "Wire up standard Monday.com automations on a board. Always call this immediately after initialize_board_columns on EVERY board the agent creates (build plan board and budget board). Sets up: (1) When Status → Done, automatically move item to the Completed Tasks group. This means any team member who manually marks a task Done on the board will have it move automatically — not just items the agent completes.",
+    parameters: {
+      type: "OBJECT",
+      properties: {
+        board_id:           { type: "STRING" },
+        status_col_id:      { type: "STRING", description: "Status column ID from initialize_board_columns" },
+        completed_group_id: { type: "STRING", description: "Completed Tasks group ID from initialize_board_columns" },
+      },
+      required: ["board_id", "status_col_id", "completed_group_id"],
+    },
+  },
+  {
     name: "mark_tracker_item_done",
     description: "Find an item on the Build Tracker board by partial name and mark it Done.",
     parameters: {
@@ -399,6 +413,15 @@ async function executeTool(name: string, args: Record<string, string>): Promise<
       return { tools_monthly_usd: toolsUsd, support_monthly_usd: supportUsd, total_monthly_usd: totalUsd };
     }
 
+    case "setup_board_automations": {
+      const result = await createStatusMoveAutomation(
+        args.board_id,
+        args.status_col_id,
+        args.completed_group_id,
+      );
+      return result;
+    }
+
     case "mark_tracker_item_done": {
       const matches = await findItemsByName(BUILD_TRACKER_BOARD_ID, args.item_name_contains);
       for (const m of matches) {
@@ -530,6 +553,7 @@ REQUIRED SEQUENCE — follow this EXACTLY:
    c. "Post-MVP — Phase 2" (relative_to = MVP Phase 1 group_id)
    d. "Planning" (relative_to = Post-MVP group_id)
 5. Call initialize_board_columns(board_id) — this creates the Status column, Due Date column, AND the Completed Tasks group at the bottom. SAVE all three IDs returned — you must pass them to every create_task and complete_task call.
+5a. Immediately call setup_board_automations(board_id, status_col_id, completed_group_id) — this wires up the "Status → Done → move to Completed Tasks" automation so any team member who manually marks a task Done on the board will have it move automatically. Do NOT skip this step.
 6. Populate groups with specific, actionable tasks via create_task. ALWAYS pass:
    - status_col_id, date_col_id, AND notes_col_id (all from step 5)
    - due_date in YYYY-MM-DD format based on the phase rules above
