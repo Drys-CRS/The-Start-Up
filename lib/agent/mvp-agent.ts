@@ -210,20 +210,76 @@ const TOOL_DECLARATIONS = [
 1. Project name and one-paragraph description
 2. Tech stack (framework, language, DB, hosting, auth)
 3. Exact directory/file structure to scaffold
-4. Environment variables required (name + purpose)
+4. Environment variables required (name + purpose) — include AI API keys
 5. Data models / schema (tables, fields, types)
 6. API routes (method, path, what it does)
 7. UI pages/components (route, purpose, key interactions)
 8. Third-party integrations (how to connect each)
-9. Ordered build steps — what to build first through last
-10. Definition of done for the MVP
+9. AI agents architecture — for each agent from the AI strategy:
+   - File path where it lives (e.g. lib/agents/lead-enrichment.ts)
+   - Trigger: what event fires it (webhook, cron, Monday.com automation, user action)
+   - Step-by-step logic with real function names and API calls
+   - Which AI model is called, with the exact system prompt template and expected output schema
+   - How results are written back to Monday.com or the database (exact column IDs / API calls)
+   - Error handling and retry strategy
+   - Rate limiting and cost controls (max tokens, daily spend cap)
+10. AI workflow logic — for each intelligent workflow, the exact conditional decision tree as pseudo-code
+11. Ordered build steps — what to build first through last (core system before AI layer)
+12. Definition of done for the MVP (core system) and AI layer separately
 
 Write it in second-person imperative ("Build...", "Create...", "Set up...").
-Be specific — include real field names, column types, endpoint paths.
-No vague placeholders. End with: "Start by scaffolding the project and environment, then follow the build steps in order."`,
+Be specific — include real field names, column types, endpoint paths, model IDs (claude-sonnet-4-6 for Claude), and example prompt templates.
+No vague placeholders. End with: "Start by scaffolding the project and environment, build the core system first, then layer in the AI agents and workflows in order."`,
         },
       },
       required: ["scope_lock_item_id", "prompt"],
+    },
+  },
+  {
+    name: "post_ai_strategy",
+    description: "Generate and post an AI growth strategy document as an update on the scope lock item. Call this BEFORE post_plan_summary (step 12 in the sequence). Analyse the client's business, goals, and bottleneck from the scope lock to produce a specific, actionable AI roadmap — not generic advice.",
+    parameters: {
+      type: "OBJECT",
+      properties: {
+        scope_lock_item_id: { type: "STRING" },
+        strategy: {
+          type: "STRING",
+          description: `A detailed AI growth strategy tailored to THIS specific client. Structure it as:
+## 🤖 AI Opportunity Summary
+2–3 sentences on where AI creates the most value for this specific business and bottleneck.
+
+## ⚡ MVP AI Features (Days 1–30)
+AI features to include in the 30-day build — keep these practical and high-ROI. Examples: lead scoring formula column, auto-email draft trigger, smart routing rule. Be specific: name the field, the trigger, the output.
+
+## 🤖 AI Agents to Build
+For each agent: (1) Name and one-sentence purpose, (2) Trigger — what fires it, (3) Steps — what it does, (4) AI call — which model and what prompt/task, (5) Output — what it writes back to the system. Example: "Lead Enrichment Agent: Trigger = new Monday.com lead item created. Steps = call Clearbit Reveal API with lead email → extract company size, industry, tech stack → update Monday.com item fields. No AI model call needed — pure enrichment API. Output: populated Company Size, Industry, Stack columns on the item."
+
+## 🔀 Intelligent Workflows
+Decision tree workflows with AI at the decision points. Show the logic in plain text: "IF [condition] THEN [AI action] ELSE [other action]". Make them specific to this client's sales/ops process.
+
+## 📊 Predictive Intelligence
+1–2 specific forecasting or insight features: what data they analyse, what they predict, how the result is surfaced (Monday.com column, dashboard widget, weekly email digest, etc.).
+
+## 🛠 AI Stack Recommendation
+Specific models and APIs for this build:
+- Text generation / drafting / reasoning: Claude claude-sonnet-4-6 (Anthropic)
+- Any other models if needed and why
+- Third-party enrichment/data APIs if relevant
+- Cost estimate per month at expected usage volume
+
+## 🗂 Monday.com AI Configuration
+Specific monday.com AI features to enable: which boards, which columns, which AI functions (summarize, auto-fill, formula AI logic).
+
+## 📅 Phase 2 AI Backlog
+3–5 higher-complexity AI features for after the MVP — ordered by business impact.
+
+## 📈 Expected Business Impact
+Quantified projections where possible. Examples: "Lead response time: 2hr → 5min with follow-up agent", "Qualified pipeline visibility: +40% with scoring", "Manual data entry: eliminated for 80% of new leads with enrichment agent". Tie each impact to a specific feature.
+
+Write for a business owner — clear outcomes, no jargon.`,
+        },
+      },
+      required: ["scope_lock_item_id", "strategy"],
     },
   },
   {
@@ -431,6 +487,10 @@ async function executeTool(name: string, args: Record<string, string>): Promise<
       return { matched: matches.length };
     }
 
+    case "post_ai_strategy":
+      await postUpdate(args.scope_lock_item_id, args.strategy);
+      return { posted: true };
+
     case "post_claude_code_prompt":
       await postUpdate(args.scope_lock_item_id, `## 🤖 Claude Code Prompt — Copy & Paste to Start Building\n\n${args.prompt}`);
       return { posted: true };
@@ -522,12 +582,14 @@ export async function runMvpAgent(scopeLockItemId: string): Promise<AgentResult>
   if (!process.env.GOOGLE_AI_API_KEY) throw new Error("GOOGLE_AI_API_KEY is not set");
 
   const today = new Date();
-  const startDate      = addDays(today, 0);   // today
-  const reqDeadline    = addDays(today, 3);   // requirements locked by day 3
-  const mvpMidpoint    = addDays(today, 15);  // mid-sprint checkpoint
-  const mvpDeadline    = addDays(today, 30);  // end of sprint
-  const postMvpMid     = addDays(today, 45);  // post-MVP midpoint
-  const postMvpDeadline = addDays(today, 60); // post-MVP deadline
+  const startDate       = addDays(today, 0);   // today
+  const reqDeadline     = addDays(today, 3);   // requirements locked by day 3
+  const mvpMidpoint     = addDays(today, 15);  // mid-sprint checkpoint
+  const mvpDeadline     = addDays(today, 30);  // end of sprint
+  const postMvpMid      = addDays(today, 45);  // post-MVP midpoint
+  const postMvpDeadline = addDays(today, 60);  // post-MVP deadline
+  const aiLayerStart    = addDays(today, 61);  // AI layer start
+  const aiLayerDeadline = addDays(today, 90);  // AI layer deadline
 
   const SYSTEM = `You are The Startup's project planning agent. You build structured MVP plans for client builds in Monday.com.
 
@@ -542,6 +604,7 @@ PHASE DUE DATE RULES (always assign a due date to every task):
   - Integration and final tasks: ${addDays(today, 21)} – ${addDays(today, 28)}
   - Testing and deployment: ${addDays(today, 29)} – ${mvpDeadline}
 - Post-MVP Phase 2 tasks: spread due dates between ${addDays(today, 31)} and ${postMvpDeadline}
+- AI & Growth Agents tasks: spread due dates between ${aiLayerStart} and ${aiLayerDeadline}
 
 REQUIRED SEQUENCE — follow this EXACTLY:
 1. Call read_scope_lock to get the full scope data
@@ -551,7 +614,8 @@ REQUIRED SEQUENCE — follow this EXACTLY:
    a. "Requirements" (no relative_to — first group)
    b. "MVP — Phase 1 (Days 1–30)" (relative_to = Requirements group_id)
    c. "Post-MVP — Phase 2" (relative_to = MVP Phase 1 group_id)
-   d. "Planning" (relative_to = Post-MVP group_id)
+   d. "AI & Growth Agents" (relative_to = Post-MVP Phase 2 group_id)
+   e. "Planning" (relative_to = AI & Growth Agents group_id)
 5. Call initialize_board_columns(board_id) — this creates the Status column, Due Date column, AND the Completed Tasks group at the bottom. SAVE all three IDs returned — you must pass them to every create_task and complete_task call.
 5a. Immediately call setup_board_automations(board_id, status_col_id, completed_group_id) — this wires up the "Status → Done → move to Completed Tasks" automation so any team member who manually marks a task Done on the board will have it move automatically. Do NOT skip this step.
 6. Populate groups with specific, actionable tasks via create_task. ALWAYS pass:
@@ -559,7 +623,17 @@ REQUIRED SEQUENCE — follow this EXACTLY:
    - due_date in YYYY-MM-DD format based on the phase rules above
    - notes: a meaningful build note for EVERY task — capture what needs to be built, acceptance criteria, key technical decisions, dependencies, and anything useful for handover documentation. Bad note: "Build the UI". Good note: "Build lead capture form at /leads/new — fields: name, email, company, message. On submit POST to /api/leads, create Monday.com item in Sales Pipeline board, send confirmation email via SendGrid. Validation: all fields required, email format check."
    Bad task name: "Build frontend". Good: "Build lead capture form with email validation and webhook trigger".
-   Assign correct priority (P0/P1/P2) and category to every task.
+   Assign correct priority (P0/P1/P2) and category (Frontend, Backend, Integration, Infrastructure, Design, Testing, Discovery, or AI / Agent) to every task.
+
+   For the "AI & Growth Agents" group, create 8–12 tasks specific to THIS client's business and bottleneck. Cover:
+   - AI AGENTS: Autonomous agents that handle repetitive work — tailor to what the client actually does. CRM examples: "Lead Enrichment Agent — on new lead creation, call Clearbit/Hunter API to auto-fill industry, company size, and tech stack; update Monday.com item"; "Follow-Up Drafting Agent — when a deal changes stage, call Claude API to generate a personalised next-step email draft and post it as a Monday.com update"; "Lead Scoring Agent — on new submission, compute a 0–100 score using weighted criteria (job title, company size, intent signals) and auto-route P0 leads to the senior rep". Invent equivalents for non-CRM scopes (booking system: availability agent; service business: proposal agent; e-commerce: cart recovery agent).
+   - INTELLIGENT WORKFLOWS: Conditional automation chains with AI decision points — e.g. "If lead score > 70 → assign senior rep + draft intro email; if score < 30 → enrol in nurture sequence; if no reply in 3 days → AI generates follow-up nudge and triggers reminder".
+   - PREDICTIVE INTELLIGENCE: Forecasting and insight tasks — deal velocity tracking, churn risk scoring, conversion probability, demand forecasting, or anomaly alerts. Pick the 1–2 most relevant for this business.
+   - MONDAY.COM AI: Tasks to enable and configure Monday.com's native AI — "Enable AI Summarize on all board updates so team gets instant digests"; "Set up AI formula columns for auto-tagging and sentiment detection"; "Configure AI-generated status suggestions based on update content".
+   - GROWTH FEATURES: 2–3 AI capabilities that directly accelerate this client's revenue or efficiency goal — derive these specifically from their bottleneck and stated goal in the scope lock. Examples: automated proposal generation, competitive intelligence monitoring, smart scheduling, personalised onboarding flows.
+   - AI STACK INTEGRATION: "Set up Claude API (claude-sonnet-4-6) for all text generation, reasoning, and drafting tasks"; "Configure AI rate limiting, error handling, and cost controls"; "Add AI usage tracking to budget board".
+   Assign category "AI / Agent" and priority P1 (core AI the business needs to function well) or P2 (advanced enhancements) to each task.
+
 7. For every task you create in the "Planning" group: immediately call complete_task with a completion_note explaining what was planned/decided, then move it to Completed Tasks. For any other task you can confirm is done during the agent run, call complete_task the same way.
    Use add_task_note any time you need to append additional context to a task after it was created.
 8. Call create_budget_board(client_name, workspace_id) — creates a "[ClientName] — Budget & Subscriptions" board in the same workspace. SAVE all returned IDs. After creating it, call create_board_link to connect the build plan board and budget board bidirectionally.
@@ -573,9 +647,10 @@ REQUIRED SEQUENCE — follow this EXACTLY:
    - The client is responsible for ALL of these costs — they are NOT included in The Startup's fee
 10. Call post_monthly_estimate — sum ALL monthly costs from the budget items you added and post to the scope lock. This generates the sign-link snippet the admin needs so the client sees their monthly commitment before paying the deposit.
 11. Call mark_tracker_item_done for any matched Build Tracker items.
-12. Call post_plan_summary with a markdown summary: client goal, requirements, MVP scope, post-MVP backlog, timeline overview, and a subscription cost summary from the budget board.
-13. Call post_claude_code_prompt — generate a complete, developer-ready Claude Code prompt the client can copy and paste to start building. It must include: project description, exact tech stack, directory structure, environment variables, data models, API routes, UI pages, integrations, ordered build steps, and MVP definition of done. Write it so a developer can paste it into Claude Code with zero extra context and start immediately.
-14. Call advance_scope_stage to move the scope lock to "Planning".
+12. Call post_ai_strategy — analyse the scope lock and generate a specific AI growth strategy for THIS business. Cover: which AI agents to build and exactly what they do, intelligent workflow designs with decision trees, predictive intelligence opportunities, recommended AI stack (specific models and APIs), Monday.com AI configuration, phase 2 AI backlog, and quantified expected business impact. Be specific to this client's goals and bottleneck — no generic advice.
+13. Call post_plan_summary with a markdown summary: client goal, requirements, MVP scope, post-MVP backlog, AI & growth agent roadmap, timeline overview, and a subscription cost summary from the budget board.
+14. Call post_claude_code_prompt — generate a complete, developer-ready Claude Code prompt the client can copy and paste to start building. It must include: project description, exact tech stack, directory structure, environment variables, data models, API routes, UI pages, integrations, ordered build steps, MVP definition of done, AND (11) AI agent architecture — for each AI agent identified in the AI strategy, describe what triggers it, what it does step by step, which AI model/API it calls (with example request/response), how it writes back to Monday.com or the app, and error handling; (12) AI workflow decision trees in plain text showing the conditional logic; (13) AI cost controls (rate limiting, token budgets, fallback behaviour). Write it so a developer can paste it into Claude Code with zero extra context and start immediately.
+15. Call advance_scope_stage to move the scope lock to "Planning".
 
 Cover all layers: auth, data model, API routes, UI pages, integrations, deployment, testing, documentation.`;
 
