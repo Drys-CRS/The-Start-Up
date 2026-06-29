@@ -1,7 +1,7 @@
 "use client";
 import React, { useState } from "react";
 import {
-  ArrowRight, Check, X, ShieldCheck, FileText, ChevronDown,
+  ArrowRight, Check, X, ShieldCheck, FileText, ChevronDown, Monitor,
 } from "lucide-react";
 import WordMark from "./WordMark";
 import { FAQS } from "@/lib/faqs";
@@ -82,14 +82,22 @@ export default function OfferPage() {
               Start your Scope Lock <ArrowRight className="h-4 w-4" />
             </a>
           </div>
-          <div className="mt-3 flex items-center gap-4">
-            <p className="flex items-center gap-1.5 text-xs text-slate-400">
-              <ShieldCheck className="h-3.5 w-3.5" /> No call required to start.
-            </p>
-            <a href="/crm-demo" className="text-xs font-medium text-slate-400 hover:text-slate-600">
-              See an example &rarr;
-            </a>
-          </div>
+
+          {/* Demo CTA — drives curiosity before commitment */}
+          <a href="/crm-demo" className="mt-4 group flex items-center gap-3 rounded-xl border border-slate-200 bg-white px-4 py-3 hover:border-teal-300 hover:bg-teal-50 transition-colors max-w-sm">
+            <div className="flex h-8 w-8 flex-none items-center justify-center rounded-lg bg-slate-100 group-hover:bg-teal-100 transition-colors">
+              <Monitor className="h-4 w-4 text-slate-500 group-hover:text-teal-600" />
+            </div>
+            <div className="min-w-0">
+              <div className="text-sm font-semibold text-slate-900 group-hover:text-teal-700">See a live system example</div>
+              <div className="text-xs text-slate-400 group-hover:text-teal-600">Pick your industry — see exactly what we'd build for you</div>
+            </div>
+            <ArrowRight className="h-4 w-4 flex-none text-slate-300 group-hover:text-teal-500 ml-auto" />
+          </a>
+
+          <p className="mt-3 flex items-center gap-1.5 text-xs text-slate-400">
+            <ShieldCheck className="h-3.5 w-3.5" /> No call required to start.
+          </p>
         </div>
 
         {/* Process Flow */}
