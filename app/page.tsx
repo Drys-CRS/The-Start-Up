@@ -5,14 +5,32 @@ import { FAQS } from "@/lib/faqs";
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://thestartup.app";
 
 export const metadata: Metadata = {
-  title: "Custom CRM & Apps, Shipped in 30 Days — The Start Up",
+  title: "Business Systems & AI for Any Sector — Built in 30 Days",
   description:
-    "We turn your worst pipeline bottleneck into a working CRM system in 30 days, then support your team for 60–120 days. Fixed price. Free automated audit. No call required.",
+    "We help businesses of every kind grow — through custom CRM systems, intelligent workflows, and AI built in 30 days. Fixed price. Free automated audit. No call required.",
+  keywords: [
+    "custom CRM system",
+    "business systems AI",
+    "workflow automation",
+    "Monday.com CRM setup",
+    "30-day app build",
+    "business growth AI",
+    "pipeline management",
+    "custom software South Africa",
+    "business process automation",
+    "AI agents for business",
+  ],
   openGraph: {
-    title: "Custom CRM & Apps, Shipped in 30 Days",
+    title: "Business Systems & AI for Any Sector — Built in 30 Days",
     description:
-      "We turn your worst pipeline bottleneck into a working CRM system in 30 days. Fixed price. Free automated audit. No call required to start.",
+      "Custom systems, workflows, and AI for any business — built in 30 days, fixed price. Free audit reveals exactly what to build.",
     url: "/",
+    images: [{ url: "/og-image.png", width: 851, height: 315, alt: "The Start Up" }],
+  },
+  twitter: {
+    title: "Business Systems & AI for Any Sector — Built in 30 Days",
+    description:
+      "Custom systems, workflows, and AI for any business — built in 30 days, fixed price. Free automated audit.",
   },
   alternates: {
     canonical: siteUrl,
@@ -23,26 +41,47 @@ const jsonLd = {
   "@context": "https://schema.org",
   "@graph": [
     {
+      "@type": "WebSite",
+      "@id": `${siteUrl}/#website`,
+      url: siteUrl,
+      name: "The Start Up",
+      publisher: { "@id": `${siteUrl}/#organization` },
+    },
+    {
       "@type": "Organization",
       "@id": `${siteUrl}/#organization`,
       name: "The Start Up",
       url: siteUrl,
+      logo: {
+        "@type": "ImageObject",
+        url: `${siteUrl}/logo-light.png`,
+        width: 500,
+        height: 500,
+      },
       description:
-        "Custom CRM systems and apps, shipped in 30 days with 60–120 days of included support. Fixed price, fixed scope, no call required.",
+        "We help businesses of every kind grow through custom systems, intelligent workflows, and AI — built in 30 days with a fixed price and 60–120 days of included support.",
+      contactPoint: {
+        "@type": "ContactPoint",
+        contactType: "sales",
+        availableLanguage: ["English"],
+      },
     },
     {
       "@type": "Service",
       "@id": `${siteUrl}/#service`,
-      name: "30-Day CRM & Custom App Build",
+      name: "30-Day Business System Build",
       provider: { "@id": `${siteUrl}/#organization` },
+      serviceType: "Custom Software Development",
+      areaServed: ["ZA", "US", "GB"],
       description:
-        "A fully built CRM or custom app delivered in 30 days with a fixed price and fixed scope. Includes team training, handover documentation, and 60–120 days of post-delivery support.",
+        "A fully built CRM, custom app, or AI-backed workflow system delivered in 30 days with a fixed price and fixed scope. Includes team training, handover documentation, and 60–120 days of post-delivery support.",
       offers: [
         {
           "@type": "Offer",
           name: "Promotional",
           price: "3000",
           priceCurrency: "USD",
+          availability: "https://schema.org/LimitedAvailability",
           description:
             "30-day build with 60 days of included support. Ideal for a single focused workflow.",
         },
@@ -51,6 +90,7 @@ const jsonLd = {
           name: "Premium",
           price: "5000",
           priceCurrency: "USD",
+          availability: "https://schema.org/InStock",
           description:
             "30-day build with 120 days of included support. For complex or multi-system builds.",
         },

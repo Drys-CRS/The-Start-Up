@@ -9,20 +9,24 @@ const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://thestartup.app";
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
   title: {
-    default: "The Start Up — Custom CRM & Apps, Shipped in 30 Days",
+    default: "The Start Up — Business Systems & AI, Shipped in 30 Days",
     template: "%s | The Start Up",
   },
   description:
-    "We turn your worst pipeline bottleneck into a working CRM system in 30 days — then support your team for 60–120 days. Fixed price. Free automated audit. No call required to start.",
+    "We help businesses of every kind grow — through custom systems, intelligent workflows, and AI built in 30 days. Fixed price. Free automated audit. No call required to start.",
   keywords: [
-    "CRM development",
+    "custom CRM development",
     "Monday.com implementation",
+    "business systems development",
+    "workflow automation",
+    "AI business tools",
     "custom app development",
     "30-day build",
-    "lead management system",
-    "business automation",
-    "pipeline bottleneck",
+    "business process automation",
+    "pipeline management system",
     "CRM setup South Africa",
+    "business growth systems",
+    "AI workflow automation",
   ],
   icons: {
     icon: "/logo-icon.png",
@@ -36,23 +40,23 @@ export const metadata: Metadata = {
     locale: "en_US",
     url: siteUrl,
     siteName: "The Start Up",
-    title: "The Start Up — Custom CRM & Apps, Shipped in 30 Days",
+    title: "The Start Up — Business Systems & AI, Shipped in 30 Days",
     description:
-      "We turn your worst pipeline bottleneck into a working CRM system in 30 days — then support your team for 60–120 days. Fixed price. No call required to start.",
+      "We help businesses of every kind grow through custom systems, intelligent workflows, and AI — built in 30 days, fixed price. No call required to start.",
     images: [
       {
         url: "/og-image.png",
-        width: 1200,
-        height: 630,
-        alt: "The Start Up — Custom CRM & Apps, Shipped in 30 Days",
+        width: 851,
+        height: 315,
+        alt: "The Start Up — Business Systems & AI, Shipped in 30 Days",
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "The Start Up — Custom CRM & Apps, Shipped in 30 Days",
+    title: "The Start Up — Business Systems & AI, Shipped in 30 Days",
     description:
-      "We turn your worst pipeline bottleneck into a working CRM system in 30 days. Fixed price. No call required to start.",
+      "Custom systems, workflows, and AI for any business — built in 30 days, fixed price. Free automated audit. No call required.",
     images: ["/og-image.png"],
   },
   robots: {

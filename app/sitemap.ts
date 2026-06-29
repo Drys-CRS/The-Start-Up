@@ -2,31 +2,33 @@ import { MetadataRoute } from "next";
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://thestartup.app";
 
+// Stable dates — only update when content materially changes (avoids
+// triggering unnecessary recrawl on every deployment).
 export default function sitemap(): MetadataRoute.Sitemap {
   return [
     {
       url: siteUrl,
-      lastModified: new Date(),
+      lastModified: "2026-06-29",
       changeFrequency: "weekly",
       priority: 1,
     },
     {
       url: `${siteUrl}/calculator`,
-      lastModified: new Date(),
-      changeFrequency: "weekly",
-      priority: 0.8,
+      lastModified: "2026-06-29",
+      changeFrequency: "monthly",
+      priority: 0.9,
     },
     {
       url: `${siteUrl}/crm-demo`,
-      lastModified: new Date(),
+      lastModified: "2026-06-29",
       changeFrequency: "monthly",
-      priority: 0.7,
+      priority: 0.8,
     },
     {
       url: `${siteUrl}/scope-lock`,
-      lastModified: new Date(),
+      lastModified: "2026-06-29",
       changeFrequency: "monthly",
-      priority: 0.6,
+      priority: 0.7,
     },
   ];
 }
