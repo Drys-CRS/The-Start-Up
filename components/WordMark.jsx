@@ -1,9 +1,24 @@
 export default function WordMark({ dark = false, className = "" }) {
-  const color = dark ? "text-slate-900" : "text-white";
+  if (dark) {
+    // Light-background context — use logo with white bg, blend with multiply so white becomes transparent
+    return (
+      <img
+        src="/logo-light.png"
+        alt="The Startup"
+        height={36}
+        style={{ height: 36, width: "auto", display: "block", mixBlendMode: "multiply" }}
+        className={className}
+      />
+    );
+  }
+  // Dark-background context — use logo with black bg, blend with screen so black becomes transparent
   return (
-    <div className={`inline-flex flex-col leading-none select-none ${color} ${className}`}>
-      <span className="text-[8px] font-bold tracking-[0.45em] uppercase opacity-70 ml-px">THE</span>
-      <span className="text-[1.35rem] font-black tracking-tighter uppercase -mt-px">STARTUP</span>
-    </div>
+    <img
+      src="/logo-dark.png"
+      alt="The Startup"
+      height={36}
+      style={{ height: 36, width: "auto", display: "block", mixBlendMode: "screen" }}
+      className={className}
+    />
   );
 }

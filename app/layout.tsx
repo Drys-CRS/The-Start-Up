@@ -24,6 +24,10 @@ export const metadata: Metadata = {
     "pipeline bottleneck",
     "CRM setup South Africa",
   ],
+  icons: {
+    icon: "/logo-icon.png",
+    apple: "/logo-icon.png",
+  },
   authors: [{ name: "The Start Up" }],
   creator: "The Start Up",
   publisher: "The Start Up",

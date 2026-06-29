@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
-import { CheckCircle, AlertCircle, Loader2, PenLine, RotateCcw, CreditCard, ShieldCheck, RefreshCw } from "lucide-react";
+import { CheckCircle, AlertCircle, Loader2, CreditCard, ShieldCheck, RefreshCw } from "lucide-react";
 
 type Stage = "form" | "signing" | "signed" | "paying" | "error";
 
@@ -43,7 +43,6 @@ export default function SignPage() {
 
   const [name,   setName]   = useState("");
   const [agreed, setAgreed] = useState(false);
-  const [drawn,  setDrawn]  = useState(false);
 
   const [stage,  setStage]  = useState<Stage>("form");
   const [errMsg, setErrMsg] = useState("");
@@ -65,49 +64,17 @@ export default function SignPage() {
     const canvas = canvasRef.current;
     if (!canvas) return;
     const ctx = canvas.getContext("2d")!;
-    ctx.strokeStyle = "var(--c-dark)";
-    ctx.lineWidth   = 2.5;
-    ctx.lineCap     = "round";
-    ctx.lineJoin    = "round";
-    let drawing = false;
-
-    function pos(e: MouseEvent | TouchEvent) {
-      const r  = canvas!.getBoundingClientRect();
-      const sx = canvas!.width  / r.width;
-      const sy = canvas!.height / r.height;
-      if ("touches" in e) return { x: (e.touches[0].clientX - r.left) * sx, y: (e.touches[0].clientY - r.top)  * sy };
-      return { x: ((e as MouseEvent).clientX - r.left) * sx, y: ((e as MouseEvent).clientY - r.top) * sy };
-    }
-    function start(e: MouseEvent | TouchEvent) { drawing = true; setDrawn(true); const p2 = pos(e); ctx.beginPath(); ctx.moveTo(p2.x, p2.y); }
-    function move(e: MouseEvent | TouchEvent)  { if (!drawing) return; e.preventDefault(); const p2 = pos(e); ctx.lineTo(p2.x, p2.y); ctx.stroke(); }
-    function end()                              { drawing = false; }
-
-    canvas.addEventListener("mousedown",  start);
-    canvas.addEventListener("mousemove",  move);
-    canvas.addEventListener("mouseup",    end);
-    canvas.addEventListener("mouseleave", end);
-    canvas.addEventListener("touchstart", start, { passive: false });
-    canvas.addEventListener("touchmove",  move,  { passive: false });
-    canvas.addEventListener("touchend",   end);
-    return () => {
-      canvas.removeEventListener("mousedown",  start);
-      canvas.removeEventListener("mousemove",  move);
-      canvas.removeEventListener("mouseup",    end);
-      canvas.removeEventListener("mouseleave", end);
-      canvas.removeEventListener("touchstart", start);
-      canvas.removeEventListener("touchmove",  move);
-      canvas.removeEventListener("touchend",   end);
-    };
-  }, []);
-
-  function clearSig() {
-    const c = canvasRef.current!;
-    c.getContext("2d")!.clearRect(0, 0, c.width, c.height);
-    setDrawn(false);
-  }
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    if (!name.trim()) return;
+    ctx.font = "italic 30px Georgia, 'Times New Roman', serif";
+    ctx.fillStyle = "#0f172a";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillText(name.trim(), canvas.width / 2, canvas.height / 2);
+  }, [name]);
 
   async function submitSignature() {
-    if (!name.trim() || !drawn || !agreed) return;
+    if (!name.trim() || !agreed) return;
     setStage("signing");
     try {
       const sigDataUrl = canvasRef.current!.toDataURL("image/png");
@@ -162,7 +129,7 @@ export default function SignPage() {
 
   const amountInfo = AMOUNTS[tier]?.[cur] ?? AMOUNTS.premium.USD;
   const ai = amountInfo; // shorthand
-  const canSign    = name.trim().length > 0 && drawn && agreed;
+  const canSign    = name.trim().length > 0 && agreed;
 
   // ── Signed success + payment ───────────────────────────────────────────────
   if (stage === "signed" || stage === "paying") {
@@ -233,7 +200,7 @@ export default function SignPage() {
                         Add Ongoing Support &amp; Tools Coverage
                       </div>
                       <div style={{ fontSize: 12, color: "var(--c-mid)", lineHeight: 1.5 }}>
-                        Keep your app running after delivery — priority support, maintenance, and all tool subscriptions covered.
+                        Keep your system running after your included support period ends. This subscription only starts once your {TIER_LABEL[tier] === "Promotional" ? "90" : "120"}-day support period completes — <strong>nothing is charged today or during your build.</strong>
                       </div>
                     </div>
                   </label>
@@ -254,7 +221,10 @@ export default function SignPage() {
                         </div>
                       ))}
                       <div style={{ display: "flex", justifyContent: "space-between", paddingTop: "0.5rem" }}>
-                        <span style={{ fontSize: 11, color: "var(--c-light)", fontWeight: 600 }}>MONTHLY TOTAL</span>
+                        <div>
+                          <span style={{ fontSize: 11, color: "var(--c-light)", fontWeight: 600, display: "block" }}>SUBSCRIPTION TOTAL</span>
+                          <span style={{ fontSize: 10, color: "var(--c-light)" }}>Starts after your {TIER_LABEL[tier] === "Promotional" ? "90" : "120"}-day support ends</span>
+                        </div>
                         <span style={{ fontSize: 14, fontWeight: 800, color: TEAL }}>${monthlyTotal}/mo</span>
                       </div>
                     </div>
@@ -281,7 +251,7 @@ export default function SignPage() {
               >
                 {stage === "paying"
                   ? <><Loader2 size={17} style={{ animation: "spin 1s linear infinite" }} /> Redirecting…</>
-                  : <><RefreshCw size={17} /> Set up monthly plan (${150 + (monthlyTools ?? 0)}/mo)</>}
+                  : <><RefreshCw size={17} /> Activate post-support subscription (${150 + (monthlyTools ?? 0)}/mo)</>}
               </button>
             )}
 
@@ -375,7 +345,7 @@ export default function SignPage() {
             </div>
           )}
           <p style={{ fontSize: 11, color: "var(--c-light)", margin: "0.5rem 0 0", lineHeight: 1.5 }}>
-            You can opt in to the monthly plan after signing — no commitment required at this stage.
+            Optional subscription you can activate after signing. Billing only begins once your included support period ends — nothing extra is charged today.
           </p>
         </div>
 
@@ -399,22 +369,14 @@ export default function SignPage() {
           style={S.input}
         />
 
-        {/* Canvas */}
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", margin: "1.25rem 0 0.4rem" }}>
-          <label style={{ ...S.label, margin: 0 }}>
-            <PenLine size={13} style={{ display: "inline", marginRight: 5, color: TEAL }} />
-            Draw Your Signature
-          </label>
-          {drawn && (
-            <button onClick={clearSig} style={{ background: "none", border: "none", cursor: "pointer", color: "var(--c-light)", fontSize: 12, display: "flex", alignItems: "center", gap: 4 }}>
-              <RotateCcw size={12} /> Clear
-            </button>
-          )}
+        {/* Signature preview */}
+        <label style={{ ...S.label, margin: "1.25rem 0 0.4rem" }}>Your Signature</label>
+        <div style={{ border: `2px solid ${name.trim() ? TEAL : "var(--c-border)"}`, borderRadius: 10, background: "var(--c-subtle)", transition: "border-color 0.15s", overflow: "hidden" }}>
+          <canvas ref={canvasRef} width={500} height={110} style={{ width: "100%", height: 110, display: "block", borderRadius: 8 }} />
         </div>
-        <div style={{ border: `2px solid ${drawn ? TEAL : "var(--c-border)"}`, borderRadius: 10, background: "var(--c-subtle)", cursor: "crosshair", transition: "border-color 0.15s" }}>
-          <canvas ref={canvasRef} width={500} height={130} style={{ width: "100%", height: 130, display: "block", borderRadius: 8 }} />
-        </div>
-        {!drawn && <p style={{ fontSize: 11, color: "var(--c-light)", margin: "4px 0 0", textAlign: "center" }}>Sign with your mouse or finger</p>}
+        <p style={{ fontSize: 11, color: "var(--c-light)", margin: "4px 0 0", textAlign: "center" }}>
+          {name.trim() ? "Signature captured — your typed name is your legal digital signature." : "Your signature will appear here as you type your name above."}
+        </p>
 
         {/* Agree */}
         <label style={{ display: "flex", alignItems: "flex-start", gap: 10, cursor: "pointer", margin: "1.25rem 0" }}>

@@ -5,7 +5,7 @@ import {
   TrendingUp, BarChart2, Check, Bell, ChevronRight,
   Layers, RefreshCw, ShieldCheck, GitMerge,
   LayoutGrid, List, Calendar, Activity,
-  Code2, Monitor, Package,
+  Code2, Monitor, Package, Sparkles, Bot, BrainCircuit, Workflow,
 } from "lucide-react";
 import WordMark from "./WordMark";
 
@@ -834,11 +834,251 @@ const HEAT = {
   cold: { dot: "bg-slate-300",   bar: "border-l-slate-300",   label: "Cold", hex: "#cbd5e1" },
 };
 
+// ─── AI data per industry ───────────────────────────────────────────────────────
+
+const AI_DATA = {
+  saas: {
+    agents: [
+      { icon: "⚡", name: "Trial Scoring Agent", desc: "Monitors feature usage, seat invitations, and company signals — automatically routes high-intent trials to sales within 2 minutes." },
+      { icon: "✍️", name: "Follow-up Writer", desc: "Generates personalised outreach based on trial activity and company profile. 3× better reply rates than static templates." },
+      { icon: "🔔", name: "Churn Early Warning", desc: "Detects usage drops before cancellation intent becomes visible. Triggers re-engagement sequences while accounts are still recoverable." },
+    ],
+    workflows: [
+      "Trial signup → AI scores intent → hot leads routed to SDR in < 5 min",
+      "Demo no-show → AI drafts reschedule email → sent within 15 min automatically",
+      "Proposal viewed → activity signal detected → personalised follow-up triggered",
+      "30-day no activity → churn risk flagged → retention offer sent",
+    ],
+    win: "SaaS businesses using AI lead scoring close 35% more trials without adding headcount — the agent handles the triage, your team handles the conversations.",
+  },
+  agency: {
+    agents: [
+      { icon: "🎯", name: "Brief Qualifier", desc: "Analyses new enquiries for budget, timeline, and brief quality — scores fit and auto-assigns to the right account manager." },
+      { icon: "📝", name: "Proposal Writer Agent", desc: "Generates proposal first drafts from brief inputs, past wins, and pricing rules. Account managers review and personalise, not write from scratch." },
+      { icon: "📊", name: "Retainer Health Monitor", desc: "Tracks retainer utilisation, delivery pace, and client communication — flags at-risk accounts before they churn." },
+    ],
+    workflows: [
+      "New enquiry received → AI scores fit + budget → assigned within 10 min",
+      "Proposal not opened after 3 days → AI nudge email drafted + sent",
+      "Retainer 80% utilised → project manager alerted + scope conversation initiated",
+      "Project completed → AI generates case study draft from delivery notes",
+    ],
+    win: "Agencies with AI-assisted triage respond to new enquiries 4× faster and win 22% more proposals — speed signals capability before the first call.",
+  },
+  professional: {
+    agents: [
+      { icon: "🔎", name: "Enquiry Triage Agent", desc: "Qualifies inbound enquiries by matter type, urgency, and referral source — routes to the right partner or team within minutes." },
+      { icon: "🤝", name: "Referral Intelligence Agent", desc: "Tracks every referral source, conversion outcome, and relationship health. Surfaces who to thank, who to nurture, and when." },
+      { icon: "📋", name: "Proposal Personaliser", desc: "Pulls relevant case precedents and prior matter data to generate tailored engagement letters faster than any template." },
+    ],
+    workflows: [
+      "New referral logged → AI categorises matter + routes to right team → acknowledged within 1 hour",
+      "Proposal opened → read signal detected → partner alerted for follow-up",
+      "Matter stalled 14 days → AI flags → internal review triggered",
+      "Matter closed → AI prompts referral thank-you + review request",
+    ],
+    win: "Professional services firms using AI referral tracking convert 31% more referrals — knowing who to prioritise and when to follow up is everything.",
+  },
+  recruitment: {
+    agents: [
+      { icon: "📄", name: "CV Screening Agent", desc: "Matches candidate profiles against role criteria, score-ranks shortlists, and flags red/green signals before a recruiter reads a word." },
+      { icon: "💬", name: "Candidate Prep Agent", desc: "Sends personalised interview prep emails based on job spec, company background, and stage — candidates arrive better prepared, offers convert higher." },
+      { icon: "🎯", name: "Brief Matcher", desc: "When a new client brief arrives, instantly matches it against your active and passive candidate pool. First shortlist in minutes, not hours." },
+    ],
+    workflows: [
+      "New role brief → AI matches against candidate pool → ranked shortlist in minutes",
+      "Interview confirmed → candidate prep email generated + sent automatically",
+      "Offer stage → AI drafts offer summary + FAQ for candidate objections",
+      "Placement made → AI schedules 30/60/90-day check-ins automatically",
+    ],
+    win: "Recruitment firms with AI CV screening process 4× more candidates per consultant without quality loss — volume becomes a competitive advantage, not a bottleneck.",
+  },
+  distribution: {
+    agents: [
+      { icon: "📦", name: "Reorder Predictor", desc: "Analyses purchase cycles, seasonal patterns, and account behaviour to predict when each stockist will need to reorder — before they contact you." },
+      { icon: "📈", name: "Account Health Monitor", desc: "Tracks order frequency, value trends, and communication gaps. Flags accounts going quiet before they're lost." },
+      { icon: "🛒", name: "New SKU Recommender", desc: "When you launch a new product line, AI identifies which accounts are most likely to adopt it based on past purchase patterns." },
+    ],
+    workflows: [
+      "Reorder cycle approaching → AI nudge sent → order confirmed before stockist runs out",
+      "Account quiet 21 days → health flag raised → rep prompted to call",
+      "New product launched → AI generates targeted pitch list + personalised emails",
+      "Large order placed → AI schedules post-delivery check-in automatically",
+    ],
+    win: "Distributors using predictive reorder nudges see 29% higher reorder rates and 91% account retention — the AI knows the pattern before the customer does.",
+  },
+  financial: {
+    agents: [
+      { icon: "📋", name: "KYC Chaser Agent", desc: "Monitors document submission status and sends smart, personalised chasers at the right intervals — compliance rates go from 61% to 94%." },
+      { icon: "🔒", name: "Risk Scoring Agent", desc: "Analyses client portfolio, communication history, and behaviour signals to flag at-risk relationships before they escalate." },
+      { icon: "📅", name: "Review Prep Agent", desc: "Generates client meeting briefs with portfolio summary, regulatory flags, and personalised talking points — advisors walk in prepared." },
+    ],
+    workflows: [
+      "New client onboarded → AI launches KYC document collection sequence",
+      "Annual review due → AI generates client brief + sends meeting request automatically",
+      "Referral received → AI scores priority + routes to right advisor within minutes",
+      "Client portfolio drop → AI flags for proactive outreach before complaint",
+    ],
+    win: "Financial services firms with AI-driven KYC collection cut onboarding time by 12 days and eliminate the compliance bottleneck that stalls every new relationship.",
+  },
+  healthcare: {
+    agents: [
+      { icon: "📅", name: "Appointment Rebooker", desc: "When a cancellation occurs, AI instantly contacts patients on the waitlist and fills the slot — no admin time required." },
+      { icon: "🔁", name: "Referral Tracker Agent", desc: "Acknowledges incoming referrals within minutes, routes to the right clinician, and tracks response time against targets." },
+      { icon: "💙", name: "Patient Engagement Agent", desc: "Sends recall reminders, post-appointment check-ins, and satisfaction prompts at the right intervals without manual scheduling." },
+    ],
+    workflows: [
+      "Appointment cancelled → AI contacts waitlist → slot filled within 30 min",
+      "Referral received → acknowledged + routed → response time tracked vs. targets",
+      "Post-appointment → AI check-in at 48 hours → satisfaction captured automatically",
+      "Patient due for recall → AI reminder sequence → rebooking confirmed",
+    ],
+    win: "Healthcare practices with AI appointment management achieve 91% fill rates and recover thousands per week in lost appointment revenue — with zero extra admin.",
+  },
+  realestate: {
+    agents: [
+      { icon: "🏠", name: "Enquiry Qualifier", desc: "Scores incoming property enquiries by intent, budget signals, and urgency — your agents call serious buyers first, not everyone." },
+      { icon: "📸", name: "Viewing Prep Agent", desc: "Before each viewing, generates a buyer profile brief for the agent — relevant questions, comparable properties, and buyer history." },
+      { icon: "📬", name: "Follow-up Sequence Agent", desc: "After every viewing, automatically sends tailored follow-up at optimal intervals — buyers stay warm without agents manually chasing." },
+    ],
+    workflows: [
+      "Enquiry submitted → AI scores intent → priority call list for agents by 9am",
+      "Viewing confirmed → buyer profile brief generated + sent to agent night before",
+      "Post-viewing → AI follow-up at 4 hours, 24 hours, and 72 hours automatically",
+      "Offer made → pipeline updated + vendor notification triggered instantly",
+    ],
+    win: "Estate agencies using AI enquiry scoring respond to top-intent buyers in under 9 minutes — vs. a 4.3-hour industry average. Speed is the differentiator.",
+  },
+  ecommerce: {
+    agents: [
+      { icon: "📦", name: "Sample Converter Agent", desc: "Tracks every sample sent and launches a structured 48-hour follow-up sequence — converts 54% of samples into first orders." },
+      { icon: "💰", name: "LTV Predictor", desc: "Analyses order history, frequency, and margin per account to predict future value — your team focuses energy where it returns most." },
+      { icon: "🔄", name: "Stockist Reactivator", desc: "Identifies accounts that have gone quiet and launches a targeted win-back campaign using their previous purchase patterns." },
+    ],
+    workflows: [
+      "Sample dispatched → 48-hour AI follow-up → order nudge at 72 hours",
+      "Account quiet 30 days → LTV calculated → reactivation sequence launched",
+      "New product range → AI generates targeted stockist pitch based on past orders",
+      "Bulk order placed → post-delivery check-in + upsell triggered at 14 days",
+    ],
+    win: "E-commerce brands with AI-driven sample follow-up convert 22% more samples into orders — the follow-up is faster, more personal, and never forgotten.",
+  },
+  construction: {
+    agents: [
+      { icon: "📐", name: "Tender Qualifier", desc: "Analyses tender documents for fit, margin potential, and win probability — ranks opportunities so your estimators bid the right jobs." },
+      { icon: "⚡", name: "Quote Accelerator", desc: "Pulls past project data, supplier rates, and scope templates to generate quote first drafts — estimators refine, not rebuild from zero." },
+      { icon: "📋", name: "Project Milestone Agent", desc: "Monitors project stages and triggers client notifications, invoice requests, and variation tracking automatically." },
+    ],
+    workflows: [
+      "Tender received → AI scores fit + win probability → estimator assigned in minutes",
+      "Quote ready → client notified automatically → response tracked",
+      "Variation submitted → approval tracked → invoice triggered on sign-off",
+      "Project milestone hit → client update generated + sent automatically",
+    ],
+    win: "Construction businesses using AI tender scoring bid 38% more accurately and win 16% more contracts — qualified leads only, no wasted estimator time.",
+  },
+  education: {
+    agents: [
+      { icon: "🎓", name: "Enquiry Nurture Agent", desc: "Responds to prospectus requests and enquiries with personalised follow-up sequences — no enquiry goes cold waiting for a callback." },
+      { icon: "📝", name: "Enrolment Converter", desc: "Identifies incomplete applications and launches personalised completion nudges at the right intervals." },
+      { icon: "🏢", name: "Corporate Training Manager", desc: "Tracks corporate training renewal cycles, usage rates, and contract expiry — proactive outreach before renewals lapse." },
+    ],
+    workflows: [
+      "Enquiry submitted → AI personalised response in < 5 min → nurture sequence launched",
+      "Application incomplete → AI chases at 3 days, 7 days, 14 days automatically",
+      "Open day confirmed → reminder sequence + pre-event info sent at right intervals",
+      "Corporate contract expiring in 60 days → renewal conversation triggered",
+    ],
+    win: "Education providers with AI-driven enquiry nurture convert 11% more enquiries into enrolments — the AI keeps every prospect warm until they're ready to commit.",
+  },
+  custom: {
+    agents: [
+      { icon: "⚙️", name: "Workflow Automation Agent", desc: "Handles repetitive routing, status updates, and notifications — your team focuses on decisions, not data entry." },
+      { icon: "🔄", name: "Data Sync Agent", desc: "Keeps data consistent across all connected platforms automatically — no manual reconciliation, no duplicate records." },
+      { icon: "📊", name: "Adoption Monitor", desc: "Tracks feature usage across your team and surfaces the workflows being missed — drives the ROI of every tool you've invested in." },
+    ],
+    workflows: [
+      "Form submitted → AI classifies + routes to right team → SLA clock starts",
+      "Integration failure → alert raised + auto-retry → escalation if unresolved",
+      "Team member not using a feature → targeted nudge + micro-training sent",
+      "Milestone reached → stakeholder update generated + sent automatically",
+    ],
+    win: "Custom apps built with AI agents from day one process routine decisions 10× faster — your team makes fewer low-value decisions and more high-impact ones.",
+  },
+};
+
+// ─── AI view ────────────────────────────────────────────────────────────────────
+
+function AIView({ industry }) {
+  const ai = AI_DATA[industry.id] || AI_DATA.saas;
+  return (
+    <div className="space-y-6">
+      {/* Header callout */}
+      <div className="rounded-2xl border border-teal-200 bg-teal-50 p-5 flex items-start gap-4">
+        <div className="flex h-10 w-10 flex-none items-center justify-center rounded-xl bg-teal-500">
+          <BrainCircuit className="h-5 w-5 text-white" strokeWidth={2} />
+        </div>
+        <div>
+          <div className="text-xs font-semibold uppercase tracking-widest text-teal-600 mb-1">AI Layer</div>
+          <p className="text-sm leading-relaxed text-teal-900">
+            Every system we build includes an AI layer — agents, intelligent workflows, and automation that help your <strong>{industry.label}</strong> business operate faster and grow without adding headcount.
+          </p>
+        </div>
+      </div>
+
+      {/* AI Agents */}
+      <div>
+        <div className="text-xs font-semibold uppercase tracking-widest text-slate-400 mb-3">AI Agents for {industry.label}</div>
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          {ai.agents.map((agent) => (
+            <div key={agent.name} className="rounded-2xl border border-slate-200 bg-white p-4">
+              <div className="text-2xl mb-2">{agent.icon}</div>
+              <div className="font-semibold text-sm tracking-tight text-slate-900 mb-1">{agent.name}</div>
+              <p className="text-xs leading-relaxed text-slate-500">{agent.desc}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Intelligent Workflows */}
+      <div className="rounded-2xl border border-slate-200 bg-white p-5">
+        <div className="flex items-center gap-2 mb-4">
+          <Workflow className="h-4 w-4 text-teal-500" strokeWidth={2.5} />
+          <span className="text-xs font-semibold uppercase tracking-widest text-slate-400">Intelligent Workflows</span>
+        </div>
+        <div className="space-y-2.5">
+          {ai.workflows.map((wf, i) => (
+            <div key={i} className="flex items-start gap-3 text-sm text-slate-700">
+              <div className="flex h-5 w-5 flex-none items-center justify-center rounded-full bg-teal-500 text-white text-xs font-bold mt-0.5">
+                {i + 1}
+              </div>
+              <span className="leading-relaxed">{wf}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Quick win insight */}
+      <div className="rounded-2xl border border-slate-800 bg-slate-900 p-5">
+        <div className="flex items-center gap-2 mb-3">
+          <Sparkles className="h-4 w-4 text-teal-400" strokeWidth={2.5} />
+          <span className="text-xs font-semibold uppercase tracking-widest text-teal-400">AI Growth Insight</span>
+        </div>
+        <p className="text-sm leading-relaxed text-slate-300">{ai.win}</p>
+        <a href="/calculator" className="mt-4 inline-flex items-center gap-1.5 rounded-lg bg-teal-500 px-4 py-2 text-xs font-semibold text-slate-950 hover:bg-teal-400">
+          Get your free AI audit <ArrowRight className="h-3.5 w-3.5" />
+        </a>
+      </div>
+    </div>
+  );
+}
+
 const VIEWS = [
   { id: "pipeline",  label: "Pipeline",  icon: LayoutGrid },
   { id: "timeline",  label: "Timeline",  icon: Calendar },
   { id: "dashboard", label: "Dashboard", icon: Activity },
   { id: "table",     label: "Table",     icon: List },
+  { id: "ai",        label: "AI",        icon: Sparkles },
 ];
 
 // ─── Lead card ─────────────────────────────────────────────────────────────────
@@ -1220,17 +1460,29 @@ export default function CRMSimulator() {
           </div>
         </div>
 
+        {/* Demo disclaimer */}
+        <div className="mb-8 flex items-start gap-3 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3.5">
+          <span className="mt-0.5 flex-none text-amber-500">
+            <svg className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+              <path fillRule="evenodd" d="M8.485 2.495c.673-1.167 2.357-1.167 3.03 0l6.28 10.875c.673 1.167-.17 2.625-1.516 2.625H3.72c-1.347 0-2.189-1.458-1.515-2.625L8.485 2.495zM10 5a.75.75 0 01.75.75v3.5a.75.75 0 01-1.5 0v-3.5A.75.75 0 0110 5zm0 9a1 1 0 100-2 1 1 0 000 2z" clipRule="evenodd" />
+            </svg>
+          </span>
+          <p className="text-xs leading-relaxed text-amber-800">
+            <span className="font-semibold">This is an interactive example.</span> All company names, contacts, deal values, and figures shown are entirely fictional and exist only to illustrate what a real system looks like. They do not represent actual clients or engagements.
+          </p>
+        </div>
+
         {/* Hero */}
         <div className="max-w-2xl mb-12">
           <div className="inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-white px-3 py-1 text-xs font-medium text-slate-500 mb-5">
-            <span className="h-1.5 w-1.5 rounded-full bg-teal-500" /> Interactive demo — pick your industry
+            <span className="h-1.5 w-1.5 rounded-full bg-teal-500" /> Interactive example — pick your industry
           </div>
           <h1 className="text-4xl sm:text-5xl font-semibold tracking-tight leading-tight">
             See your pipeline.<br className="hidden sm:block" />
             <span className="text-slate-400">Before you build it.</span>
           </h1>
           <p className="mt-4 text-lg text-slate-600 max-w-xl">
-            Select your industry to see how a custom system would organise your leads, automate your follow-up, and surface the numbers that matter.
+            Select your industry to see how a custom system would organise your leads, automate your follow-up, and surface the numbers that matter — built specifically for your business in 30 days.
           </p>
         </div>
 
@@ -1312,7 +1564,9 @@ export default function CRMSimulator() {
         )}
 
         {/* Simulation area */}
-        {industry.isCustomApp ? (
+        {view === "ai" ? (
+          <AIView industry={industry} />
+        ) : industry.isCustomApp ? (
           <CustomAppGrid />
         ) : view === "pipeline" ? (
           <KanbanBoard industry={industry} />
