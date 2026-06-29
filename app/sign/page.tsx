@@ -134,8 +134,8 @@ export default function SignPage() {
   // ── Signed success + payment ───────────────────────────────────────────────
   if (stage === "signed" || stage === "paying") {
     return (
-      <main style={S.page}>
-        <div style={{ ...S.card, maxWidth: 540 }}>
+      <main style={S.page} className="sign-page">
+        <div style={{ ...S.card, maxWidth: 540 }} className="sign-card">
           <div style={{ textAlign: "center", marginBottom: "1.75rem" }}>
             <CheckCircle size={52} color={TEAL} style={{ margin: "0 auto 0.75rem" }} />
             <h1 style={{ fontSize: 22, fontWeight: 700, color: "var(--c-dark)", margin: "0 0 0.4rem" }}>
@@ -260,7 +260,13 @@ export default function SignPage() {
             </p>
           </div>
         </div>
-        <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+        <style>{`
+          @keyframes spin { to { transform: rotate(360deg); } }
+          @media (max-width: 600px) {
+            .sign-card { padding: 1.25rem !important; }
+            .sign-page { padding: 1rem 0.75rem !important; align-items: flex-start !important; }
+          }
+        `}</style>
       </main>
     );
   }
@@ -283,11 +289,11 @@ export default function SignPage() {
 
   // ── Main form ──────────────────────────────────────────────────────────────
   return (
-    <main style={S.page}>
-      <div style={{ ...S.card, maxWidth: 580 }}>
+    <main style={S.page} className="sign-page">
+      <div style={{ ...S.card, maxWidth: 580 }} className="sign-card">
 
         {/* Header */}
-        <div style={{ background: "#0f172a", margin: "-2rem -2rem 1.75rem", borderRadius: "16px 16px 0 0", padding: "1.5rem 2rem" }}>
+        <div style={{ background: "#0f172a", margin: "-2rem -2rem 1.75rem", borderRadius: "16px 16px 0 0", padding: "1.5rem 2rem" }} className="sign-header">
           <div style={{ fontSize: 11, fontWeight: 700, color: TEAL, letterSpacing: 2, marginBottom: 6 }}>THE STARTUP</div>
           <h1 style={{ fontSize: 20, fontWeight: 700, color: "#fff", margin: "0 0 4px" }}>Scope Lock Agreement</h1>
           {ref && <div style={{ fontSize: 12, color: "#94a3b8" }}>Reference: {ref}</div>}
@@ -398,7 +404,14 @@ export default function SignPage() {
             : "Sign Agreement"}
         </button>
       </div>
-      <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+      <style>{`
+        @keyframes spin { to { transform: rotate(360deg); } }
+        @media (max-width: 600px) {
+          .sign-card { padding: 1.25rem !important; }
+          .sign-page { padding: 1rem 0.75rem !important; align-items: flex-start !important; }
+          .sign-header { margin: -1.25rem -1.25rem 1.5rem !important; }
+        }
+      `}</style>
     </main>
   );
 }

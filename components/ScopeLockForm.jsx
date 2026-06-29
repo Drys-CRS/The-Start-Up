@@ -325,7 +325,7 @@ export default function ScopeLockForm() {
           </div>
 
           {fillMode === "website" ? (
-            <div className="flex gap-2">
+            <div className="flex flex-col sm:flex-row gap-2">
               <div className="relative flex-1">
                 <Globe className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
                 <input
@@ -339,13 +339,13 @@ export default function ScopeLockForm() {
               <button
                 onClick={analyzeDomain}
                 disabled={analyzing || !domain.trim()}
-                className={"flex-shrink-0 px-4 py-2.5 rounded-lg text-sm font-semibold transition-colors " +
+                className={"flex-shrink-0 w-full sm:w-auto px-4 py-2.5 rounded-lg text-sm font-semibold transition-colors " +
                   (analyzing || !domain.trim()
                     ? "bg-teal-200 dark:bg-teal-900 text-teal-400 cursor-not-allowed"
                     : "bg-teal-600 hover:bg-teal-700 text-white cursor-pointer")}
               >
                 {analyzing
-                  ? <span className="flex items-center gap-1.5"><Loader2 className="h-3.5 w-3.5 animate-spin" />Analysing…</span>
+                  ? <span className="flex items-center justify-center gap-1.5"><Loader2 className="h-3.5 w-3.5 animate-spin" />Analysing…</span>
                   : "Analyse"}
               </button>
             </div>

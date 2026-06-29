@@ -1111,18 +1111,19 @@ function KanbanBoard({ industry }) {
   return (
     <div className="rounded-2xl border border-slate-200 overflow-hidden shadow-sm">
       <div className="flex items-center justify-between gap-3 bg-white border-b border-slate-200 px-4 py-3">
-        <div className="flex items-center gap-2 rounded-lg border border-slate-200 bg-slate-50 px-3 py-1.5 text-xs text-slate-400 w-48">
+        <div className="flex items-center gap-2 rounded-lg border border-slate-200 bg-slate-50 px-3 py-1.5 text-xs text-slate-400 flex-1 sm:w-48 sm:flex-none">
           <Search className="h-3.5 w-3.5 flex-none" />
           <span>Search pipeline…</span>
         </div>
         <div className="flex items-center gap-2">
           <button className="flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-2.5 py-1.5 text-xs text-slate-500 hover:bg-slate-50">
-            <Filter className="h-3.5 w-3.5" /> Filter
+            <Filter className="h-3.5 w-3.5" />
+            <span className="hidden sm:inline">Filter</span>
           </button>
-          <button className="flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-2.5 py-1.5 text-xs text-slate-500 hover:bg-slate-50">
+          <button className="hidden sm:flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-2.5 py-1.5 text-xs text-slate-500 hover:bg-slate-50">
             <Bell className="h-3.5 w-3.5" />
           </button>
-          <div className="flex -space-x-1.5">
+          <div className="hidden sm:flex -space-x-1.5">
             {["SL","AR","JK"].map((i) => (
               <div key={i} className="h-6 w-6 rounded-full bg-slate-700 border-2 border-white flex items-center justify-center text-[9px] font-bold text-white">{i}</div>
             ))}
@@ -1448,14 +1449,16 @@ export default function CRMSimulator() {
       <div className="mx-auto max-w-6xl px-5 py-10 sm:py-14">
 
         {/* Nav */}
-        <div className="flex items-center justify-between mb-14">
+        <div className="flex items-center justify-between mb-10 sm:mb-14">
           <a href="/"><WordMark dark /></a>
           <div className="flex items-center gap-3">
             <a href="/calculator" className="hidden sm:inline-flex text-xs font-medium text-slate-500 hover:text-slate-900">
               Free audit
             </a>
-            <a href="/scope-lock" className="inline-flex items-center gap-1.5 rounded-lg bg-slate-900 px-4 py-2 text-xs font-semibold text-white hover:bg-slate-800">
-              Start your build <ArrowRight className="h-3.5 w-3.5" />
+            <a href="/scope-lock" className="inline-flex items-center gap-1.5 rounded-lg bg-slate-900 px-3 py-2 sm:px-4 text-xs font-semibold text-white hover:bg-slate-800">
+              <span className="hidden sm:inline">Start your build</span>
+              <span className="sm:hidden">Get started</span>
+              <ArrowRight className="h-3.5 w-3.5" />
             </a>
           </div>
         </div>
@@ -1510,7 +1513,7 @@ export default function CRMSimulator() {
             <button
               key={ind.id}
               onClick={() => setActive(i)}
-              className={`flex items-center gap-2 rounded-xl border px-3.5 py-2 text-sm font-medium transition-all ${
+              className={`flex items-center gap-1.5 rounded-xl border px-2.5 py-1.5 sm:px-3.5 sm:py-2 text-xs sm:text-sm font-medium transition-all ${
                 active === i
                   ? "border-slate-900 bg-slate-900 text-white shadow-sm"
                   : "border-slate-200 bg-white text-slate-600 hover:border-slate-400 hover:text-slate-900"
@@ -1530,23 +1533,26 @@ export default function CRMSimulator() {
 
         {/* View toggle — hidden for Custom App sector */}
         {!industry.isCustomApp && (
-          <div className="flex items-center gap-2 mb-5 flex-wrap">
-            <span className="text-xs text-slate-400">View as:</span>
-            <div className="flex items-center gap-1 rounded-xl border border-slate-200 bg-white p-1">
-              {VIEWS.map((v) => (
-                <button
-                  key={v.id}
-                  onClick={() => setView(v.id)}
-                  className={`flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium transition-all ${
-                    view === v.id
-                      ? "bg-slate-900 text-white"
-                      : "text-slate-500 hover:text-slate-900"
-                  }`}
-                >
-                  <v.icon className="h-3.5 w-3.5" />
-                  {v.label}
-                </button>
-              ))}
+          <div className="flex items-center gap-2 mb-5">
+            <span className="text-xs text-slate-400 flex-none hidden sm:block">View as:</span>
+            <div className="overflow-x-auto pb-0.5 flex-1">
+              <div className="flex items-center gap-1 rounded-xl border border-slate-200 bg-white p-1 w-max">
+                {VIEWS.map((v) => (
+                  <button
+                    key={v.id}
+                    onClick={() => setView(v.id)}
+                    className={`flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium transition-all whitespace-nowrap ${
+                      view === v.id
+                        ? "bg-slate-900 text-white"
+                        : "text-slate-500 hover:text-slate-900"
+                    }`}
+                  >
+                    <v.icon className="h-3.5 w-3.5" />
+                    <span className="hidden sm:inline">{v.label}</span>
+                    <span className="sm:hidden">{v.label.split(" ")[0]}</span>
+                  </button>
+                ))}
+              </div>
             </div>
           </div>
         )}

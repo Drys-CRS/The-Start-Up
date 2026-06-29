@@ -84,7 +84,7 @@ export default function OfferPage() {
           </div>
 
           {/* Demo CTA — drives curiosity before commitment */}
-          <a href="/crm-demo" className="mt-4 group flex items-center gap-3 rounded-xl border border-slate-200 bg-white px-4 py-3 hover:border-teal-300 hover:bg-teal-50 transition-colors max-w-sm">
+          <a href="/crm-demo" className="mt-4 group flex items-center gap-3 rounded-xl border border-slate-200 bg-white px-4 py-3 hover:border-teal-300 hover:bg-teal-50 transition-colors w-full sm:max-w-sm">
             <div className="flex h-8 w-8 flex-none items-center justify-center rounded-lg bg-slate-100 group-hover:bg-teal-100 transition-colors">
               <Monitor className="h-4 w-4 text-slate-500 group-hover:text-teal-600" />
             </div>
@@ -210,7 +210,7 @@ export default function OfferPage() {
                   <span className="text-xs text-slate-400">Ends {OFFER_DEADLINE}</span>
                 </div>
                 <div className="flex items-baseline gap-2">
-                  <span className="font-mono text-5xl font-semibold tracking-tight tabular-nums text-white">
+                  <span className="font-mono text-4xl sm:text-5xl font-semibold tracking-tight tabular-nums text-white">
                     {tiers.sym}{tiers.offer.total}
                   </span>
                   <span className="text-slate-400 text-sm">flat · all-in</span>
@@ -230,9 +230,9 @@ export default function OfferPage() {
                   We're taking on a small cohort of case-study partners at this price. Once the September window closes, the rate moves to the standard tier.
                 </p>
               </div>
-              <div className="flex-none">
+              <div className="flex-none w-full sm:w-auto">
                 <a href="/scope-lock"
-                  className="inline-flex items-center justify-center gap-2 rounded-xl bg-teal-500 px-8 py-4 text-base font-semibold text-slate-950 hover:bg-teal-400 shadow-lg whitespace-nowrap">
+                  className="flex sm:inline-flex items-center justify-center gap-2 rounded-xl bg-teal-500 px-8 py-4 text-base font-semibold text-slate-950 hover:bg-teal-400 shadow-lg whitespace-nowrap">
                   Claim this rate <ArrowRight className="h-5 w-5" />
                 </a>
                 <p className="mt-2 text-center text-xs text-slate-500">No call required</p>
