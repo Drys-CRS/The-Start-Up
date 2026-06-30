@@ -55,8 +55,8 @@ const jsonLd = {
       logo: {
         "@type": "ImageObject",
         url: `${siteUrl}/logo-light.png`,
-        width: 500,
-        height: 500,
+        width: 1920,
+        height: 1080,
       },
       description:
         "We help businesses of every kind grow through custom systems, intelligent workflows, and AI — built in 30 days with a fixed price and 60–120 days of included support.",
