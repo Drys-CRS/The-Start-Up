@@ -5,8 +5,8 @@ export default function WordMark({ dark = false, className = "" }) {
       <img
         src="/logo-light.png"
         alt="The Startup"
-        height={36}
-        style={{ height: 36, width: "auto", display: "block", mixBlendMode: "multiply" }}
+        height={52}
+        style={{ height: 52, width: "auto", display: "block", mixBlendMode: "multiply" }}
         className={className}
       />
     );
@@ -16,8 +16,8 @@ export default function WordMark({ dark = false, className = "" }) {
     <img
       src="/logo-dark.png"
       alt="The Startup"
-      height={36}
-      style={{ height: 36, width: "auto", display: "block", mixBlendMode: "screen" }}
+      height={52}
+      style={{ height: 52, width: "auto", display: "block", mixBlendMode: "screen" }}
       className={className}
     />
   );
