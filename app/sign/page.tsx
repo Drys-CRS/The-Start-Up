@@ -14,14 +14,15 @@ const TIER_LABEL: Record<string, string> = {
 };
 
 // Payment structure: 10% deposit now → 80% on MVP plan approval → 10% on delivery
-const AMOUNTS: Record<string, Record<string, { total: string; deposit: string; mvp: string; balance: string }>> = {
+// 50% off special (ends 30 Sep 2026) — "was" reflects the full-price total.
+const AMOUNTS: Record<string, Record<string, { total: string; was: string; deposit: string; mvp: string; balance: string }>> = {
   promo: {
-    USD: { total: "$3,000",   deposit: "$300",    mvp: "$2,400",   balance: "$300"    },
-    ZAR: { total: "R60,000",  deposit: "R6,000",  mvp: "R48,000",  balance: "R6,000"  },
+    USD: { total: "$1,500",  was: "$3,000",   deposit: "$150",   mvp: "$1,200",   balance: "$150"   },
+    ZAR: { total: "R30,000", was: "R60,000",  deposit: "R3,000", mvp: "R24,000",  balance: "R3,000" },
   },
   premium: {
-    USD: { total: "$5,000",   deposit: "$500",    mvp: "$4,000",   balance: "$500"    },
-    ZAR: { total: "R100,000", deposit: "R10,000", mvp: "R80,000",  balance: "R10,000" },
+    USD: { total: "$2,500",  was: "$5,000",   deposit: "$250",   mvp: "$2,000",   balance: "$250"   },
+    ZAR: { total: "R50,000", was: "R100,000", deposit: "R5,000", mvp: "R40,000",  balance: "R5,000" },
   },
 };
 
@@ -308,8 +309,11 @@ export default function SignPage() {
               <div style={{ fontSize: 15, fontWeight: 700, color: "var(--c-dark)" }}>{TIER_LABEL[tier] ?? tier}</div>
             </div>
             <div style={{ textAlign: "right" }}>
-              <div style={{ fontSize: 22, fontWeight: 800, color: TEAL }}>{ai.total}</div>
-              <div style={{ fontSize: 11, color: "var(--c-mid)" }}>total investment</div>
+              <div style={{ display: "flex", alignItems: "baseline", gap: 6, justifyContent: "flex-end" }}>
+                <span style={{ fontSize: 13, color: "var(--c-mid)", textDecoration: "line-through" }}>{ai.was}</span>
+                <span style={{ fontSize: 22, fontWeight: 800, color: TEAL }}>{ai.total}</span>
+              </div>
+              <div style={{ fontSize: 11, color: "var(--c-mid)" }}>total investment · 50% off</div>
             </div>
           </div>
           <div style={{ borderTop: `1px solid ${TEAL}30`, paddingTop: 8, display: "flex", gap: 8, justifyContent: "space-between" }}>

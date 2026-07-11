@@ -10,7 +10,8 @@ const TIERS = [
     value: "PROMOTIONAL (Base + Free 2 Months)",
     label: "Promotional",
     sublabel: "Base + Free 2 Months",
-    price: { USD: "$3,000 flat", ZAR: "R60,000 flat" },
+    price: { USD: "$1,500 flat", ZAR: "R30,000 flat" },
+    wasPrice: { USD: "$3,000", ZAR: "R60,000" },
     note: { USD: "30-day build · 60 days support FREE", ZAR: "30-day build · 60 days support FREE" },
     promo: true,
   },
@@ -18,7 +19,8 @@ const TIERS = [
     value: "Premium",
     label: "Premium",
     sublabel: "120 days total",
-    price: { USD: "$5,000 flat", ZAR: "R100,000 flat" },
+    price: { USD: "$2,500 flat", ZAR: "R50,000 flat" },
+    wasPrice: { USD: "$5,000", ZAR: "R100,000" },
     note: { USD: "30-day build · 60 days support · +30 days FREE", ZAR: "30-day build · 60 days support · +30 days FREE" },
     promo: false,
   },
@@ -198,9 +200,10 @@ export default function ScopeLockForm() {
             <div className="flex items-center justify-between bg-slate-900 px-5 py-4">
               <div>
                 <p className="text-[10px] font-semibold uppercase tracking-wider text-teal-400">
-                  {selectedTier.label}
+                  {selectedTier.label} · 50% Off
                 </p>
-                <p className="mt-0.5 text-lg font-bold text-white">
+                <p className="mt-0.5 flex items-baseline gap-2 text-lg font-bold text-white">
+                  <span className="text-sm font-normal text-slate-400 line-through">{selectedTier.wasPrice[cur]}</span>
                   {selectedTier.price[cur]}
                 </p>
               </div>
@@ -473,8 +476,11 @@ export default function ScopeLockForm() {
                           <p className="text-xs text-slate-500 mt-0.5">{t.note[currency]}</p>
                         </div>
                       </div>
-                      <span className={`font-mono text-sm font-semibold flex-none ${t.promo ? "text-teal-600" : "text-slate-900"}`}>
-                        {t.price[currency]}
+                      <span className="flex items-baseline gap-1.5 flex-none">
+                        <span className="font-mono text-xs text-slate-400 line-through">{t.wasPrice[currency]}</span>
+                        <span className={`font-mono text-sm font-semibold ${t.promo ? "text-teal-600" : "text-slate-900"}`}>
+                          {t.price[currency]}
+                        </span>
                       </span>
                     </div>
                   </button>

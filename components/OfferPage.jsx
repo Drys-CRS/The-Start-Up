@@ -12,16 +12,16 @@ const OFFER_DEADLINE = "30 Sep 2026";
 const TIERS = {
   USD: {
     sym: "$",
-    offer: { total: "3,000", tag: "30-day build · 60 days support FREE" },
+    offer: { total: "1,500", was: "3,000", tag: "30-day build · 60 days support FREE" },
     items: [
-      { name: "Premium", total: "5,000", tag: "Complex / multi-system builds" },
+      { name: "Premium", total: "2,500", was: "5,000", tag: "Complex / multi-system builds" },
     ],
   },
   ZAR: {
     sym: "R",
-    offer: { total: "60,000", tag: "30-day build · 60 days support FREE" },
+    offer: { total: "30,000", was: "60,000", tag: "30-day build · 60 days support FREE" },
     items: [
-      { name: "Premium", total: "100,000", tag: "Complex / multi-system builds" },
+      { name: "Premium", total: "50,000", was: "100,000", tag: "Complex / multi-system builds" },
     ],
   },
 };
@@ -184,7 +184,7 @@ export default function OfferPage() {
           <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 mb-7">
             <div>
               <div className="text-xs font-medium uppercase tracking-wider text-slate-500 mb-1">Pricing</div>
-              <h2 className="text-2xl font-semibold tracking-tight">Two tiers. Fixed scope. Fixed price.</h2>
+              <h2 className="text-2xl font-semibold tracking-tight">Two tiers. Fixed scope. 50% off.</h2>
               <p className="mt-1.5 text-sm text-slate-600">Promotional: 30-day build + 60 days FREE support. Premium: 30-day build + 60 days support + 30 days FREE = 120 days total.</p>
             </div>
             <div className="flex rounded-lg border border-slate-200 bg-white p-0.5 text-xs font-medium self-start">
@@ -205,11 +205,14 @@ export default function OfferPage() {
               <div className="flex-1">
                 <div className="flex items-center gap-2 mb-3">
                   <span className="rounded-full bg-teal-500 px-3 py-0.5 text-xs font-bold text-slate-950 tracking-wide uppercase">
-                    Limited Time Offer
+                    50% Off — Special
                   </span>
                   <span className="text-xs text-slate-400">Ends {OFFER_DEADLINE}</span>
                 </div>
                 <div className="flex items-baseline gap-2">
+                  <span className="font-mono text-2xl text-slate-500 line-through tabular-nums">
+                    {tiers.sym}{tiers.offer.was}
+                  </span>
                   <span className="font-mono text-4xl sm:text-5xl font-semibold tracking-tight tabular-nums text-white">
                     {tiers.sym}{tiers.offer.total}
                   </span>
@@ -227,7 +230,7 @@ export default function OfferPage() {
                   </span>
                 </div>
                 <p className="mt-3 text-xs text-slate-500 max-w-md">
-                  We're taking on a small cohort of case-study partners at this price. Once the September window closes, the rate moves to the standard tier.
+                  50% off for a small cohort of case-study partners. Once the September window closes, price returns to full rate.
                 </p>
               </div>
               <div className="flex-none w-full sm:w-auto">
@@ -245,7 +248,7 @@ export default function OfferPage() {
             <div key={t.name}
               className="relative flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6 rounded-2xl border border-slate-900 bg-slate-950 text-slate-100 shadow-lg p-6 sm:p-8">
               <span className="absolute -top-2.5 left-6 rounded-full bg-teal-500 px-2.5 py-0.5 text-xs font-semibold text-slate-950">
-                Standard
+                50% Off
               </span>
               <div className="flex-1">
                 <div className="text-base font-semibold tracking-tight">{t.name}</div>
@@ -267,7 +270,10 @@ export default function OfferPage() {
               </div>
               <div className="flex-none flex flex-col sm:items-end gap-3">
                 <div>
-                  <div className="flex items-baseline gap-1">
+                  <div className="flex items-baseline gap-1.5">
+                    <span className="font-mono text-lg text-slate-500 line-through tabular-nums">
+                      {tiers.sym}{t.was}
+                    </span>
                     <span className="font-mono text-3xl font-semibold tracking-tight tabular-nums">
                       {tiers.sym}{t.total}
                     </span>

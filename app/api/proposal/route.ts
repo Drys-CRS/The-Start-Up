@@ -23,16 +23,19 @@ const BORDER = c("#e2e8f0");
 const WHITE  = rgb(1, 1, 1);
 
 // ── Tier data ─────────────────────────────────────────────────────────────────
-const TIERS: Record<string, { label: string; usd: string; zar: string; period: string; isPromo: boolean }> = {
+// 50% off special (ends 30 Sep 2026) — wasUsd/wasZar hold the full-price reference.
+const TIERS: Record<string, { label: string; usd: string; zar: string; wasUsd: string; wasZar: string; period: string; isPromo: boolean }> = {
   "PROMOTIONAL (Base + Free 2 Months)": {
-    label: "Promotional - Limited Time Offer",
-    usd: "$3,000 flat", zar: "R60,000 flat",
+    label: "Promotional - 50% Off Special",
+    usd: "$1,500 flat", zar: "R30,000 flat",
+    wasUsd: "$3,000", wasZar: "R60,000",
     period: "90 days total (30-day build - 60 days support FREE)",
     isPromo: true,
   },
   Premium: {
-    label: "Premium",
-    usd: "$5,000 flat", zar: "R100,000 flat",
+    label: "Premium - 50% Off Special",
+    usd: "$2,500 flat", zar: "R50,000 flat",
+    wasUsd: "$5,000", wasZar: "R100,000",
     period: "120 days total (30-day build - 60 days support - +30 days FREE)",
     isPromo: false,
   },
@@ -84,6 +87,7 @@ export async function POST(req: NextRequest) {
   const tier: string = b.tier || "Premium";
   const pkg = TIERS[tier] ?? TIERS.Premium;
   const price = currency === "ZAR" ? pkg.zar : pkg.usd;
+  const wasPrice = currency === "ZAR" ? pkg.wasZar : pkg.wasUsd;
   const mondayItemId: string | undefined = b.mondayItemId;
 
   const refNo = `SL-${Date.now().toString().slice(-8)}`;
@@ -220,6 +224,8 @@ export async function POST(req: NextRequest) {
   txt(pkg.label.toUpperCase(), ML + 12, cy - 10, fontB, 8,  TEAL);
   // Price (size 22) — topY cy-30, baseline cy-52. Descenders reach ~cy-56
   txt(price,                   ML + 12, cy - 30, fontB, 22, WHITE);
+  const priceW = fontB.widthOfTextAtSize(sanitize(price), 22);
+  txt(`(was ${wasPrice} - 50% OFF)`, ML + 12 + priceW + 8, cy - 40, fontR, 8, TEAL);
   // Period (size 8) — topY cy-60, baseline cy-68. Cap top ~cy-62. Gap from descenders = 6pt ✓
   txt(pkg.period,              ML + 12, cy - 60, fontR, 8,  LIGHT);
   // Feature line (size 7.5) — topY cy-74, baseline cy-81.5, well within 88pt box ✓
@@ -284,9 +290,9 @@ export async function POST(req: NextRequest) {
   sectionTitle("Investment Summary");
   type IRow = [string, string, string];
   const isZar = currency === "ZAR";
-  const invDeposit = pkg.isPromo ? (isZar ? "R6,000"  : "$300")    : (isZar ? "R10,000" : "$500");
-  const invMvp     = pkg.isPromo ? (isZar ? "R48,000" : "$2,400")  : (isZar ? "R80,000" : "$4,000");
-  const invBalance = pkg.isPromo ? (isZar ? "R6,000"  : "$300")    : (isZar ? "R10,000" : "$500");
+  const invDeposit = pkg.isPromo ? (isZar ? "R3,000"  : "$150")    : (isZar ? "R5,000"  : "$250");
+  const invMvp     = pkg.isPromo ? (isZar ? "R24,000" : "$1,200")  : (isZar ? "R40,000" : "$2,000");
+  const invBalance = pkg.isPromo ? (isZar ? "R3,000"  : "$150")    : (isZar ? "R5,000"  : "$250");
   const invRows: IRow[] = [
     ["Deposit - 10%",          invDeposit, "Due on signature - secures your start date"],
     ["MVP Approval - 80%",     invMvp,     "Due once MVP plan is reviewed and approved by client"],

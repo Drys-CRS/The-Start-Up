@@ -79,20 +79,20 @@ const jsonLd = {
         {
           "@type": "Offer",
           name: "Promotional",
-          price: "3000",
+          price: "1500",
           priceCurrency: "USD",
           availability: "https://schema.org/LimitedAvailability",
           description:
-            "30-day build with 60 days of included support. Ideal for a single focused workflow.",
+            "50% off special (was $3,000, ends 30 Sep 2026). 30-day build with 60 days of included support. Ideal for a single focused workflow.",
         },
         {
           "@type": "Offer",
           name: "Premium",
-          price: "5000",
+          price: "2500",
           priceCurrency: "USD",
           availability: "https://schema.org/InStock",
           description:
-            "30-day build with 120 days of included support. For complex or multi-system builds.",
+            "50% off special (was $5,000, ends 30 Sep 2026). 30-day build with 120 days of included support. For complex or multi-system builds.",
         },
       ],
     },
