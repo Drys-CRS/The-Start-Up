@@ -10,8 +10,8 @@ const SUPPORT_USD_CENTS = 15000; // $150/month fixed
 export async function POST(req: NextRequest) {
   const { toolsMonthlyUsd, email, ref, item } = await req.json().catch(() => ({}));
 
-  if (!toolsMonthlyUsd || isNaN(Number(toolsMonthlyUsd))) {
-    return NextResponse.json({ error: "toolsMonthlyUsd is required" }, { status: 400 });
+  if (toolsMonthlyUsd === undefined || toolsMonthlyUsd === null || isNaN(Number(toolsMonthlyUsd)) || Number(toolsMonthlyUsd) < 0) {
+    return NextResponse.json({ error: "toolsMonthlyUsd must be a non-negative number" }, { status: 400 });
   }
 
   const toolsCents = Math.round(Number(toolsMonthlyUsd) * 100);
@@ -32,15 +32,19 @@ export async function POST(req: NextRequest) {
         },
         quantity: 1,
       },
-      {
-        price_data: {
-          currency: "usd",
-          product_data: { name: "Tools & Subscriptions", description: "Estimated monthly cost of all tools and platforms required for your app" },
-          unit_amount: toolsCents,
-          recurring: { interval: "month" },
-        },
-        quantity: 1,
-      },
+      ...(toolsCents > 0
+        ? [
+            {
+              price_data: {
+                currency: "usd",
+                product_data: { name: "Tools & Subscriptions", description: "Estimated monthly cost of all tools and platforms required for your app" },
+                unit_amount: toolsCents,
+                recurring: { interval: "month" as const },
+              },
+              quantity: 1,
+            },
+          ]
+        : []),
     ],
     success_url: `${origin}/sign/success?session_id={CHECKOUT_SESSION_ID}&type=monthly`,
     cancel_url:  `${origin}/sign?ref=${encodeURIComponent(ref || "")}&cancelled=1`,

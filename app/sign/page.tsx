@@ -117,7 +117,7 @@ export default function SignPage() {
     const res = await fetch("/api/checkout/subscription", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ toolsMonthlyUsd: monthlyTools, email, ref, item }),
+      body: JSON.stringify({ toolsMonthlyUsd: monthlyTools ?? 0, email, ref, item }),
     });
     if (res.ok) {
       const { url } = await res.json();
