@@ -10,8 +10,8 @@ export default function WordMark({ context = "auto", className = "" }) {
     <img
       src="/logo-light.png"
       alt="The Startup"
-      height={52}
-      style={{ height: 52, width: "auto", display: "block", mixBlendMode: "multiply" }}
+      height={72}
+      style={{ height: 72, width: "auto", display: "block", mixBlendMode: "multiply" }}
       className={context === "auto" ? "block dark:hidden" : undefined}
     />
   );
@@ -19,8 +19,8 @@ export default function WordMark({ context = "auto", className = "" }) {
     <img
       src="/logo-dark.png"
       alt="The Startup"
-      height={52}
-      style={{ height: 52, width: "auto", display: "block", mixBlendMode: "screen" }}
+      height={72}
+      style={{ height: 72, width: "auto", display: "block", mixBlendMode: "screen" }}
       className={context === "auto" ? "hidden dark:block" : undefined}
     />
   );

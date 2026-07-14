@@ -15,15 +15,9 @@ const TIER_LABEL: Record<string, string> = {
 
 // Payment structure: 10% deposit now → 80% on MVP plan approval → 10% on delivery
 // 50% off special (ends 30 Sep 2026) — "was" reflects the full-price total.
-const AMOUNTS: Record<string, Record<string, { total: string; was: string; deposit: string; mvp: string; balance: string }>> = {
-  promo: {
-    USD: { total: "$1,500",  was: "$3,000",   deposit: "$150",   mvp: "$1,200",   balance: "$150"   },
-    ZAR: { total: "R30,000", was: "R60,000",  deposit: "R3,000", mvp: "R24,000",  balance: "R3,000" },
-  },
-  premium: {
-    USD: { total: "$2,500",  was: "$5,000",   deposit: "$250",   mvp: "$2,000",   balance: "$250"   },
-    ZAR: { total: "R50,000", was: "R100,000", deposit: "R5,000", mvp: "R40,000",  balance: "R5,000" },
-  },
+const AMOUNTS: Record<string, { total: string; was: string; deposit: string; mvp: string; balance: string }> = {
+  promo:   { total: "$1,500", was: "$3,000", deposit: "$150", mvp: "$1,200", balance: "$150" },
+  premium: { total: "$2,500", was: "$5,000", deposit: "$250", mvp: "$2,000", balance: "$250" },
 };
 
 const KEY_TERMS = [
@@ -37,7 +31,7 @@ export default function SignPage() {
   const [ref,         setRef]         = useState("");
   const [item,        setItem]        = useState("");
   const [tier,        setTier]        = useState("premium");
-  const [cur,         setCur]         = useState("USD");
+  const cur = "USD";
   const [email,       setEmail]       = useState("");
   const [monthlyTools, setMonthlyTools] = useState<number | null>(null);
   const [monthlyOptIn, setMonthlyOptIn] = useState(false);
@@ -55,7 +49,6 @@ export default function SignPage() {
     setRef(p.get("ref")   || "");
     setItem(p.get("item") || "");
     setTier(p.get("t")    || "premium");
-    setCur(p.get("c")     || "USD");
     setEmail(p.get("e")   || "");
     const mt = p.get("mtools");
     if (mt && !isNaN(Number(mt))) setMonthlyTools(Number(mt));
@@ -128,7 +121,7 @@ export default function SignPage() {
     }
   }
 
-  const amountInfo = AMOUNTS[tier]?.[cur] ?? AMOUNTS.premium.USD;
+  const amountInfo = AMOUNTS[tier] ?? AMOUNTS.premium;
   const ai = amountInfo; // shorthand
   const canSign    = name.trim().length > 0 && agreed;
 
@@ -393,7 +386,7 @@ export default function SignPage() {
           <input type="checkbox" checked={agreed} onChange={e => setAgreed(e.target.checked)}
             style={{ marginTop: 3, accentColor: TEAL, width: 15, height: 15, flexShrink: 0 }} />
           <span style={{ fontSize: 13, color: "var(--c-mid)", lineHeight: 1.5 }}>
-            I have read and understood the Terms &amp; Conditions in this proposal, including that third-party subscriptions and tool costs (hosting, Monday.com, APIs, etc.) are my responsibility and are not included in the project fee. I agree that this digital signature constitutes a legally binding acceptance of all terms.
+            I have read and understood the Terms &amp; Conditions in this proposal, including that third-party subscriptions and tool costs (hosting, your CRM platform, APIs, etc.) are my responsibility and are not included in the project fee. I agree that this digital signature constitutes a legally binding acceptance of all terms.
           </span>
         </label>
 

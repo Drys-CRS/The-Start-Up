@@ -12,7 +12,7 @@ export const metadata: Metadata = {
     "custom CRM system",
     "business systems AI",
     "workflow automation",
-    "Monday.com CRM setup",
+    "platform-agnostic CRM setup",
     "30-day app build",
     "business growth AI",
     "pipeline management",

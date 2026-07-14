@@ -11,24 +11,23 @@ const TIERS = [
     value: "PROMOTIONAL (Base + Free 2 Months)",
     label: "Promotional",
     sublabel: "Base + Free 2 Months",
-    price: { USD: "$1,500 flat", ZAR: "R30,000 flat" },
-    wasPrice: { USD: "$3,000", ZAR: "R60,000" },
-    note: { USD: "30-day build · 60 days support FREE", ZAR: "30-day build · 60 days support FREE" },
+    price: "$1,500 flat",
+    wasPrice: "$3,000",
+    note: "30-day build · 60 days support FREE",
     promo: true,
   },
   {
     value: "Premium",
     label: "Premium",
     sublabel: "120 days total",
-    price: { USD: "$2,500 flat", ZAR: "R50,000 flat" },
-    wasPrice: { USD: "$5,000", ZAR: "R100,000" },
-    note: { USD: "30-day build · 60 days support · +30 days FREE", ZAR: "30-day build · 60 days support · +30 days FREE" },
+    price: "$2,500 flat",
+    wasPrice: "$5,000",
+    note: "30-day build · 60 days support · +30 days FREE",
     promo: false,
   },
 ];
 
 export default function ScopeLockForm({ embedded = false, initialValues = {}, prefilledKeys = [] }) {
-  const [currency, setCurrency] = useState("USD");
   const [f, setF] = useState({
     company: "", contact: "", email: "", tier: "PROMOTIONAL (Base + Free 2 Months)",
     goal: "", bottleneck: "", workflow: "", musthaves: "",
@@ -109,7 +108,7 @@ export default function ScopeLockForm({ embedded = false, initialValues = {}, pr
   async function submit() {
     if (!valid) return;
     setStatus("sending");
-    const payload = { ...f, currency };
+    const payload = { ...f, currency: "USD" };
     try {
       const res = await fetch("/api/scope-lock", {
         method: "POST",
@@ -215,12 +214,12 @@ export default function ScopeLockForm({ embedded = false, initialValues = {}, pr
                   {selectedTier.label} · 50% Off
                 </p>
                 <p className="mt-0.5 flex items-baseline gap-2 text-lg font-bold text-white">
-                  <span className="text-sm font-normal text-slate-400 line-through">{selectedTier.wasPrice[cur]}</span>
-                  {selectedTier.price[cur]}
+                  <span className="text-sm font-normal text-slate-400 line-through">{selectedTier.wasPrice}</span>
+                  {selectedTier.price}
                 </p>
               </div>
               <p className="text-xs text-slate-400 text-right max-w-[140px]">
-                {selectedTier.note[cur]}
+                {selectedTier.note}
               </p>
             </div>
 
@@ -425,18 +424,7 @@ export default function ScopeLockForm({ embedded = false, initialValues = {}, pr
         </div>
 
         <div className="mt-4 rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-5 sm:p-7 shadow-sm space-y-5">
-          <div className="flex items-center justify-between">
-            <span className={label + " mb-0"}>Your engagement</span>
-            <div className="flex rounded-lg border border-slate-200 p-0.5 text-xs font-medium">
-              {["USD", "ZAR"].map((c) => (
-                <button key={c} onClick={() => setCurrency(c)}
-                  className={"px-3 py-1 rounded-md transition-colors " +
-                    (currency === c ? "bg-slate-900 text-white" : "text-slate-500 hover:text-slate-900")}>
-                  {c}
-                </button>
-              ))}
-            </div>
-          </div>
+          <span className={label + " mb-0"}>Your engagement</span>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
@@ -495,13 +483,13 @@ export default function ScopeLockForm({ embedded = false, initialValues = {}, pr
                               </span>
                             )}
                           </div>
-                          <p className="text-xs text-slate-500 mt-0.5">{t.note[currency]}</p>
+                          <p className="text-xs text-slate-500 mt-0.5">{t.note}</p>
                         </div>
                       </div>
                       <span className="flex items-baseline gap-1.5 flex-none">
-                        <span className="font-mono text-xs text-slate-400 line-through">{t.wasPrice[currency]}</span>
+                        <span className="font-mono text-xs text-slate-400 line-through">{t.wasPrice}</span>
                         <span className={`font-mono text-sm font-semibold ${t.promo ? "text-teal-600" : "text-slate-900"}`}>
-                          {t.price[currency]}
+                          {t.price}
                         </span>
                       </span>
                     </div>
@@ -524,7 +512,7 @@ export default function ScopeLockForm({ embedded = false, initialValues = {}, pr
           <div>
             <label className={label}>The one core workflow this must handle</label>
             <textarea className={inp("workflow")} rows={2} value={f.workflow} onChange={set("workflow")}
-              placeholder="e.g. Lead arrives → scored → routed to an owner → appears on a rep's Monday board → reported weekly." />
+              placeholder="e.g. Lead arrives → scored → routed to an owner → appears on a rep's pipeline board → reported weekly." />
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>

@@ -19,20 +19,11 @@ const reveal = {
 const OFFER_DEADLINE = "30 Sep 2026";
 
 const TIERS = {
-  USD: {
-    sym: "$",
-    offer: { total: "1,500", was: "3,000", tag: "30-day build · 60 days support FREE" },
-    items: [
-      { name: "Premium", total: "2,500", was: "5,000", tag: "Complex / multi-system builds" },
-    ],
-  },
-  ZAR: {
-    sym: "R",
-    offer: { total: "30,000", was: "60,000", tag: "30-day build · 60 days support FREE" },
-    items: [
-      { name: "Premium", total: "50,000", was: "100,000", tag: "Complex / multi-system builds" },
-    ],
-  },
+  sym: "$",
+  offer: { total: "1,500", was: "3,000", tag: "30-day build · 60 days support FREE" },
+  items: [
+    { name: "Premium", total: "2,500", was: "5,000", tag: "Complex / multi-system builds" },
+  ],
 };
 
 const INCLUDED = [
@@ -54,9 +45,8 @@ const DEFERRED = [
 
 
 export default function OfferPage() {
-  const [currency, setCurrency] = useState("USD");
   const [openFaq, setOpenFaq] = useState(0);
-  const tiers = TIERS[currency];
+  const tiers = TIERS;
 
   return (
     <div className="min-h-screen w-full bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 font-sans">
@@ -203,21 +193,10 @@ export default function OfferPage() {
 
         {/* Pricing */}
         <motion.div {...reveal} id="pricing" className="mt-16">
-          <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 mb-7">
-            <div>
-              <div className="text-xs font-medium uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-1">Pricing</div>
-              <h2 className="text-2xl font-semibold tracking-tight">Two tiers. Fixed scope. 50% off.</h2>
-              <p className="mt-1.5 text-sm text-slate-600 dark:text-slate-400">Promotional: 30-day build + 60 days FREE support. Premium: 30-day build + 60 days support + 30 days FREE = 120 days total.</p>
-            </div>
-            <div className="flex rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-0.5 text-xs font-medium self-start">
-              {["USD", "ZAR"].map((cc) => (
-                <button key={cc} onClick={() => setCurrency(cc)}
-                  className={"px-3 py-1.5 rounded-md transition-colors " +
-                    (currency === cc ? "bg-slate-900 dark:bg-teal-500 text-white dark:text-slate-950" : "text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white")}>
-                  {cc}
-                </button>
-              ))}
-            </div>
+          <div className="mb-7">
+            <div className="text-xs font-medium uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-1">Pricing</div>
+            <h2 className="text-2xl font-semibold tracking-tight">Two tiers. Fixed scope. 50% off.</h2>
+            <p className="mt-1.5 text-sm text-slate-600 dark:text-slate-400">Promotional: 30-day build + 60 days FREE support. Premium: 30-day build + 60 days support + 30 days FREE = 120 days total.</p>
           </div>
 
           {/* Limited Time Offer — full-width feature block */}
@@ -370,11 +349,7 @@ export default function OfferPage() {
           </div>
         </motion.div>
 
-        <p className="mt-10 text-center text-xs text-slate-400 dark:text-slate-500">
-          * Our CRM systems are built on and powered by <a href="https://monday.com" target="_blank" rel="noopener noreferrer" className="underline hover:text-slate-600 dark:hover:text-slate-300">Monday.com</a>.
-        </p>
-
-        <div className="mt-6 border-t border-slate-200 dark:border-slate-800 pt-6 flex flex-col sm:flex-row items-center justify-between gap-3">
+        <div className="mt-10 border-t border-slate-200 dark:border-slate-800 pt-6 flex flex-col sm:flex-row items-center justify-between gap-3">
           <WordMark className="opacity-40 scale-75 origin-left" />
           <div className="flex items-center gap-4">
             <a href="/calculator" className="text-xs font-semibold text-teal-600 dark:text-teal-400 hover:text-teal-700 dark:hover:text-teal-300">Free audit →</a>

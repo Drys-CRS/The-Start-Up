@@ -23,19 +23,19 @@ const BORDER = c("#e2e8f0");
 const WHITE  = rgb(1, 1, 1);
 
 // ── Tier data ─────────────────────────────────────────────────────────────────
-// 50% off special (ends 30 Sep 2026) — wasUsd/wasZar hold the full-price reference.
-const TIERS: Record<string, { label: string; usd: string; zar: string; wasUsd: string; wasZar: string; period: string; isPromo: boolean }> = {
+// 50% off special (ends 30 Sep 2026) — wasUsd holds the full-price reference.
+const TIERS: Record<string, { label: string; usd: string; wasUsd: string; period: string; isPromo: boolean }> = {
   "PROMOTIONAL (Base + Free 2 Months)": {
     label: "Promotional - 50% Off Special",
-    usd: "$1,500 flat", zar: "R30,000 flat",
-    wasUsd: "$3,000", wasZar: "R60,000",
+    usd: "$1,500 flat",
+    wasUsd: "$3,000",
     period: "90 days total (30-day build - 60 days support FREE)",
     isPromo: true,
   },
   Premium: {
     label: "Premium - 50% Off Special",
-    usd: "$2,500 flat", zar: "R50,000 flat",
-    wasUsd: "$5,000", wasZar: "R100,000",
+    usd: "$2,500 flat",
+    wasUsd: "$5,000",
     period: "120 days total (30-day build - 60 days support - +30 days FREE)",
     isPromo: false,
   },
@@ -83,11 +83,11 @@ function wrapText(
 export async function POST(req: NextRequest) {
   const b = await req.json().catch(() => ({}));
 
-  const currency: "USD" | "ZAR" = b.currency === "ZAR" ? "ZAR" : "USD";
+  const currency = "USD";
   const tier: string = b.tier || "Premium";
   const pkg = TIERS[tier] ?? TIERS.Premium;
-  const price = currency === "ZAR" ? pkg.zar : pkg.usd;
-  const wasPrice = currency === "ZAR" ? pkg.wasZar : pkg.wasUsd;
+  const price = pkg.usd;
+  const wasPrice = pkg.wasUsd;
   const mondayItemId: string | undefined = b.mondayItemId;
 
   const refNo = `SL-${Date.now().toString().slice(-8)}`;
@@ -210,7 +210,6 @@ export async function POST(req: NextRequest) {
   fieldBlock("Company / Organisation", b.company);
   fieldBlock("Contact Name", b.contact);
   fieldBlock("Email Address", b.email);
-  fieldBlock("Preferred Currency", currency);
 
   // ── SELECTED PACKAGE ───────────────────────────────────────────────────────
   sectionTitle("Selected Package");
@@ -289,10 +288,9 @@ export async function POST(req: NextRequest) {
   // ── INVESTMENT SUMMARY ─────────────────────────────────────────────────────
   sectionTitle("Investment Summary");
   type IRow = [string, string, string];
-  const isZar = currency === "ZAR";
-  const invDeposit = pkg.isPromo ? (isZar ? "R3,000"  : "$150")    : (isZar ? "R5,000"  : "$250");
-  const invMvp     = pkg.isPromo ? (isZar ? "R24,000" : "$1,200")  : (isZar ? "R40,000" : "$2,000");
-  const invBalance = pkg.isPromo ? (isZar ? "R3,000"  : "$150")    : (isZar ? "R5,000"  : "$250");
+  const invDeposit = pkg.isPromo ? "$150"   : "$250";
+  const invMvp     = pkg.isPromo ? "$1,200" : "$2,000";
+  const invBalance = pkg.isPromo ? "$150"   : "$250";
   const invRows: IRow[] = [
     ["Deposit - 10%",          invDeposit, "Due on signature - secures your start date"],
     ["MVP Approval - 80%",     invMvp,     "Due once MVP plan is reviewed and approved by client"],
@@ -320,7 +318,7 @@ export async function POST(req: NextRequest) {
     ["2. 30-Day Build Guarantee", "We commit to delivering a working system within 30 calendar days of the confirmed build start. If we miss this for reasons attributable solely to us, the client receives an additional 30 days of support at no cost."],
     ["3. Payment Terms", "All tiers follow a three-stage schedule: 10% deposit on signature (secures your start date); 80% on MVP plan approval (client must review and approve before build continues); 10% final balance on delivery at end of the 30-day build. Invoices are due within 5 business days. Overdue payments may pause the build."],
     ["4. Ownership of Deliverables", "All custom configurations, automations, dashboards, and documentation become the client's property upon final payment. The Startup retains rights to its reusable internal frameworks and methodologies."],
-    ["5. Third-Party Subscriptions & Tools", "The client is solely responsible for the cost of all third-party tools, platforms, APIs, and software subscriptions required to operate and maintain the delivered system. This includes — but is not limited to — Monday.com workspace subscriptions, cloud hosting fees, domain registration, payment processing fees, API usage costs, and any SaaS tools integrated during the build. A Budget & Subscriptions board is provided with the project outlining estimated monthly and annual costs. These ongoing costs are entirely separate from The Startup's service fee and are not included in the project price."],
+    ["5. Third-Party Subscriptions & Tools", "The client is solely responsible for the cost of all third-party tools, platforms, APIs, and software subscriptions required to operate and maintain the delivered system. This includes — but is not limited to — CRM/workspace subscriptions, cloud hosting fees, domain registration, payment processing fees, API usage costs, and any SaaS tools integrated during the build. A Budget & Subscriptions breakdown is provided with the project outlining estimated monthly and annual costs. These ongoing costs are entirely separate from The Startup's service fee and are not included in the project price."],
     ["6. Support Period", "The support period covers active system support, bug fixes, optimisation, and training. It begins on handover and does not include new feature development."],
     ["7. Confidentiality", "Both parties agree to keep all project details, business information, and proprietary data confidential and will not disclose to third parties without prior written consent."],
     ["8. Cancellation Policy", "Before build start: full refund minus 10% scoping and admin fee. After build start: deposit is non-refundable; remaining work invoiced at a pro-rata day rate."],

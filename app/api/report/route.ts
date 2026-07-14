@@ -4,8 +4,7 @@ export async function POST(req: NextRequest) {
   const b = await req.json().catch(() => null);
   if (!b) return NextResponse.json({ error: "Invalid body" }, { status: 400 });
 
-  const cur = b.currency === "ZAR" ? "R" : "$";
-  const money = (n: number) => cur + Math.round(n || 0).toLocaleString("en-US");
+  const money = (n: number) => "$" + Math.round(n || 0).toLocaleString("en-US");
 
   const prompt = `You are a senior revenue-operations consultant at "The Start Up", a firm that ships custom CRM lead-generation systems in 30 days. Write a sharp, personalized "Bottleneck Report" for a prospect who just ran our lead-leakage calculator.
 
@@ -13,7 +12,7 @@ Prospect:
 - Company: ${b.company || "the company"}
 - Industry: ${b.industry || "B2B"}
 - Monthly inbound leads: ${b.leads ?? 0}
-- Average deal value: ${cur}${b.deal ?? 0}
+- Average deal value: $${b.deal ?? 0}
 - Current close rate: ${b.closeRate ?? 0}%
 - Average lead response time: ${b.responseTime || "unknown"}
 

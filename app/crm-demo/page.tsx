@@ -9,7 +9,7 @@ export const metadata: Metadata = {
     "Explore an interactive demo of the CRM, pipeline, and AI systems we build. Pick your industry and see exactly how your data would flow, automate, and report — before committing to anything.",
   keywords: [
     "CRM demo",
-    "Monday.com CRM example",
+    "custom CRM example",
     "pipeline management demo",
     "business system example",
     "CRM for SaaS",

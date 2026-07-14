@@ -1696,9 +1696,9 @@ export default function CRMSimulator() {
             </h2>
             <p className="text-slate-400 leading-relaxed mb-6">
               Every system you see simulated here can be built on the platform that fits your team best.
-              We default to Monday.com for most clients — it's fast to build on, easy for teams to adopt,
-              and powerful enough for complex automations. But the architecture, logic, and automations
-              we design are transferable. You own the system. The platform is just where it lives.
+              We pick whatever's fastest to build on, easiest for your team to adopt, and powerful enough
+              for the automations you need — no default, no vendor lock-in. The architecture, logic, and
+              automations we design are transferable. You own the system. The platform is just where it lives.
             </p>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-8">
               {[
@@ -1729,7 +1729,6 @@ export default function CRMSimulator() {
         {/* Footer */}
         <motion.div {...reveal} className="mt-10 border-t border-slate-200 dark:border-slate-700 pt-6 flex flex-col sm:flex-row items-center justify-between gap-3">
           <WordMark className="opacity-40 scale-75 origin-left" />
-          <p className="text-xs text-slate-400 dark:text-slate-500">* CRM systems are built on Monday.com where applicable.</p>
         </motion.div>
 
       </div>

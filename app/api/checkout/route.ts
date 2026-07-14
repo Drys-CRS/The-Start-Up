@@ -6,20 +6,14 @@ export const runtime = "nodejs";
 // 50% off special (ends 30 Sep 2026). Regenerated via seed-stripe.mjs equivalent
 // against Stripe account acct_1Tlz1sDdDUCT3Na5 (Cyber Retaliator Solutions LLC).
 const LINKS: Record<string, string> = {
-  // ── Promotional — 50% off ($1,500 / R30,000, was $3,000 / R60,000) ──────
+  // ── Promotional — 50% off ($1,500, was $3,000) ──────────────────────────
   "promo|USD|deposit": "https://buy.stripe.com/fZuaEX9BC8NxaCdf1t57W0c",
   "promo|USD|mvp":     "https://buy.stripe.com/14AcN5g00gfZ9y9g5x57W0d",
   "promo|USD|balance": "https://buy.stripe.com/14AfZh8xyaVFh0B3iL57W0e",
-  "promo|ZAR|deposit": "https://buy.stripe.com/3cI28r8xy8NxfWxcTl57W0f",
-  "promo|ZAR|mvp":     "https://buy.stripe.com/7sYaEX1564xh7q16uX57W0g",
-  "promo|ZAR|balance": "https://buy.stripe.com/3cI6oH5lmaVF8u5cTl57W0h",
-  // ── Premium — 50% off ($2,500 / R50,000, was $5,000 / R100,000) ─────────
+  // ── Premium — 50% off ($2,500, was $5,000) ──────────────────────────────
   "premium|USD|deposit": "https://buy.stripe.com/fZucN56pqd3NfWxcTl57W0i",
   "premium|USD|mvp":     "https://buy.stripe.com/aFacN50123tdaCd4mP57W0j",
   "premium|USD|balance": "https://buy.stripe.com/3cI14ncNO9RBeSt4mP57W0k",
-  "premium|ZAR|deposit": "https://buy.stripe.com/dRmbJ1bJKe7R7q13iL57W0l",
-  "premium|ZAR|mvp":     "https://buy.stripe.com/7sY14n9BCbZJ8u57z157W0m",
-  "premium|ZAR|balance": "https://buy.stripe.com/eVqfZh3de8NxeSt9H957W0n",
 };
 
 export async function POST(req: NextRequest) {

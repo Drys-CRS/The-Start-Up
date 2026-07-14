@@ -39,7 +39,7 @@ const INDUSTRIES = [
   "Financial Services", "Other",
 ];
 
-const SYM = { USD: "$", ZAR: "R" };
+const SYM = { USD: "$" };
 const fmt = (n, cur) =>
   SYM[cur] + Math.round(isFinite(n) ? n : 0).toLocaleString("en-US");
 
@@ -68,7 +68,7 @@ function useCountUp(target, duration = 1100) {
 
 export default function LeadLeakageCalculator() {
   const [step, setStep] = useState("input"); // input | results | buildplan
-  const [currency, setCurrency] = useState("USD");
+  const currency = "USD";
   const [company, setCompany] = useState("");
   const [industry, setIndustry] = useState(INDUSTRIES[0]);
   const [leads, setLeads] = useState("");
@@ -260,26 +260,7 @@ Be concrete and non-generic. No flattery, no filler.`;
             </p>
 
             <div className="mt-8 rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-5 sm:p-7 shadow-sm">
-              {/* currency toggle */}
-              <div className="flex items-center justify-between mb-5">
-                <span className={labelBase + " mb-0"}>Your numbers</span>
-                <div className="flex rounded-lg border border-slate-200 dark:border-slate-700 p-0.5 text-xs font-medium">
-                  {["USD", "ZAR"].map((c) => (
-                    <button
-                      key={c}
-                      onClick={() => setCurrency(c)}
-                      className={
-                        "px-3 py-1 rounded-md transition-colors " +
-                        (currency === c
-                          ? "bg-slate-900 dark:bg-teal-500 text-white dark:text-slate-950"
-                          : "text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white")
-                      }
-                    >
-                      {c}
-                    </button>
-                  ))}
-                </div>
-              </div>
+              <span className={labelBase + " mb-5 block"}>Your numbers</span>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="sm:col-span-1">
@@ -523,7 +504,7 @@ Be concrete and non-generic. No flattery, no filler.`;
             </div>
 
             <p className="mt-5 text-center text-xs text-slate-400 dark:text-slate-500">
-              Estimates based on lead-response benchmarks. Built by The Start Up · CRM powered by Monday.com.
+              Estimates based on lead-response benchmarks. Built by The Start Up.
             </p>
           </motion.div>
         )}

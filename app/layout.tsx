@@ -16,7 +16,7 @@ export const metadata: Metadata = {
     "We help businesses of every kind grow — through custom systems, intelligent workflows, and AI built in 30 days. Fixed price. Free automated audit. No call required to start.",
   keywords: [
     "custom CRM development",
-    "Monday.com implementation",
+    "platform-agnostic implementation",
     "business systems development",
     "workflow automation",
     "AI business tools",
