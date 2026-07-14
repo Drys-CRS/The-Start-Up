@@ -64,22 +64,23 @@ export default function OfferPage() {
         {/* Hero */}
         <div className="max-w-2xl">
           <div className="inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-white px-3 py-1 text-xs font-medium text-slate-500 mb-5">
-            <span className="h-1.5 w-1.5 rounded-full bg-teal-500" /> Systems &amp; AI for any business, any sector
+            <span className="h-1.5 w-1.5 rounded-full bg-teal-500" /> For businesses whose CRM isn't running the sales cycle
           </div>
           <h1 className="text-4xl sm:text-5xl font-semibold tracking-tight leading-tight">
-            Shipped in <span className="font-mono tabular-nums">30</span>.
-            <br className="hidden sm:block" /> Supported for <span className="font-mono tabular-nums">60–120</span>.
+            Your CRM isn't broken.
+            <br className="hidden sm:block" /> Your sales cycle is.
           </h1>
           <p className="mt-4 text-lg text-slate-600">
-            We help businesses of every kind grow — through custom systems, smart processes, and AI that works for your team.
-            Built in 30 days. Supported for 60 to 120. No endless discovery. No disappearing act.
+            Leads stall, reps skip steps, follow-up happens whenever someone remembers. We rebuild the process
+            and automation around your CRM so it actually runs your sales cycle. Shipped in 30 days.
+            Supported for <span className="font-mono tabular-nums">60–120</span>. No endless discovery. No disappearing act.
           </p>
           <div className="mt-7 flex flex-col sm:flex-row gap-3">
             <a href="/calculator" className="inline-flex items-center justify-center gap-2 rounded-lg bg-teal-500 px-6 py-3 text-sm font-semibold text-slate-950 hover:bg-teal-400">
               Get your free audit <ArrowRight className="h-4 w-4" />
             </a>
-            <a href="/scope-lock" className="inline-flex items-center justify-center gap-2 rounded-lg bg-slate-900 px-6 py-3 text-sm font-semibold text-white hover:bg-slate-800">
-              Start your Scope Lock <ArrowRight className="h-4 w-4" />
+            <a href="/calculator?step=buildplan" className="inline-flex items-center justify-center gap-2 rounded-lg bg-slate-900 px-6 py-3 text-sm font-semibold text-white hover:bg-slate-800">
+              Start Your Build Plan <ArrowRight className="h-4 w-4" />
             </a>
           </div>
 
@@ -108,10 +109,10 @@ export default function OfferPage() {
             <div className="hidden sm:block absolute top-5 left-0 right-0 h-px bg-slate-700" style={{ left: "10%", right: "10%" }} />
             <div className="grid grid-cols-1 sm:grid-cols-5 gap-6 sm:gap-2 relative">
               {[
-                { n: "01", label: "Free Audit", sub: "Run the calculator — instant Bottleneck Report, no call needed" },
-                { n: "02", label: "Bottleneck Report", sub: "AI analysis pinpoints exactly where revenue leaks and what to build" },
-                { n: "03", label: "Scope Lock", sub: "Short async questionnaire fixes scope, price, and ship date" },
-                { n: "04", label: "30-Day Build", sub: "Your CRM system built and live — fixed date, no delays" },
+                { n: "01", label: "Free Audit", sub: "Run the calculator — see exactly where your sales cycle is breaking down" },
+                { n: "02", label: "Bottleneck Report", sub: "AI pinpoints where revenue leaks and what fixes it, no call needed" },
+                { n: "03", label: "Your Build Plan", sub: "Same page, a few more questions — fixes scope, price, and ship date" },
+                { n: "04", label: "30-Day Build", sub: "Your sales cycle rebuilt and live in your CRM — fixed date, no delays" },
                 { n: "05", label: "Support Period", sub: "60 days (Promotional) or 120 days (Premium) — training, optimisation, documentation" },
               ].map((step, i) => (
                 <div key={step.n} className="flex flex-col items-center text-center">
@@ -234,7 +235,7 @@ export default function OfferPage() {
                 </p>
               </div>
               <div className="flex-none w-full sm:w-auto">
-                <a href="/scope-lock"
+                <a href="/calculator?step=buildplan"
                   className="flex sm:inline-flex items-center justify-center gap-2 rounded-xl bg-teal-500 px-8 py-4 text-base font-semibold text-slate-950 hover:bg-teal-400 shadow-lg whitespace-nowrap">
                   Claim this rate <ArrowRight className="h-5 w-5" />
                 </a>
@@ -281,7 +282,7 @@ export default function OfferPage() {
                   </div>
                   <div className="text-xs text-slate-400 mt-0.5">90 days included · +30 days FREE</div>
                 </div>
-                <a href="/scope-lock"
+                <a href="/calculator?step=buildplan"
                   className="inline-flex items-center justify-center gap-2 rounded-lg bg-teal-500 px-6 py-2.5 text-sm font-semibold text-slate-950 hover:bg-teal-400 transition-colors whitespace-nowrap">
                   Start <ArrowRight className="h-4 w-4" />
                 </a>
@@ -294,12 +295,12 @@ export default function OfferPage() {
         <div id="start" className="mt-16 rounded-2xl border border-teal-200 bg-teal-50 p-6 sm:p-8">
           <h2 className="text-2xl font-semibold tracking-tight">Start without a call</h2>
           <p className="mt-2 text-slate-700 max-w-2xl">
-            Run the free audit first — it takes 2 minutes and pre-fills your Scope Lock. Everything else is async.
+            Run the free audit first — it takes 2 minutes and carries straight into your Build Plan on the same page.
           </p>
           <div className="mt-6 grid grid-cols-1 sm:grid-cols-3 gap-4">
             {[
-              ["Run the free audit", "2-minute Lead Leakage Calculator — AI pinpoints your biggest bottleneck and pre-fills your Scope Lock."],
-              ["Answer the Scope Lock", "A short questionnaire pins down exactly what we'll build and the date we'll ship it."],
+              ["Run the free audit", "2-minute Lead Leakage Calculator — AI pinpoints where your sales cycle is breaking down."],
+              ["Lock in your Build Plan", "Same page — a few more questions pin down exactly what we'll build and the date we'll ship it."],
               ["Build begins", "We send scope, price, and a start date. Approve it, pay the deposit, and we're off — daily updates, no meetings."],
             ].map(([t, b], i) => (
               <div key={t} className="rounded-xl border border-teal-200 bg-white p-4">
@@ -313,8 +314,8 @@ export default function OfferPage() {
             <a href="/calculator" className="inline-flex items-center justify-center gap-2 rounded-lg bg-teal-500 px-6 py-3 text-sm font-semibold text-slate-950 hover:bg-teal-400">
               Get your free audit <ArrowRight className="h-4 w-4" />
             </a>
-            <a href="/scope-lock" className="inline-flex items-center justify-center gap-2 rounded-lg border border-teal-300 bg-white px-6 py-3 text-sm font-semibold text-slate-700 hover:bg-teal-50">
-              Skip to Scope Lock <ArrowRight className="h-4 w-4" />
+            <a href="/calculator?step=buildplan" className="inline-flex items-center justify-center gap-2 rounded-lg border border-teal-300 bg-white px-6 py-3 text-sm font-semibold text-slate-700 hover:bg-teal-50">
+              Skip to Your Build Plan <ArrowRight className="h-4 w-4" />
             </a>
           </div>
         </div>
@@ -344,7 +345,7 @@ export default function OfferPage() {
           <WordMark dark className="opacity-40 scale-75 origin-left" />
           <div className="flex items-center gap-4">
             <a href="/calculator" className="text-xs font-semibold text-teal-600 hover:text-teal-700">Free audit →</a>
-            <a href="/scope-lock" className="text-xs font-semibold text-slate-900 hover:text-teal-600">Start your Scope Lock →</a>
+            <a href="/calculator?step=buildplan" className="text-xs font-semibold text-slate-900 hover:text-teal-600">Start Your Build Plan →</a>
           </div>
         </div>
       </div>

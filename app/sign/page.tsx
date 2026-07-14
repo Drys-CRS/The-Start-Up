@@ -143,7 +143,7 @@ export default function SignPage() {
               Agreement Signed
             </h1>
             <p style={{ color: "var(--c-mid)", fontSize: 14, margin: 0 }}>
-              Your signature has been recorded and attached to your scope lock record.
+              Your signature has been recorded and attached to your Build Plan record.
             </p>
           </div>
 
@@ -296,7 +296,7 @@ export default function SignPage() {
         {/* Header */}
         <div style={{ background: "#0f172a", margin: "-2rem -2rem 1.75rem", borderRadius: "16px 16px 0 0", padding: "1.5rem 2rem" }} className="sign-header">
           <div style={{ fontSize: 11, fontWeight: 700, color: TEAL, letterSpacing: 2, marginBottom: 6 }}>THE STARTUP</div>
-          <h1 style={{ fontSize: 20, fontWeight: 700, color: "#fff", margin: "0 0 4px" }}>Scope Lock Agreement</h1>
+          <h1 style={{ fontSize: 20, fontWeight: 700, color: "#fff", margin: "0 0 4px" }}>Build Plan Agreement</h1>
           {ref && <div style={{ fontSize: 12, color: "#94a3b8" }}>Reference: {ref}</div>}
         </div>
 

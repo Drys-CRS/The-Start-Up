@@ -8,6 +8,7 @@ import {
   Loader2, ChevronDown, ShieldCheck, Mail,
 } from "lucide-react";
 import WordMark from "./WordMark";
+import ScopeLockForm from "./ScopeLockForm";
 
 /**
  * THE START UP — Lead Leakage Calculator + AI Bottleneck Report
@@ -64,7 +65,7 @@ function useCountUp(target, duration = 1100) {
 }
 
 export default function LeadLeakageCalculator() {
-  const [step, setStep] = useState("input"); // input | results
+  const [step, setStep] = useState("input"); // input | results | buildplan
   const [currency, setCurrency] = useState("USD");
   const [company, setCompany] = useState("");
   const [industry, setIndustry] = useState(INDUSTRIES[0]);
@@ -78,6 +79,12 @@ export default function LeadLeakageCalculator() {
   const [loadingReport, setLoadingReport] = useState(false);
   const [leadCaptured, setLeadCaptured] = useState(false);
   const [showMethod, setShowMethod] = useState(false);
+
+  // Direct links to the Build Plan step (e.g. from the homepage, or the old /scope-lock URL) skip the audit.
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("step") === "buildplan") setStep("buildplan");
+  }, []);
 
   const calc = useMemo(() => {
     const L = parseFloat(leads) || 0;
@@ -209,6 +216,17 @@ Be concrete and non-generic. No flattery, no filler.`;
   const labelBase =
     "block text-xs font-medium uppercase tracking-wider text-slate-500 mb-1.5";
 
+  // Carries the audit's numbers straight into the Build Plan step — same page, no re-typing.
+  const buildPlanInitial = {
+    ...(company ? { company } : {}),
+    ...(calc.valid
+      ? {
+          goal: `Recover the ~${fmt(calc.annualLeak, currency)}/year we're losing to a slow sales cycle.`,
+          bottleneck: `${industry} leads get a ${RESPONSE[response].label.toLowerCase()} response — deals cool before anyone follows up.`,
+        }
+      : {}),
+  };
+
   return (
     <div className="min-h-screen w-full bg-slate-50 text-slate-900 font-sans">
       <div className="mx-auto max-w-3xl px-5 py-10 sm:py-14">
@@ -217,19 +235,19 @@ Be concrete and non-generic. No flattery, no filler.`;
         <div className="flex items-center justify-between mb-10">
           <a href="/"><WordMark dark /></a>
           <div className="hidden sm:block text-xs font-medium uppercase tracking-wider text-slate-400">
-            Lead Leakage Audit
+            {step === "buildplan" ? "Step 2 of 2 · Your Build Plan" : "Step 1 of 2 · Lead Leakage Audit"}
           </div>
         </div>
 
         {step === "input" && (
           <div>
             <h1 className="text-3xl sm:text-4xl font-semibold tracking-tight leading-tight">
-              Find out how much revenue is
-              <span className="text-teal-400"> leaking out of your pipeline.</span>
+              Your CRM isn't catching this —
+              <span className="text-teal-400"> find out how much your sales cycle is leaking.</span>
             </h1>
             <p className="mt-3 text-slate-600 text-base max-w-xl">
-              Most B2B teams lose deals to slow follow-up, not to competitors — and never see it.
-              Answer four questions for an instant estimate. No call.
+              Most B2B teams don't lose deals to competitors — they lose them to a broken sales cycle: slow
+              follow-up, no routing, nobody owning the next step. Answer four questions for an instant estimate. No call.
             </p>
 
             <div className="mt-8 rounded-2xl border border-slate-200 bg-white p-5 sm:p-7 shadow-sm">
@@ -479,9 +497,13 @@ Be concrete and non-generic. No flattery, no filler.`;
 
                   <div className="mt-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-t border-slate-800 pt-5">
                     <p className="text-sm text-slate-300 max-w-sm">{report.closingLine}</p>
-                    <a href="/scope-lock" className="inline-flex flex-none items-center justify-center gap-2 rounded-lg bg-white px-5 py-2.5 text-sm font-semibold text-slate-950 hover:bg-slate-200 transition-colors">
-                      See how we'd build it <ArrowRight className="h-4 w-4" />
-                    </a>
+                    <button
+                      type="button"
+                      onClick={() => setStep("buildplan")}
+                      className="inline-flex flex-none items-center justify-center gap-2 rounded-lg bg-white px-5 py-2.5 text-sm font-semibold text-slate-950 hover:bg-slate-200 transition-colors"
+                    >
+                      Turn this into my Build Plan <ArrowRight className="h-4 w-4" />
+                    </button>
                   </div>
                 </div>
               )}
@@ -490,6 +512,23 @@ Be concrete and non-generic. No flattery, no filler.`;
             <p className="mt-5 text-center text-xs text-slate-400">
               Estimates based on lead-response benchmarks. Built by The Start Up · CRM powered by Monday.com.
             </p>
+          </div>
+        )}
+
+        {step === "buildplan" && (
+          <div>
+            <button
+              type="button"
+              onClick={() => setStep(calc.valid ? "results" : "input")}
+              className="inline-flex items-center gap-1.5 text-sm text-slate-500 hover:text-slate-900 mb-6"
+            >
+              <ArrowLeft className="h-4 w-4" /> {calc.valid ? "Back to my leak report" : "Back to the audit"}
+            </button>
+            <ScopeLockForm
+              embedded
+              initialValues={buildPlanInitial}
+              prefilledKeys={Object.keys(buildPlanInitial)}
+            />
           </div>
         )}
       </div>

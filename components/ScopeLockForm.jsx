@@ -26,12 +26,13 @@ const TIERS = [
   },
 ];
 
-export default function ScopeLockForm() {
+export default function ScopeLockForm({ embedded = false, initialValues = {}, prefilledKeys = [] }) {
   const [currency, setCurrency] = useState("USD");
   const [f, setF] = useState({
     company: "", contact: "", email: "", tier: "PROMOTIONAL (Base + Free 2 Months)",
     goal: "", bottleneck: "", workflow: "", musthaves: "",
     integrations: "", startDate: "",
+    ...initialValues,
   });
   const [status, setStatus] = useState("idle"); // idle | sending | done | error
   const [downloading, setDownloading] = useState(false);
@@ -43,7 +44,7 @@ export default function ScopeLockForm() {
   const [description, setDescription] = useState("");
   const [analyzing, setAnalyzing] = useState(false);
   const [analyzeError, setAnalyzeError] = useState("");
-  const [prefilled, setPrefilled] = useState(new Set());
+  const [prefilled, setPrefilled] = useState(new Set(prefilledKeys));
   const [vertical, setVertical] = useState("");
   const lastSubmission = useRef(null);
   const set = (k) => (e) => {
@@ -141,7 +142,7 @@ export default function ScopeLockForm() {
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
-      const company = (lastSubmission.current.company || "scope-lock")
+      const company = (lastSubmission.current.company || "build-plan")
         .replace(/[^a-z0-9]/gi, "-").toLowerCase();
       a.download = `proposal-${company}.pdf`;
       document.body.appendChild(a);
@@ -187,7 +188,7 @@ export default function ScopeLockForm() {
             <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-teal-500">
               <Check className="h-6 w-6 text-white" strokeWidth={3} />
             </div>
-            <h1 className="text-2xl font-semibold tracking-tight text-slate-900 dark:text-white">Scope Lock received.</h1>
+            <h1 className="text-2xl font-semibold tracking-tight text-slate-900 dark:text-white">Your Build Plan is in.</h1>
             <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">
               We will turn this into a fixed scope, price, and start date — sent to your email. No call needed.
             </p>
@@ -286,16 +287,19 @@ export default function ScopeLockForm() {
   }
 
   return (
-    <div className="min-h-screen w-full bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 font-sans">
-      <div className="mx-auto max-w-2xl px-5 py-10 sm:py-14">
-        <a href="/" className="mb-10 inline-block">
-          <WordMark dark />
-        </a>
+    <div className={embedded ? "" : "min-h-screen w-full bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 font-sans"}>
+      <div className={embedded ? "" : "mx-auto max-w-2xl px-5 py-10 sm:py-14"}>
+        {!embedded && (
+          <a href="/" className="mb-10 inline-block">
+            <WordMark dark />
+          </a>
+        )}
 
-        <h1 className="text-3xl sm:text-4xl font-semibold tracking-tight">Start your Scope Lock</h1>
+        <h1 className="text-3xl sm:text-4xl font-semibold tracking-tight">Your Build Plan</h1>
         <p className="mt-3 text-slate-600 dark:text-slate-400 max-w-xl">
-          A few questions pin down exactly what we will build and the date we will ship it. No call —
-          we turn this into a fixed scope and price, you approve it, the build begins.
+          {embedded
+            ? "We've carried your numbers over. A few more questions turn this into a fixed build — exactly what we'll fix, the price, and the date we ship it. No call."
+            : "A few questions turn this into a fixed build — exactly what we will fix, the price, and the date we ship it. No call, no vague scope. You approve it, the build begins."}
         </p>
 
         {/* Auto-fill — tabbed: Website URL | Quick Description */}
@@ -528,7 +532,7 @@ export default function ScopeLockForm() {
           <button onClick={submit} disabled={!valid || status === "sending"}
             className={"inline-flex w-full items-center justify-center gap-2 rounded-lg px-5 py-3 text-sm font-semibold transition-colors " +
               (valid && status !== "sending" ? "bg-slate-900 text-white hover:bg-slate-800" : "bg-slate-200 text-slate-400 cursor-not-allowed")}>
-            {status === "sending" ? <><Loader2 className="h-4 w-4 animate-spin" /> Sending…</> : <>Submit Scope Lock <ArrowRight className="h-4 w-4" /></>}
+            {status === "sending" ? <><Loader2 className="h-4 w-4 animate-spin" /> Sending…</> : <>Get My Build Plan <ArrowRight className="h-4 w-4" /></>}
           </button>
           <p className="flex items-center gap-1.5 text-xs text-slate-400">
             <ShieldCheck className="h-3.5 w-3.5" /> Goes straight to our pipeline. We reply with scope, price, and a start date.

@@ -1455,7 +1455,7 @@ export default function CRMSimulator() {
             <a href="/calculator" className="hidden sm:inline-flex text-xs font-medium text-slate-500 hover:text-slate-900">
               Free audit
             </a>
-            <a href="/scope-lock" className="inline-flex items-center gap-1.5 rounded-lg bg-slate-900 px-3 py-2 sm:px-4 text-xs font-semibold text-white hover:bg-slate-800">
+            <a href="/calculator?step=buildplan" className="inline-flex items-center gap-1.5 rounded-lg bg-slate-900 px-3 py-2 sm:px-4 text-xs font-semibold text-white hover:bg-slate-800">
               <span className="hidden sm:inline">Start your build</span>
               <span className="sm:hidden">Get started</span>
               <ArrowRight className="h-3.5 w-3.5" />
@@ -1667,8 +1667,8 @@ export default function CRMSimulator() {
               ))}
             </div>
             <div className="flex flex-col sm:flex-row gap-3">
-              <a href="/scope-lock" className="inline-flex items-center justify-center gap-2 rounded-lg bg-teal-500 px-6 py-3 text-sm font-semibold text-slate-950 hover:bg-teal-400">
-                Start your Scope Lock <ArrowRight className="h-4 w-4" />
+              <a href="/calculator?step=buildplan" className="inline-flex items-center justify-center gap-2 rounded-lg bg-teal-500 px-6 py-3 text-sm font-semibold text-slate-950 hover:bg-teal-400">
+                Start Your Build Plan <ArrowRight className="h-4 w-4" />
               </a>
               <a href="/calculator" className="inline-flex items-center justify-center gap-2 rounded-lg border border-slate-700 px-6 py-3 text-sm font-semibold text-slate-300 hover:border-slate-500 hover:text-white">
                 Get your free audit first
