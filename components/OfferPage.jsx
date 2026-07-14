@@ -3,8 +3,10 @@ import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   ArrowRight, Check, X, ShieldCheck, FileText, ChevronDown, Monitor,
+  Search, TrendingDown, ClipboardCheck, Hammer, LifeBuoy, Tag, Unlock, Zap,
 } from "lucide-react";
 import WordMark from "./WordMark";
+import PipelinePreview from "./PipelinePreview";
 import { FAQS } from "@/lib/faqs";
 
 // Fade-and-rise as each section scrolls into view — plays once, doesn't re-trigger on scroll-back.
@@ -15,6 +17,13 @@ const reveal = {
   transition: { duration: 0.5, ease: "easeOut" },
 };
 
+// Per-item stagger for grids — pass i as the array index.
+const staggerItem = (i) => ({
+  initial: { opacity: 0, y: 10 },
+  whileInView: { opacity: 1, y: 0 },
+  viewport: { once: true, margin: "-40px" },
+  transition: { duration: 0.4, delay: i * 0.08, ease: "easeOut" },
+});
 
 const OFFER_DEADLINE = "30 Sep 2026";
 
@@ -26,13 +35,28 @@ const TIERS = {
   ],
 };
 
+const TRUST_POINTS = [
+  "Fixed price, no overruns",
+  "30-day build, fixed date",
+  "No call required to start",
+  "50% off launch cohort",
+];
+
+const STEPS = [
+  { n: "01", icon: Search, label: "Free Audit", sub: "Run the calculator — see exactly where your sales cycle is breaking down" },
+  { n: "02", icon: TrendingDown, label: "Bottleneck Report", sub: "AI pinpoints where revenue leaks and what fixes it, no call needed" },
+  { n: "03", icon: ClipboardCheck, label: "Your Build Plan", sub: "Same page, a few more questions — fixes scope, price, and ship date" },
+  { n: "04", icon: Hammer, label: "30-Day Build", sub: "Your sales cycle rebuilt and live in your CRM — fixed date, no delays" },
+  { n: "05", icon: LifeBuoy, label: "Support Period", sub: "60 days (Promotional) or 120 days (Premium) — training, optimisation, documentation" },
+];
+
 const INCLUDED = [
-  "One core workflow built end-to-end (capture → score → route → report)",
-  "CRM board your team already knows how to use",
-  "One reporting dashboard with the metrics leadership actually watches",
-  "One third-party integration (your CRM, enrichment, or calendar)",
-  "Team training, recorded and yours to keep",
-  "Exhaustive handover documentation — you fully own it",
+  { icon: Zap, title: "Core workflow, end-to-end", body: "Capture → score → route → report, built and tested — not a demo.", big: true },
+  { icon: ClipboardCheck, title: "CRM board your team knows", body: "Configured on the platform that fits your workflow." },
+  { icon: TrendingDown, title: "One reporting dashboard", body: "The metrics leadership actually watches, nothing else." },
+  { icon: Check, title: "One integration in scope", body: "Your CRM, enrichment tool, or calendar — connected." },
+  { icon: FileText, title: "Recorded team training", body: "Yours to keep and reuse as your team grows." },
+  { icon: ShieldCheck, title: "Full handover documentation", body: "You fully own it — no dependency on us to run it." },
 ];
 
 const DEFERRED = [
@@ -43,6 +67,12 @@ const DEFERRED = [
   "Long chains of integrations",
 ];
 
+const GUARANTEES = [
+  { icon: ShieldCheck, title: "30-day guarantee", body: "Miss the date for a reason that's on us, get 30 extra days of support free." },
+  { icon: Tag, title: "Fixed price, always", body: "The price you sign is the price you pay. No surprise invoices." },
+  { icon: Unlock, title: "You own what we build", body: "System, data, documentation — fully yours on final payment." },
+  { icon: Zap, title: "No call required", body: "Audit, scope, and price all happen async, on this page." },
+];
 
 export default function OfferPage() {
   const [openFaq, setOpenFaq] = useState(0);
@@ -50,89 +80,137 @@ export default function OfferPage() {
 
   return (
     <div className="min-h-screen w-full bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 font-sans">
-      <div className="mx-auto max-w-4xl px-5 py-10 sm:py-14">
-
-        {/* Brand */}
-        <div className="flex items-center justify-between mb-12">
+      {/* Sticky nav */}
+      <div className="sticky top-0 z-40 border-b border-slate-200/80 dark:border-slate-800/80 bg-slate-50/80 dark:bg-slate-950/80 backdrop-blur-md">
+        <div className="mx-auto max-w-5xl px-5 py-4 flex items-center justify-between">
           <WordMark />
           <a href="#pricing" className="hidden sm:inline-flex items-center gap-1.5 rounded-lg bg-slate-900 dark:bg-teal-500 px-4 py-2 text-xs font-semibold text-white dark:text-slate-950 hover:bg-slate-800 dark:hover:bg-teal-400">
             See pricing <ArrowRight className="h-3.5 w-3.5" />
           </a>
         </div>
+      </div>
+
+      <div className="mx-auto max-w-5xl px-5 py-10 sm:py-14">
 
         {/* Hero */}
-        <motion.div
-          className="max-w-2xl"
-          initial={{ opacity: 0, y: 16 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, ease: "easeOut" }}
-        >
-          <div className="inline-flex items-center gap-1.5 rounded-full border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-1 text-xs font-medium text-slate-500 dark:text-slate-400 mb-5">
-            <span className="h-1.5 w-1.5 rounded-full bg-teal-500" /> For businesses whose CRM isn't running the sales cycle
-          </div>
-          <h1 className="text-4xl sm:text-5xl font-semibold tracking-tight leading-tight">
-            Your CRM isn't broken.
-            <br className="hidden sm:block" /> Your sales cycle is.
-          </h1>
-          <p className="mt-4 text-lg text-slate-600 dark:text-slate-400">
-            Leads stall, reps skip steps, follow-up happens whenever someone remembers. We rebuild the process
-            and automation around your CRM so it actually runs your sales cycle. Shipped in 30 days.
-            Supported for <span className="font-mono tabular-nums">60–120</span>. No endless discovery. No disappearing act.
-          </p>
-          <div className="mt-7 flex flex-col sm:flex-row gap-3">
-            <motion.a whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} href="/calculator" className="inline-flex items-center justify-center gap-2 rounded-lg bg-teal-500 px-6 py-3 text-sm font-semibold text-slate-950 hover:bg-teal-400">
-              Get your free audit <ArrowRight className="h-4 w-4" />
-            </motion.a>
-            <motion.a whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} href="/calculator?step=buildplan" className="inline-flex items-center justify-center gap-2 rounded-lg bg-slate-900 dark:bg-white px-6 py-3 text-sm font-semibold text-white dark:text-slate-950 hover:bg-slate-800 dark:hover:bg-slate-200">
-              Start Your Build Plan <ArrowRight className="h-4 w-4" />
-            </motion.a>
-          </div>
-
-          {/* Demo CTA — drives curiosity before commitment */}
-          <a href="/crm-demo" className="mt-4 group flex items-center gap-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-4 py-3 hover:border-teal-300 dark:hover:border-teal-700 hover:bg-teal-50 dark:hover:bg-teal-950/40 transition-colors w-full sm:max-w-sm">
-            <div className="flex h-8 w-8 flex-none items-center justify-center rounded-lg bg-slate-100 dark:bg-slate-800 group-hover:bg-teal-100 dark:group-hover:bg-teal-900 transition-colors">
-              <Monitor className="h-4 w-4 text-slate-500 dark:text-slate-400 group-hover:text-teal-600 dark:group-hover:text-teal-400" />
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-14 items-center">
+          <motion.div
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, ease: "easeOut" }}
+          >
+            <div className="inline-flex items-center gap-1.5 rounded-full border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-1 text-xs font-medium text-slate-500 dark:text-slate-400 mb-5">
+              <span className="h-1.5 w-1.5 rounded-full bg-teal-500" /> For businesses whose CRM isn't running the sales cycle
             </div>
-            <div className="min-w-0">
-              <div className="text-sm font-semibold text-slate-900 dark:text-slate-100 group-hover:text-teal-700 dark:group-hover:text-teal-400">See a live system example</div>
-              <div className="text-xs text-slate-400 dark:text-slate-500 group-hover:text-teal-600 dark:group-hover:text-teal-400">Pick your industry — see exactly what we'd build for you</div>
+            <h1 className="text-4xl sm:text-5xl font-semibold tracking-tight leading-tight">
+              Your CRM isn't broken.
+              <br /> Your sales cycle is.
+            </h1>
+            <p className="mt-4 text-lg text-slate-600 dark:text-slate-400">
+              Leads stall, reps skip steps, follow-up happens whenever someone remembers. We rebuild the process
+              and automation around your CRM so it actually runs your sales cycle. Shipped in 30 days.
+              Supported for <span className="font-mono tabular-nums">60–120</span>. No endless discovery. No disappearing act.
+            </p>
+            <div className="mt-7 flex flex-col sm:flex-row gap-3">
+              <motion.a whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} href="/calculator" className="inline-flex items-center justify-center gap-2 rounded-lg bg-teal-500 px-6 py-3 text-sm font-semibold text-slate-950 hover:bg-teal-400">
+                Get your free audit <ArrowRight className="h-4 w-4" />
+              </motion.a>
+              <motion.a whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} href="/calculator?step=buildplan" className="inline-flex items-center justify-center gap-2 rounded-lg bg-slate-900 dark:bg-white px-6 py-3 text-sm font-semibold text-white dark:text-slate-950 hover:bg-slate-800 dark:hover:bg-slate-200">
+                Start Your Build Plan <ArrowRight className="h-4 w-4" />
+              </motion.a>
             </div>
-            <ArrowRight className="h-4 w-4 flex-none text-slate-300 dark:text-slate-600 group-hover:text-teal-500 ml-auto" />
-          </a>
+            <p className="mt-4 flex items-center gap-1.5 text-xs text-slate-400 dark:text-slate-500">
+              <ShieldCheck className="h-3.5 w-3.5" /> No call required to start.
+            </p>
+          </motion.div>
 
-          <p className="mt-3 flex items-center gap-1.5 text-xs text-slate-400 dark:text-slate-500">
-            <ShieldCheck className="h-3.5 w-3.5" /> No call required to start.
+          <motion.div
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.15, ease: "easeOut" }}
+          >
+            <PipelinePreview />
+            <a href="/crm-demo" className="mt-4 group flex items-center gap-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-4 py-3 hover:border-teal-300 dark:hover:border-teal-700 hover:bg-teal-50 dark:hover:bg-teal-950/40 transition-colors">
+              <div className="flex h-8 w-8 flex-none items-center justify-center rounded-lg bg-slate-100 dark:bg-slate-800 group-hover:bg-teal-100 dark:group-hover:bg-teal-900 transition-colors">
+                <Monitor className="h-4 w-4 text-slate-500 dark:text-slate-400 group-hover:text-teal-600 dark:group-hover:text-teal-400" />
+              </div>
+              <div className="min-w-0">
+                <div className="text-sm font-semibold text-slate-900 dark:text-slate-100 group-hover:text-teal-700 dark:group-hover:text-teal-400">See a live system example</div>
+                <div className="text-xs text-slate-400 dark:text-slate-500 group-hover:text-teal-600 dark:group-hover:text-teal-400">Pick your industry — see exactly what we'd build for you</div>
+              </div>
+              <ArrowRight className="h-4 w-4 flex-none text-slate-300 dark:text-slate-600 group-hover:text-teal-500 ml-auto" />
+            </a>
+          </motion.div>
+        </div>
+
+        {/* Trust strip */}
+        <motion.div {...reveal} className="mt-10 flex flex-wrap items-center justify-center gap-x-6 gap-y-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-5 py-3.5">
+          {TRUST_POINTS.map((t) => (
+            <span key={t} className="flex items-center gap-1.5 text-xs font-medium text-slate-500 dark:text-slate-400">
+              <Check className="h-3.5 w-3.5 text-teal-500" strokeWidth={3} /> {t}
+            </span>
+          ))}
+        </motion.div>
+
+        {/* What's included — bento grid */}
+        <motion.div {...reveal} className="mt-16">
+          <div className="text-xs font-medium uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-1">What's included</div>
+          <h2 className="text-2xl font-semibold tracking-tight">A 30-day build ships the spine first.</h2>
+          <p className="mt-2 text-slate-600 dark:text-slate-400 text-sm max-w-xl">
+            The core system that proves the value and gets your team using it. Everything else becomes
+            your roadmap, not scope creep.
           </p>
+          <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {INCLUDED.map((item, i) => (
+              <motion.div
+                key={item.title}
+                {...staggerItem(i)}
+                className={`rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-5 ${item.big ? "sm:col-span-2" : ""}`}
+              >
+                <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-teal-50 dark:bg-teal-950/40 mb-4">
+                  <item.icon className="h-4 w-4 text-teal-600 dark:text-teal-400" strokeWidth={2.5} />
+                </div>
+                <div className="font-semibold tracking-tight mb-1.5">{item.title}</div>
+                <p className="text-sm leading-relaxed text-slate-600 dark:text-slate-400">{item.body}</p>
+              </motion.div>
+            ))}
+          </div>
+          <div className="mt-5 flex flex-wrap items-center gap-2 text-xs text-slate-400 dark:text-slate-500">
+            <FileText className="h-3.5 w-3.5 flex-none" />
+            <span>Deferred to your roadmap: {DEFERRED.join(" · ")}</span>
+          </div>
+        </motion.div>
+
+        {/* Guarantees bento */}
+        <motion.div {...reveal} className="mt-16 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          {GUARANTEES.map((g, i) => (
+            <motion.div
+              key={g.title}
+              {...staggerItem(i)}
+              className="rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-5"
+            >
+              <g.icon className="h-5 w-5 text-teal-500 mb-3" strokeWidth={2.5} />
+              <div className="font-semibold text-sm tracking-tight mb-1.5">{g.title}</div>
+              <p className="text-xs leading-relaxed text-slate-500 dark:text-slate-400">{g.body}</p>
+            </motion.div>
+          ))}
         </motion.div>
 
         {/* Process Flow */}
-        <motion.div {...reveal} id="how" className="mt-12 overflow-hidden rounded-2xl bg-slate-950 shadow-sm p-8 sm:p-10">
+        <motion.div {...reveal} id="how" className="mt-16 overflow-hidden rounded-2xl bg-slate-950 shadow-sm p-8 sm:p-10">
           <div className="text-xs font-medium uppercase tracking-wider text-slate-500 mb-8">How it works</div>
           <div className="relative">
             {/* connecting line */}
             <div className="hidden sm:block absolute top-5 left-0 right-0 h-px bg-slate-700" style={{ left: "10%", right: "10%" }} />
             <div className="grid grid-cols-1 sm:grid-cols-5 gap-6 sm:gap-2 relative">
-              {[
-                { n: "01", label: "Free Audit", sub: "Run the calculator — see exactly where your sales cycle is breaking down" },
-                { n: "02", label: "Bottleneck Report", sub: "AI pinpoints where revenue leaks and what fixes it, no call needed" },
-                { n: "03", label: "Your Build Plan", sub: "Same page, a few more questions — fixes scope, price, and ship date" },
-                { n: "04", label: "30-Day Build", sub: "Your sales cycle rebuilt and live in your CRM — fixed date, no delays" },
-                { n: "05", label: "Support Period", sub: "60 days (Promotional) or 120 days (Premium) — training, optimisation, documentation" },
-              ].map((step, i) => (
-                <motion.div
-                  key={step.n}
-                  className="flex flex-col items-center text-center"
-                  initial={{ opacity: 0, y: 10 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true, margin: "-40px" }}
-                  transition={{ duration: 0.4, delay: i * 0.08, ease: "easeOut" }}
-                >
-                  <div className={`relative z-10 flex h-10 w-10 items-center justify-center rounded-full border-2 text-xs font-mono font-semibold mb-3 ${
+              {STEPS.map((step, i) => (
+                <motion.div key={step.n} {...staggerItem(i)} className="flex flex-col items-center text-center">
+                  <div className={`relative z-10 flex h-10 w-10 items-center justify-center rounded-full border-2 mb-3 ${
                     i === 0
                       ? "border-teal-500 bg-teal-500 text-slate-950"
                       : "border-slate-600 bg-slate-900 text-slate-400"
                   }`}>
-                    {step.n}
+                    <step.icon className="h-4 w-4" strokeWidth={2.5} />
                   </div>
                   <div className="text-sm font-semibold text-slate-100 tracking-tight">{step.label}</div>
                   <p className="mt-1.5 text-xs leading-relaxed text-slate-500 max-w-[140px]">{step.sub}</p>
@@ -148,46 +226,6 @@ export default function OfferPage() {
             <a href="/calculator" className="inline-flex items-center gap-1.5 rounded-lg bg-teal-500 px-4 py-2 text-xs font-semibold text-slate-950 hover:bg-teal-400">
               Start with the free audit <ArrowRight className="h-3.5 w-3.5" />
             </a>
-          </div>
-        </motion.div>
-
-
-        {/* Scope */}
-        <motion.div {...reveal} className="mt-16 rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-6 sm:p-8">
-          <h2 className="text-2xl font-semibold tracking-tight">What a 30-day build includes</h2>
-          <p className="mt-2 text-slate-600 dark:text-slate-400 text-sm max-w-xl">
-            We ship the spine first — the core system that proves the value and gets your team using it.
-            Everything else becomes your roadmap, not scope creep.
-          </p>
-          <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 gap-6">
-            <div>
-              <div className="flex items-center gap-2 text-teal-600 dark:text-teal-400 mb-3">
-                <Check className="h-4 w-4" strokeWidth={3} />
-                <span className="text-xs font-medium uppercase tracking-wider">In the MVP</span>
-              </div>
-              <ul className="space-y-2.5">
-                {INCLUDED.map((i) => (
-                  <li key={i} className="flex gap-2.5 text-sm text-slate-700 dark:text-slate-300">
-                    <Check className="mt-0.5 h-4 w-4 flex-none text-teal-500" strokeWidth={2.5} />
-                    <span className="leading-relaxed">{i}</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
-            <div>
-              <div className="flex items-center gap-2 text-slate-400 dark:text-slate-500 mb-3">
-                <FileText className="h-4 w-4" strokeWidth={2.5} />
-                <span className="text-xs font-medium uppercase tracking-wider">Deferred to your roadmap</span>
-              </div>
-              <ul className="space-y-2.5">
-                {DEFERRED.map((i) => (
-                  <li key={i} className="flex gap-2.5 text-sm text-slate-500 dark:text-slate-400">
-                    <X className="mt-0.5 h-4 w-4 flex-none text-slate-300 dark:text-slate-600" strokeWidth={2.5} />
-                    <span className="leading-relaxed">{i}</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
           </div>
         </motion.div>
 
@@ -346,6 +384,25 @@ export default function OfferPage() {
                 </AnimatePresence>
               </div>
             ))}
+          </div>
+        </motion.div>
+
+        {/* Final CTA band */}
+        <motion.div {...reveal} className="mt-16 relative overflow-hidden rounded-2xl bg-slate-950 p-8 sm:p-12 text-center">
+          <div className="absolute inset-0 pointer-events-none" style={{ background: "radial-gradient(ellipse at 50% 0%, rgba(16,185,129,0.15) 0%, transparent 65%)" }} />
+          <div className="relative">
+            <h2 className="text-2xl sm:text-3xl font-semibold tracking-tight text-white">Ready to fix your sales cycle?</h2>
+            <p className="mt-2 text-slate-400 max-w-lg mx-auto">
+              Run the free audit, see your number, and turn it into a fixed Build Plan — all on one page. No call required.
+            </p>
+            <div className="mt-6 flex flex-col sm:flex-row items-center justify-center gap-3">
+              <motion.a whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} href="/calculator" className="inline-flex items-center justify-center gap-2 rounded-lg bg-teal-500 px-6 py-3 text-sm font-semibold text-slate-950 hover:bg-teal-400">
+                Get your free audit <ArrowRight className="h-4 w-4" />
+              </motion.a>
+              <motion.a whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} href="/calculator?step=buildplan" className="inline-flex items-center justify-center gap-2 rounded-lg border border-slate-700 px-6 py-3 text-sm font-semibold text-slate-200 hover:border-slate-500">
+                Start Your Build Plan <ArrowRight className="h-4 w-4" />
+              </motion.a>
+            </div>
           </div>
         </motion.div>
 
