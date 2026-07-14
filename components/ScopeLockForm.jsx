@@ -1,5 +1,6 @@
 "use client";
 import React, { useState, useRef } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import { ArrowRight, Check, Download, FileText, Globe, Loader2, PenLine, ShieldCheck, Sparkles, X } from "lucide-react";
 import WordMark from "./WordMark";
 
@@ -181,13 +182,23 @@ export default function ScopeLockForm({ embedded = false, initialValues = {}, pr
 
     return (
       <div className="min-h-screen w-full bg-slate-50 dark:bg-slate-950 font-sans py-12 px-5">
-        <div className="mx-auto max-w-lg">
+        <motion.div
+          className="mx-auto max-w-lg"
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4, ease: "easeOut" }}
+        >
 
           {/* Header */}
           <div className="mb-7 text-center">
-            <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-teal-500">
+            <motion.div
+              className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-teal-500"
+              initial={{ scale: 0 }}
+              animate={{ scale: 1 }}
+              transition={{ duration: 0.4, delay: 0.1, ease: "backOut" }}
+            >
               <Check className="h-6 w-6 text-white" strokeWidth={3} />
-            </div>
+            </motion.div>
             <h1 className="text-2xl font-semibold tracking-tight text-slate-900 dark:text-white">Your Build Plan is in.</h1>
             <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">
               We will turn this into a fixed scope, price, and start date — sent to your email. No call needed.
@@ -281,7 +292,7 @@ export default function ScopeLockForm({ embedded = false, initialValues = {}, pr
             </a>
           </div>
 
-        </div>
+        </motion.div>
       </div>
     );
   }
@@ -331,8 +342,9 @@ export default function ScopeLockForm({ embedded = false, initialValues = {}, pr
             ))}
           </div>
 
+          <AnimatePresence mode="wait" initial={false}>
           {fillMode === "website" ? (
-            <div className="flex flex-col sm:flex-row gap-2">
+            <motion.div key="website" initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -6 }} transition={{ duration: 0.18, ease: "easeOut" }} className="flex flex-col sm:flex-row gap-2">
               <div className="relative flex-1">
                 <Globe className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
                 <input
@@ -355,9 +367,9 @@ export default function ScopeLockForm({ embedded = false, initialValues = {}, pr
                   ? <span className="flex items-center justify-center gap-1.5"><Loader2 className="h-3.5 w-3.5 animate-spin" />Analysing…</span>
                   : "Analyse"}
               </button>
-            </div>
+            </motion.div>
           ) : (
-            <div className="space-y-2">
+            <motion.div key="description" initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -6 }} transition={{ duration: 0.18, ease: "easeOut" }} className="space-y-2">
               <textarea
                 value={description}
                 onChange={e => setDescription(e.target.value)}
@@ -384,15 +396,21 @@ export default function ScopeLockForm({ embedded = false, initialValues = {}, pr
                     : "Fill form"}
                 </button>
               </div>
-            </div>
+            </motion.div>
           )}
+          </AnimatePresence>
 
           {analyzeError && (
             <p className="mt-2 text-xs text-rose-600 dark:text-rose-400">{analyzeError}</p>
           )}
 
           {vertical && prefilled.size > 0 && (
-            <div className="mt-3 flex items-center justify-between">
+            <motion.div
+              initial={{ opacity: 0, y: -6 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.25, ease: "easeOut" }}
+              className="mt-3 flex items-center justify-between"
+            >
               <p className="text-xs text-teal-700 dark:text-teal-400">
                 <span className="font-semibold">Detected:</span> {vertical} — {prefilled.size} fields pre-filled below. Review and edit before submitting.
               </p>
@@ -402,7 +420,7 @@ export default function ScopeLockForm({ embedded = false, initialValues = {}, pr
               >
                 <X className="h-3.5 w-3.5" />
               </button>
-            </div>
+            </motion.div>
           )}
         </div>
 
@@ -529,11 +547,13 @@ export default function ScopeLockForm({ embedded = false, initialValues = {}, pr
             <p className="text-sm text-rose-600">Something went wrong saving that. Please try again.</p>
           )}
 
-          <button onClick={submit} disabled={!valid || status === "sending"}
+          <motion.button onClick={submit} disabled={!valid || status === "sending"}
+            whileHover={valid && status !== "sending" ? { scale: 1.01 } : {}}
+            whileTap={valid && status !== "sending" ? { scale: 0.98 } : {}}
             className={"inline-flex w-full items-center justify-center gap-2 rounded-lg px-5 py-3 text-sm font-semibold transition-colors " +
               (valid && status !== "sending" ? "bg-slate-900 text-white hover:bg-slate-800" : "bg-slate-200 text-slate-400 cursor-not-allowed")}>
             {status === "sending" ? <><Loader2 className="h-4 w-4 animate-spin" /> Sending…</> : <>Get My Build Plan <ArrowRight className="h-4 w-4" /></>}
-          </button>
+          </motion.button>
           <p className="flex items-center gap-1.5 text-xs text-slate-400">
             <ShieldCheck className="h-3.5 w-3.5" /> Goes straight to our pipeline. We reply with scope, price, and a start date.
           </p>

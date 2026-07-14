@@ -1,6 +1,7 @@
 "use client";
 import React, { useState, useMemo, useEffect, useRef } from "react";
 import { useTheme } from "next-themes";
+import { motion, AnimatePresence } from "framer-motion";
 import {
   BarChart, Bar, XAxis, YAxis, Cell, ResponsiveContainer, LabelList,
 } from "recharts";
@@ -246,8 +247,9 @@ Be concrete and non-generic. No flattery, no filler.`;
           </div>
         </div>
 
+        <AnimatePresence mode="wait">
         {step === "input" && (
-          <div>
+          <motion.div key="input" initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -12 }} transition={{ duration: 0.25, ease: "easeOut" }}>
             <h1 className="text-3xl sm:text-4xl font-semibold tracking-tight leading-tight">
               Your CRM isn't catching this —
               <span className="text-teal-400"> find out how much your sales cycle is leaking.</span>
@@ -321,9 +323,11 @@ Be concrete and non-generic. No flattery, no filler.`;
                 </div>
               </div>
 
-              <button
+              <motion.button
                 onClick={onReveal}
                 disabled={!calc.valid}
+                whileHover={calc.valid ? { scale: 1.015 } : {}}
+                whileTap={calc.valid ? { scale: 0.98 } : {}}
                 className={
                   "mt-6 inline-flex w-full items-center justify-center gap-2 rounded-lg px-5 py-3 text-sm font-semibold transition-colors " +
                   (calc.valid
@@ -332,18 +336,18 @@ Be concrete and non-generic. No flattery, no filler.`;
                 }
               >
                 Calculate my leak <ArrowRight className="h-4 w-4" />
-              </button>
+              </motion.button>
               {!calc.valid && (
                 <p className="mt-2 text-center text-xs text-slate-400 dark:text-slate-500">
                   Enter leads, deal value, and a close rate between 1–100% to continue.
                 </p>
               )}
             </div>
-          </div>
+          </motion.div>
         )}
 
         {step === "results" && (
-          <div>
+          <motion.div key="results" initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -12 }} transition={{ duration: 0.25, ease: "easeOut" }}>
             <button onClick={() => setStep("input")}
               className="inline-flex items-center gap-1.5 text-sm text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white mb-6">
               <ArrowLeft className="h-4 w-4" /> Adjust my numbers
@@ -470,7 +474,7 @@ Be concrete and non-generic. No flattery, no filler.`;
               )}
 
               {leadCaptured && report && !loadingReport && (
-                <div>
+                <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.35, ease: "easeOut" }}>
                   <div className="flex items-center gap-2 text-teal-400">
                     <Check className="h-4 w-4" strokeWidth={3} />
                     <span className="text-xs font-medium uppercase tracking-wider">
@@ -504,26 +508,28 @@ Be concrete and non-generic. No flattery, no filler.`;
 
                   <div className="mt-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-t border-slate-800 pt-5">
                     <p className="text-sm text-slate-300 max-w-sm">{report.closingLine}</p>
-                    <button
+                    <motion.button
                       type="button"
                       onClick={() => setStep("buildplan")}
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}
                       className="inline-flex flex-none items-center justify-center gap-2 rounded-lg bg-white px-5 py-2.5 text-sm font-semibold text-slate-950 hover:bg-slate-200 transition-colors"
                     >
                       Turn this into my Build Plan <ArrowRight className="h-4 w-4" />
-                    </button>
+                    </motion.button>
                   </div>
-                </div>
+                </motion.div>
               )}
             </div>
 
             <p className="mt-5 text-center text-xs text-slate-400 dark:text-slate-500">
               Estimates based on lead-response benchmarks. Built by The Start Up · CRM powered by Monday.com.
             </p>
-          </div>
+          </motion.div>
         )}
 
         {step === "buildplan" && (
-          <div>
+          <motion.div key="buildplan" initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -12 }} transition={{ duration: 0.25, ease: "easeOut" }}>
             <button
               type="button"
               onClick={() => setStep(calc.valid ? "results" : "input")}
@@ -536,8 +542,9 @@ Be concrete and non-generic. No flattery, no filler.`;
               initialValues={buildPlanInitial}
               prefilledKeys={Object.keys(buildPlanInitial)}
             />
-          </div>
+          </motion.div>
         )}
+        </AnimatePresence>
       </div>
     </div>
   );

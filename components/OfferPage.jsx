@@ -1,10 +1,19 @@
 "use client";
 import React, { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import {
   ArrowRight, Check, X, ShieldCheck, FileText, ChevronDown, Monitor,
 } from "lucide-react";
 import WordMark from "./WordMark";
 import { FAQS } from "@/lib/faqs";
+
+// Fade-and-rise as each section scrolls into view — plays once, doesn't re-trigger on scroll-back.
+const reveal = {
+  initial: { opacity: 0, y: 24 },
+  whileInView: { opacity: 1, y: 0 },
+  viewport: { once: true, margin: "-80px" },
+  transition: { duration: 0.5, ease: "easeOut" },
+};
 
 
 const OFFER_DEADLINE = "30 Sep 2026";
@@ -62,7 +71,12 @@ export default function OfferPage() {
         </div>
 
         {/* Hero */}
-        <div className="max-w-2xl">
+        <motion.div
+          className="max-w-2xl"
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, ease: "easeOut" }}
+        >
           <div className="inline-flex items-center gap-1.5 rounded-full border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-1 text-xs font-medium text-slate-500 dark:text-slate-400 mb-5">
             <span className="h-1.5 w-1.5 rounded-full bg-teal-500" /> For businesses whose CRM isn't running the sales cycle
           </div>
@@ -76,12 +90,12 @@ export default function OfferPage() {
             Supported for <span className="font-mono tabular-nums">60–120</span>. No endless discovery. No disappearing act.
           </p>
           <div className="mt-7 flex flex-col sm:flex-row gap-3">
-            <a href="/calculator" className="inline-flex items-center justify-center gap-2 rounded-lg bg-teal-500 px-6 py-3 text-sm font-semibold text-slate-950 hover:bg-teal-400">
+            <motion.a whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} href="/calculator" className="inline-flex items-center justify-center gap-2 rounded-lg bg-teal-500 px-6 py-3 text-sm font-semibold text-slate-950 hover:bg-teal-400">
               Get your free audit <ArrowRight className="h-4 w-4" />
-            </a>
-            <a href="/calculator?step=buildplan" className="inline-flex items-center justify-center gap-2 rounded-lg bg-slate-900 dark:bg-white px-6 py-3 text-sm font-semibold text-white dark:text-slate-950 hover:bg-slate-800 dark:hover:bg-slate-200">
+            </motion.a>
+            <motion.a whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} href="/calculator?step=buildplan" className="inline-flex items-center justify-center gap-2 rounded-lg bg-slate-900 dark:bg-white px-6 py-3 text-sm font-semibold text-white dark:text-slate-950 hover:bg-slate-800 dark:hover:bg-slate-200">
               Start Your Build Plan <ArrowRight className="h-4 w-4" />
-            </a>
+            </motion.a>
           </div>
 
           {/* Demo CTA — drives curiosity before commitment */}
@@ -99,10 +113,10 @@ export default function OfferPage() {
           <p className="mt-3 flex items-center gap-1.5 text-xs text-slate-400 dark:text-slate-500">
             <ShieldCheck className="h-3.5 w-3.5" /> No call required to start.
           </p>
-        </div>
+        </motion.div>
 
         {/* Process Flow */}
-        <div id="how" className="mt-12 overflow-hidden rounded-2xl bg-slate-950 shadow-sm p-8 sm:p-10">
+        <motion.div {...reveal} id="how" className="mt-12 overflow-hidden rounded-2xl bg-slate-950 shadow-sm p-8 sm:p-10">
           <div className="text-xs font-medium uppercase tracking-wider text-slate-500 mb-8">How it works</div>
           <div className="relative">
             {/* connecting line */}
@@ -115,7 +129,14 @@ export default function OfferPage() {
                 { n: "04", label: "30-Day Build", sub: "Your sales cycle rebuilt and live in your CRM — fixed date, no delays" },
                 { n: "05", label: "Support Period", sub: "60 days (Promotional) or 120 days (Premium) — training, optimisation, documentation" },
               ].map((step, i) => (
-                <div key={step.n} className="flex flex-col items-center text-center">
+                <motion.div
+                  key={step.n}
+                  className="flex flex-col items-center text-center"
+                  initial={{ opacity: 0, y: 10 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true, margin: "-40px" }}
+                  transition={{ duration: 0.4, delay: i * 0.08, ease: "easeOut" }}
+                >
                   <div className={`relative z-10 flex h-10 w-10 items-center justify-center rounded-full border-2 text-xs font-mono font-semibold mb-3 ${
                     i === 0
                       ? "border-teal-500 bg-teal-500 text-slate-950"
@@ -125,7 +146,7 @@ export default function OfferPage() {
                   </div>
                   <div className="text-sm font-semibold text-slate-100 tracking-tight">{step.label}</div>
                   <p className="mt-1.5 text-xs leading-relaxed text-slate-500 max-w-[140px]">{step.sub}</p>
-                </div>
+                </motion.div>
               ))}
             </div>
           </div>
@@ -138,11 +159,11 @@ export default function OfferPage() {
               Start with the free audit <ArrowRight className="h-3.5 w-3.5" />
             </a>
           </div>
-        </div>
+        </motion.div>
 
 
         {/* Scope */}
-        <div className="mt-16 rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-6 sm:p-8">
+        <motion.div {...reveal} className="mt-16 rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-6 sm:p-8">
           <h2 className="text-2xl font-semibold tracking-tight">What a 30-day build includes</h2>
           <p className="mt-2 text-slate-600 dark:text-slate-400 text-sm max-w-xl">
             We ship the spine first — the core system that proves the value and gets your team using it.
@@ -178,10 +199,10 @@ export default function OfferPage() {
               </ul>
             </div>
           </div>
-        </div>
+        </motion.div>
 
         {/* Pricing */}
-        <div id="pricing" className="mt-16">
+        <motion.div {...reveal} id="pricing" className="mt-16">
           <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 mb-7">
             <div>
               <div className="text-xs font-medium uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-1">Pricing</div>
@@ -289,10 +310,10 @@ export default function OfferPage() {
               </div>
             </div>
           ))}
-        </div>
+        </motion.div>
 
         {/* Start (no-call) */}
-        <div id="start" className="mt-16 rounded-2xl border border-teal-200 dark:border-teal-800 bg-teal-50 dark:bg-teal-950/40 p-6 sm:p-8">
+        <motion.div {...reveal} id="start" className="mt-16 rounded-2xl border border-teal-200 dark:border-teal-800 bg-teal-50 dark:bg-teal-950/40 p-6 sm:p-8">
           <h2 className="text-2xl font-semibold tracking-tight">Start without a call</h2>
           <p className="mt-2 text-slate-700 dark:text-slate-300 max-w-2xl">
             Run the free audit first — it takes 2 minutes and carries straight into your Build Plan on the same page.
@@ -318,10 +339,10 @@ export default function OfferPage() {
               Skip to Your Build Plan <ArrowRight className="h-4 w-4" />
             </a>
           </div>
-        </div>
+        </motion.div>
 
         {/* FAQ */}
-        <div className="mt-16">
+        <motion.div {...reveal} className="mt-16">
           <div className="text-xs font-medium uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-5">Questions</div>
           <div className="divide-y divide-slate-200 dark:divide-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900">
             {FAQS.map((f, i) => (
@@ -331,11 +352,23 @@ export default function OfferPage() {
                   <span className="text-sm font-semibold tracking-tight">{f.q}</span>
                   <ChevronDown className={"h-4 w-4 flex-none text-slate-400 dark:text-slate-500 transition-transform " + (openFaq === i ? "rotate-180" : "")} />
                 </button>
-                {openFaq === i && <p className="mt-2.5 text-sm leading-relaxed text-slate-600 dark:text-slate-400">{f.a}</p>}
+                <AnimatePresence initial={false}>
+                  {openFaq === i && (
+                    <motion.div
+                      initial={{ height: 0, opacity: 0 }}
+                      animate={{ height: "auto", opacity: 1 }}
+                      exit={{ height: 0, opacity: 0 }}
+                      transition={{ duration: 0.2, ease: "easeOut" }}
+                      style={{ overflow: "hidden" }}
+                    >
+                      <p className="mt-2.5 text-sm leading-relaxed text-slate-600 dark:text-slate-400">{f.a}</p>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
               </div>
             ))}
           </div>
-        </div>
+        </motion.div>
 
         <p className="mt-10 text-center text-xs text-slate-400 dark:text-slate-500">
           * Our CRM systems are built on and powered by <a href="https://monday.com" target="_blank" rel="noopener noreferrer" className="underline hover:text-slate-600 dark:hover:text-slate-300">Monday.com</a>.

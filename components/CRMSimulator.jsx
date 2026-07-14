@@ -1,5 +1,6 @@
 "use client";
 import React, { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import {
   ArrowRight, Search, Filter, Zap, Users, Clock,
   TrendingUp, BarChart2, Check, Bell, ChevronRight,
@@ -8,6 +9,14 @@ import {
   Code2, Monitor, Package, Sparkles, Bot, BrainCircuit, Workflow,
 } from "lucide-react";
 import WordMark from "./WordMark";
+
+// Fade-and-rise as each section scrolls into view — plays once, doesn't re-trigger on scroll-back.
+const reveal = {
+  initial: { opacity: 0, y: 24 },
+  whileInView: { opacity: 1, y: 0 },
+  viewport: { once: true, margin: "-80px" },
+  transition: { duration: 0.5, ease: "easeOut" },
+};
 
 // ─── Industry data ─────────────────────────────────────────────────────────────
 
@@ -1065,9 +1074,9 @@ function AIView({ industry }) {
           <span className="text-xs font-semibold uppercase tracking-widest text-teal-400">AI Growth Insight</span>
         </div>
         <p className="text-sm leading-relaxed text-slate-300">{ai.win}</p>
-        <a href="/calculator" className="mt-4 inline-flex items-center gap-1.5 rounded-lg bg-teal-500 px-4 py-2 text-xs font-semibold text-slate-950 hover:bg-teal-400">
+        <motion.a whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} href="/calculator" className="mt-4 inline-flex items-center gap-1.5 rounded-lg bg-teal-500 px-4 py-2 text-xs font-semibold text-slate-950 hover:bg-teal-400">
           Get your free AI audit <ArrowRight className="h-3.5 w-3.5" />
-        </a>
+        </motion.a>
       </div>
     </div>
   );
@@ -1455,16 +1464,21 @@ export default function CRMSimulator() {
             <a href="/calculator" className="hidden sm:inline-flex text-xs font-medium text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white">
               Free audit
             </a>
-            <a href="/calculator?step=buildplan" className="inline-flex items-center gap-1.5 rounded-lg bg-slate-900 px-3 py-2 sm:px-4 text-xs font-semibold text-white hover:bg-slate-800">
+            <motion.a whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} href="/calculator?step=buildplan" className="inline-flex items-center gap-1.5 rounded-lg bg-slate-900 px-3 py-2 sm:px-4 text-xs font-semibold text-white hover:bg-slate-800">
               <span className="hidden sm:inline">Start your build</span>
               <span className="sm:hidden">Get started</span>
               <ArrowRight className="h-3.5 w-3.5" />
-            </a>
+            </motion.a>
           </div>
         </div>
 
         {/* Hero */}
-        <div className="max-w-2xl mb-12">
+        <motion.div
+          className="max-w-2xl mb-12"
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, ease: "easeOut" }}
+        >
           <div className="inline-flex items-center gap-1.5 rounded-full border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-1 text-xs font-medium text-slate-500 dark:text-slate-400 mb-5">
             <span className="h-1.5 w-1.5 rounded-full bg-teal-500" /> Interactive example — pick your industry
           </div>
@@ -1475,10 +1489,10 @@ export default function CRMSimulator() {
           <p className="mt-4 text-lg text-slate-600 dark:text-slate-400 max-w-xl">
             Select your industry to see how a custom system would organise your leads, automate your follow-up, and surface the numbers that matter — built specifically for your business in 30 days.
           </p>
-        </div>
+        </motion.div>
 
         {/* Service overview */}
-        <div className="mb-14">
+        <motion.div {...reveal} className="mb-14">
           <div className="text-xs font-medium uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-2">What we build</div>
           <h2 className="text-2xl font-semibold tracking-tight mb-2">Three types of systems. One team. 30 days to live.</h2>
           <p className="text-slate-600 dark:text-slate-400 mb-7 max-w-2xl">
@@ -1486,8 +1500,15 @@ export default function CRMSimulator() {
             No vendor lock-in, no subscriptions for the system itself — you own it on day one.
           </p>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            {SERVICE_CARDS.map((card) => (
-              <div key={card.title} className="rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-5">
+            {SERVICE_CARDS.map((card, i) => (
+              <motion.div
+                key={card.title}
+                className="rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-5"
+                initial={{ opacity: 0, y: 10 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, margin: "-40px" }}
+                transition={{ duration: 0.4, delay: i * 0.08, ease: "easeOut" }}
+              >
                 <div className={`flex h-9 w-9 items-center justify-center rounded-xl ${card.accent} mb-4`}>
                   <card.icon className="h-4.5 w-4.5" strokeWidth={2.5} />
                 </div>
@@ -1501,29 +1522,33 @@ export default function CRMSimulator() {
                     </li>
                   ))}
                 </ul>
-              </div>
+              </motion.div>
             ))}
           </div>
-        </div>
+        </motion.div>
 
         {/* Industry picker */}
-        <div className="text-xs font-medium uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-3">Explore by sector</div>
-        <div className="flex flex-wrap gap-2 mb-6">
-          {INDUSTRIES.map((ind, i) => (
-            <button
-              key={ind.id}
-              onClick={() => setActive(i)}
-              className={`flex items-center gap-1.5 rounded-xl border px-2.5 py-1.5 sm:px-3.5 sm:py-2 text-xs sm:text-sm font-medium transition-all ${
-                active === i
-                  ? "border-slate-900 bg-slate-900 text-white shadow-sm"
-                  : "border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-400 hover:border-slate-400 dark:hover:border-slate-500 hover:text-slate-900 dark:hover:text-white"
-              }`}
-            >
-              <span>{ind.icon}</span>
-              <span>{ind.label}</span>
-            </button>
-          ))}
-        </div>
+        <motion.div {...reveal}>
+          <div className="text-xs font-medium uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-3">Explore by sector</div>
+          <div className="flex flex-wrap gap-2 mb-6">
+            {INDUSTRIES.map((ind, i) => (
+              <motion.button
+                key={ind.id}
+                onClick={() => setActive(i)}
+                whileHover={{ scale: 1.03 }}
+                whileTap={{ scale: 0.97 }}
+                className={`flex items-center gap-1.5 rounded-xl border px-2.5 py-1.5 sm:px-3.5 sm:py-2 text-xs sm:text-sm font-medium transition-all ${
+                  active === i
+                    ? "border-slate-900 bg-slate-900 text-white shadow-sm"
+                    : "border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-400 hover:border-slate-400 dark:hover:border-slate-500 hover:text-slate-900 dark:hover:text-white"
+                }`}
+              >
+                <span>{ind.icon}</span>
+                <span>{ind.label}</span>
+              </motion.button>
+            ))}
+          </div>
+        </motion.div>
 
         {/* Tagline */}
         <div className="flex items-start gap-2.5 mb-3">
@@ -1558,28 +1583,45 @@ export default function CRMSimulator() {
         )}
 
         {/* Simulation area */}
-        {view === "ai" ? (
-          <AIView industry={industry} />
-        ) : industry.isCustomApp ? (
-          <CustomAppGrid />
-        ) : view === "pipeline" ? (
-          <KanbanBoard industry={industry} />
-        ) : view === "timeline" ? (
-          <TimelineView industry={industry} />
-        ) : view === "dashboard" ? (
-          <DashboardView industry={industry} />
-        ) : (
-          <TableView industry={industry} />
-        )}
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={view === "ai" ? "ai" : industry.isCustomApp ? "custom" : view}
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -12 }}
+            transition={{ duration: 0.25, ease: "easeOut" }}
+          >
+            {view === "ai" ? (
+              <AIView industry={industry} />
+            ) : industry.isCustomApp ? (
+              <CustomAppGrid />
+            ) : view === "pipeline" ? (
+              <KanbanBoard industry={industry} />
+            ) : view === "timeline" ? (
+              <TimelineView industry={industry} />
+            ) : view === "dashboard" ? (
+              <DashboardView industry={industry} />
+            ) : (
+              <TableView industry={industry} />
+            )}
+          </motion.div>
+        </AnimatePresence>
 
         {/* Insights + Automations */}
-        <div className="mt-10 grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <motion.div {...reveal} className="mt-10 grid grid-cols-1 lg:grid-cols-3 gap-6">
           <div className="lg:col-span-2 space-y-4">
             <div className="text-xs font-medium uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-1">
               {industry.isCustomApp ? "Why custom apps work" : `Why it works for ${industry.label}`}
             </div>
-            {industry.insights.map((ins) => (
-              <div key={ins.title} className="rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-5">
+            {industry.insights.map((ins, i) => (
+              <motion.div
+                key={ins.title}
+                className="rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-5"
+                initial={{ opacity: 0, y: 10 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, margin: "-40px" }}
+                transition={{ duration: 0.4, delay: i * 0.08, ease: "easeOut" }}
+              >
                 <div className="flex items-start gap-3">
                   <div className="flex h-8 w-8 flex-none items-center justify-center rounded-lg bg-teal-50 dark:bg-teal-950/40">
                     <ins.icon className="h-4 w-4 text-teal-600" strokeWidth={2.5} />
@@ -1589,7 +1631,7 @@ export default function CRMSimulator() {
                     <p className="mt-1 text-sm leading-relaxed text-slate-600 dark:text-slate-400">{ins.body}</p>
                   </div>
                 </div>
-              </div>
+              </motion.div>
             ))}
           </div>
 
@@ -1609,17 +1651,24 @@ export default function CRMSimulator() {
               ))}
             </ul>
           </div>
-        </div>
+        </motion.div>
 
         {/* Generic benefits */}
-        <div className="mt-16">
+        <motion.div {...reveal} className="mt-16">
           <div className="text-xs font-medium uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-2">Works for any business</div>
           <h2 className="text-2xl font-semibold tracking-tight mb-7">
             Three things every system we build does, regardless of industry
           </h2>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
-            {BENEFITS.map((b) => (
-              <div key={b.title} className="rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-6">
+            {BENEFITS.map((b, i) => (
+              <motion.div
+                key={b.title}
+                className="rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-6"
+                initial={{ opacity: 0, y: 10 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, margin: "-40px" }}
+                transition={{ duration: 0.4, delay: i * 0.08, ease: "easeOut" }}
+              >
                 <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-slate-900 mb-4">
                   <b.icon className="h-4 w-4 text-teal-400" strokeWidth={2.5} />
                 </div>
@@ -1633,13 +1682,13 @@ export default function CRMSimulator() {
                     </li>
                   ))}
                 </ul>
-              </div>
+              </motion.div>
             ))}
           </div>
-        </div>
+        </motion.div>
 
         {/* Platform note */}
-        <div className="mt-12 rounded-2xl bg-slate-900 text-slate-100 p-8 sm:p-10">
+        <motion.div {...reveal} className="mt-12 rounded-2xl bg-slate-900 text-slate-100 p-8 sm:p-10">
           <div className="max-w-2xl">
             <div className="text-xs font-medium uppercase tracking-wider text-slate-400 mb-3">Platform independent</div>
             <h2 className="text-2xl font-semibold tracking-tight mb-3">
@@ -1667,21 +1716,21 @@ export default function CRMSimulator() {
               ))}
             </div>
             <div className="flex flex-col sm:flex-row gap-3">
-              <a href="/calculator?step=buildplan" className="inline-flex items-center justify-center gap-2 rounded-lg bg-teal-500 px-6 py-3 text-sm font-semibold text-slate-950 hover:bg-teal-400">
+              <motion.a whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} href="/calculator?step=buildplan" className="inline-flex items-center justify-center gap-2 rounded-lg bg-teal-500 px-6 py-3 text-sm font-semibold text-slate-950 hover:bg-teal-400">
                 Start Your Build Plan <ArrowRight className="h-4 w-4" />
-              </a>
-              <a href="/calculator" className="inline-flex items-center justify-center gap-2 rounded-lg border border-slate-700 px-6 py-3 text-sm font-semibold text-slate-300 hover:border-slate-500 hover:text-white">
+              </motion.a>
+              <motion.a whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} href="/calculator" className="inline-flex items-center justify-center gap-2 rounded-lg border border-slate-700 px-6 py-3 text-sm font-semibold text-slate-300 hover:border-slate-500 hover:text-white">
                 Get your free audit first
-              </a>
+              </motion.a>
             </div>
           </div>
-        </div>
+        </motion.div>
 
         {/* Footer */}
-        <div className="mt-10 border-t border-slate-200 dark:border-slate-700 pt-6 flex flex-col sm:flex-row items-center justify-between gap-3">
+        <motion.div {...reveal} className="mt-10 border-t border-slate-200 dark:border-slate-700 pt-6 flex flex-col sm:flex-row items-center justify-between gap-3">
           <WordMark className="opacity-40 scale-75 origin-left" />
           <p className="text-xs text-slate-400 dark:text-slate-500">* CRM systems are built on Monday.com where applicable.</p>
-        </div>
+        </motion.div>
 
       </div>
     </div>
