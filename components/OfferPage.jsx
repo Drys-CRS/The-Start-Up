@@ -129,7 +129,7 @@ export default function OfferPage() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.15, ease: "easeOut" }}
           >
-            <PipelinePreview />
+            <PipelinePreview stage="broken" />
             <a href="/crm-demo" className="mt-4 group flex items-center gap-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-4 py-3 hover:border-teal-300 dark:hover:border-teal-700 hover:bg-teal-50 dark:hover:bg-teal-950/40 transition-colors">
               <div className="flex h-8 w-8 flex-none items-center justify-center rounded-lg bg-slate-100 dark:bg-slate-800 group-hover:bg-teal-100 dark:group-hover:bg-teal-900 transition-colors">
                 <Monitor className="h-4 w-4 text-slate-500 dark:text-slate-400 group-hover:text-teal-600 dark:group-hover:text-teal-400" />
@@ -194,6 +194,19 @@ export default function OfferPage() {
               <p className="text-xs leading-relaxed text-slate-500 dark:text-slate-400">{g.body}</p>
             </motion.div>
           ))}
+        </motion.div>
+
+        {/* Pipeline preview — organizing */}
+        <motion.div {...reveal} className="mt-16">
+          <div className="text-center max-w-lg mx-auto mb-6">
+            <h2 className="text-2xl font-semibold tracking-tight">From scattered to sorted.</h2>
+            <p className="mt-2 text-slate-600 dark:text-slate-400 text-sm">
+              Every lead gets a stage, an owner, and a next step — automatically. No more guessing what happened to who.
+            </p>
+          </div>
+          <div className="max-w-xl mx-auto">
+            <PipelinePreview stage="organizing" />
+          </div>
         </motion.div>
 
         {/* Process Flow */}
@@ -358,6 +371,19 @@ export default function OfferPage() {
           </div>
         </motion.div>
 
+        {/* Pipeline preview — AI power-up */}
+        <motion.div {...reveal} className="mt-16">
+          <div className="text-center max-w-lg mx-auto mb-6">
+            <h2 className="text-2xl font-semibold tracking-tight">Then AI takes over the busywork.</h2>
+            <p className="mt-2 text-slate-600 dark:text-slate-400 text-sm">
+              Scoring, routing, and follow-up sequencing run themselves — so your team spends time closing, not chasing.
+            </p>
+          </div>
+          <div className="max-w-xl mx-auto">
+            <PipelinePreview stage="ai" />
+          </div>
+        </motion.div>
+
         {/* FAQ */}
         <motion.div {...reveal} className="mt-16">
           <div className="text-xs font-medium uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-5">Questions</div>
@@ -391,6 +417,9 @@ export default function OfferPage() {
         <motion.div {...reveal} className="mt-16 relative overflow-hidden rounded-2xl bg-slate-950 p-8 sm:p-12 text-center">
           <div className="absolute inset-0 pointer-events-none" style={{ background: "radial-gradient(ellipse at 50% 0%, rgba(16,185,129,0.15) 0%, transparent 65%)" }} />
           <div className="relative">
+            <div className="max-w-xl mx-auto mb-8 text-left">
+              <PipelinePreview stage="complete" />
+            </div>
             <h2 className="text-2xl sm:text-3xl font-semibold tracking-tight text-white">Ready to fix your sales cycle?</h2>
             <p className="mt-2 text-slate-400 max-w-lg mx-auto">
               Run the free audit, see your number, and turn it into a fixed Build Plan — all on one page. No call required.
