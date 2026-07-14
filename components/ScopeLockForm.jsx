@@ -291,7 +291,7 @@ export default function ScopeLockForm({ embedded = false, initialValues = {}, pr
       <div className={embedded ? "" : "mx-auto max-w-2xl px-5 py-10 sm:py-14"}>
         {!embedded && (
           <a href="/" className="mb-10 inline-block">
-            <WordMark dark />
+            <WordMark />
           </a>
         )}
 

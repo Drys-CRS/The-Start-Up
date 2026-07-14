@@ -1,5 +1,6 @@
 "use client";
 import React, { useState, useMemo, useEffect, useRef } from "react";
+import { useTheme } from "next-themes";
 import {
   BarChart, Bar, XAxis, YAxis, Cell, ResponsiveContainer, LabelList,
 } from "recharts";
@@ -85,6 +86,12 @@ export default function LeadLeakageCalculator() {
     const params = new URLSearchParams(window.location.search);
     if (params.get("step") === "buildplan") setStep("buildplan");
   }, []);
+
+  // recharts renders raw SVG fill colors, not Tailwind classes — theme them manually.
+  const { resolvedTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
+  const isDark = mounted ? resolvedTheme === "dark" : true;
 
   const calc = useMemo(() => {
     const L = parseFloat(leads) || 0;
@@ -212,9 +219,9 @@ Be concrete and non-generic. No flattery, no filler.`;
   ];
 
   const inputBase =
-    "w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-slate-900 text-sm placeholder-slate-400 focus:border-teal-500 focus:outline-none focus:ring-2 focus:ring-teal-100";
+    "w-full rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 px-3 py-2.5 text-slate-900 dark:text-slate-100 text-sm placeholder-slate-400 dark:placeholder-slate-500 focus:border-teal-500 focus:outline-none focus:ring-2 focus:ring-teal-100 dark:focus:ring-teal-900 transition-colors";
   const labelBase =
-    "block text-xs font-medium uppercase tracking-wider text-slate-500 mb-1.5";
+    "block text-xs font-medium uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-1.5";
 
   // Carries the audit's numbers straight into the Build Plan step — same page, no re-typing.
   const buildPlanInitial = {
@@ -228,13 +235,13 @@ Be concrete and non-generic. No flattery, no filler.`;
   };
 
   return (
-    <div className="min-h-screen w-full bg-slate-50 text-slate-900 font-sans">
+    <div className="min-h-screen w-full bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 font-sans">
       <div className="mx-auto max-w-3xl px-5 py-10 sm:py-14">
 
         {/* Brand */}
         <div className="flex items-center justify-between mb-10">
-          <a href="/"><WordMark dark /></a>
-          <div className="hidden sm:block text-xs font-medium uppercase tracking-wider text-slate-400">
+          <a href="/"><WordMark /></a>
+          <div className="hidden sm:block text-xs font-medium uppercase tracking-wider text-slate-400 dark:text-slate-500">
             {step === "buildplan" ? "Step 2 of 2 · Your Build Plan" : "Step 1 of 2 · Lead Leakage Audit"}
           </div>
         </div>
@@ -245,16 +252,16 @@ Be concrete and non-generic. No flattery, no filler.`;
               Your CRM isn't catching this —
               <span className="text-teal-400"> find out how much your sales cycle is leaking.</span>
             </h1>
-            <p className="mt-3 text-slate-600 text-base max-w-xl">
+            <p className="mt-3 text-slate-600 dark:text-slate-400 text-base max-w-xl">
               Most B2B teams don't lose deals to competitors — they lose them to a broken sales cycle: slow
               follow-up, no routing, nobody owning the next step. Answer four questions for an instant estimate. No call.
             </p>
 
-            <div className="mt-8 rounded-2xl border border-slate-200 bg-white p-5 sm:p-7 shadow-sm">
+            <div className="mt-8 rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-5 sm:p-7 shadow-sm">
               {/* currency toggle */}
               <div className="flex items-center justify-between mb-5">
                 <span className={labelBase + " mb-0"}>Your numbers</span>
-                <div className="flex rounded-lg border border-slate-200 p-0.5 text-xs font-medium">
+                <div className="flex rounded-lg border border-slate-200 dark:border-slate-700 p-0.5 text-xs font-medium">
                   {["USD", "ZAR"].map((c) => (
                     <button
                       key={c}
@@ -262,8 +269,8 @@ Be concrete and non-generic. No flattery, no filler.`;
                       className={
                         "px-3 py-1 rounded-md transition-colors " +
                         (currency === c
-                          ? "bg-slate-900 text-white"
-                          : "text-slate-500 hover:text-slate-900")
+                          ? "bg-slate-900 dark:bg-teal-500 text-white dark:text-slate-950"
+                          : "text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white")
                       }
                     >
                       {c}
@@ -320,14 +327,14 @@ Be concrete and non-generic. No flattery, no filler.`;
                 className={
                   "mt-6 inline-flex w-full items-center justify-center gap-2 rounded-lg px-5 py-3 text-sm font-semibold transition-colors " +
                   (calc.valid
-                    ? "bg-slate-900 text-white hover:bg-slate-800"
-                    : "bg-slate-200 text-slate-400 cursor-not-allowed")
+                    ? "bg-slate-900 dark:bg-teal-500 text-white dark:text-slate-950 hover:bg-slate-800 dark:hover:bg-teal-400"
+                    : "bg-slate-200 dark:bg-slate-800 text-slate-400 dark:text-slate-500 cursor-not-allowed")
                 }
               >
                 Calculate my leak <ArrowRight className="h-4 w-4" />
               </button>
               {!calc.valid && (
-                <p className="mt-2 text-center text-xs text-slate-400">
+                <p className="mt-2 text-center text-xs text-slate-400 dark:text-slate-500">
                   Enter leads, deal value, and a close rate between 1–100% to continue.
                 </p>
               )}
@@ -338,13 +345,13 @@ Be concrete and non-generic. No flattery, no filler.`;
         {step === "results" && (
           <div>
             <button onClick={() => setStep("input")}
-              className="inline-flex items-center gap-1.5 text-sm text-slate-500 hover:text-slate-900 mb-6">
+              className="inline-flex items-center gap-1.5 text-sm text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white mb-6">
               <ArrowLeft className="h-4 w-4" /> Adjust my numbers
             </button>
 
             {/* Headline figure */}
-            <div className="rounded-2xl border border-slate-200 bg-white p-6 sm:p-8 shadow-sm">
-              <div className="flex items-center gap-2 text-teal-700">
+            <div className="rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-6 sm:p-8 shadow-sm">
+              <div className="flex items-center gap-2 text-teal-700 dark:text-teal-400">
                 <TrendingDown className="h-4 w-4" strokeWidth={2.5} />
                 <span className="text-xs font-medium uppercase tracking-wider">
                   {calc.minimal ? "Estimated annual leak" : "You are likely losing, per year"}
@@ -353,10 +360,10 @@ Be concrete and non-generic. No flattery, no filler.`;
 
               {calc.minimal ? (
                 <div className="mt-3">
-                  <div className="font-mono text-4xl sm:text-5xl font-semibold tracking-tight tabular-nums text-teal-600">
+                  <div className="font-mono text-4xl sm:text-5xl font-semibold tracking-tight tabular-nums text-teal-600 dark:text-teal-400">
                     {fmt(0, currency)}
                   </div>
-                  <p className="mt-3 text-slate-600 max-w-lg">
+                  <p className="mt-3 text-slate-600 dark:text-slate-400 max-w-lg">
                     Your follow-up speed is already tight, so response-time leakage is minimal —
                     {company ? ` nice work, ${company}.` : " nice work."} The next gains are in
                     routing, scoring, and reporting. The report below maps them.
@@ -364,11 +371,11 @@ Be concrete and non-generic. No flattery, no filler.`;
                 </div>
               ) : (
                 <div className="mt-3">
-                  <div className="font-mono text-5xl sm:text-6xl font-semibold tracking-tight tabular-nums text-slate-900">
+                  <div className="font-mono text-5xl sm:text-6xl font-semibold tracking-tight tabular-nums text-slate-900 dark:text-white">
                     {fmt(animated, currency)}
                   </div>
-                  <p className="mt-3 text-slate-600 max-w-lg">
-                    That's roughly <span className="font-semibold text-slate-900">{Math.round(calc.dealsMid)} deals a month</span> slipping
+                  <p className="mt-3 text-slate-600 dark:text-slate-400 max-w-lg">
+                    That's roughly <span className="font-semibold text-slate-900 dark:text-white">{Math.round(calc.dealsMid)} deals a month</span> slipping
                     away to slow follow-up{company ? `, ${company}` : ""} — about {fmt(calc.monthlyLeak, currency)} monthly.
                     Likely range {fmt(calc.annualLeakLow, currency)}–{fmt(calc.annualLeakHigh, currency)} a year.
                   </p>
@@ -382,26 +389,26 @@ Be concrete and non-generic. No flattery, no filler.`;
                     margin={{ left: 0, right: 70, top: 4, bottom: 4 }}>
                     <XAxis type="number" hide />
                     <YAxis type="category" dataKey="name" width={90}
-                      tick={{ fontSize: 12, fill: "#475569" }}
+                      tick={{ fontSize: 12, fill: isDark ? "#94a3b8" : "#475569" }}
                       axisLine={false} tickLine={false} />
                     <Bar dataKey="value" radius={[5, 5, 5, 5]} barSize={26}>
                       {chartData.map((d, i) => <Cell key={i} fill={d.fill} />)}
                       <LabelList dataKey="label" position="right"
-                        style={{ fontSize: 12, fontWeight: 600, fill: "#0f172a" }} />
+                        style={{ fontSize: 12, fontWeight: 600, fill: isDark ? "#f1f5f9" : "#0f172a" }} />
                     </Bar>
                   </BarChart>
                 </ResponsiveContainer>
-                <p className="text-xs text-slate-400">Annual revenue from these leads, captured vs. leaking.</p>
+                <p className="text-xs text-slate-400 dark:text-slate-500">Annual revenue from these leads, captured vs. leaking.</p>
               </div>
 
               {/* methodology */}
               <button onClick={() => setShowMethod((v) => !v)}
-                className="mt-4 inline-flex items-center gap-1 text-xs font-medium text-slate-500 hover:text-slate-900">
+                className="mt-4 inline-flex items-center gap-1 text-xs font-medium text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white">
                 How this is calculated
                 <ChevronDown className={"h-3.5 w-3.5 transition-transform " + (showMethod ? "rotate-180" : "")} />
               </button>
               {showMethod && (
-                <p className="mt-2 text-xs leading-relaxed text-slate-500 max-w-xl">
+                <p className="mt-2 text-xs leading-relaxed text-slate-500 dark:text-slate-400 max-w-xl">
                   We take your non-closing leads and apply a recoverable share based on lead-response
                   benchmarks: the slower the first touch, the larger the share of warm leads lost to
                   timing rather than genuine disinterest ({RESPONSE[response].label.toLowerCase()} ≈{" "}
@@ -509,7 +516,7 @@ Be concrete and non-generic. No flattery, no filler.`;
               )}
             </div>
 
-            <p className="mt-5 text-center text-xs text-slate-400">
+            <p className="mt-5 text-center text-xs text-slate-400 dark:text-slate-500">
               Estimates based on lead-response benchmarks. Built by The Start Up · CRM powered by Monday.com.
             </p>
           </div>
@@ -520,7 +527,7 @@ Be concrete and non-generic. No flattery, no filler.`;
             <button
               type="button"
               onClick={() => setStep(calc.valid ? "results" : "input")}
-              className="inline-flex items-center gap-1.5 text-sm text-slate-500 hover:text-slate-900 mb-6"
+              className="inline-flex items-center gap-1.5 text-sm text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white mb-6"
             >
               <ArrowLeft className="h-4 w-4" /> {calc.valid ? "Back to my leak report" : "Back to the audit"}
             </button>

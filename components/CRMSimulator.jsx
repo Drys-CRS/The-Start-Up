@@ -767,7 +767,7 @@ const CUSTOM_APPS = [
 const SERVICE_CARDS = [
   {
     icon: GitMerge,
-    accent: "bg-blue-50 text-blue-600",
+    accent: "bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400",
     title: "CRM & Lead Pipeline",
     desc: "One structured system that captures every lead from every source, routes them to the right person, and tracks every deal from first touch to close.",
     points: [
@@ -779,7 +779,7 @@ const SERVICE_CARDS = [
   },
   {
     icon: Zap,
-    accent: "bg-teal-50 text-teal-600",
+    accent: "bg-teal-50 dark:bg-teal-950/40 text-teal-600 dark:text-teal-400",
     title: "Workflow Automation",
     desc: "Replace the manual tasks your team repeats every day with automated flows that trigger on the right event at the right time — without anyone managing them.",
     points: [
@@ -791,7 +791,7 @@ const SERVICE_CARDS = [
   },
   {
     icon: Code2,
-    accent: "bg-violet-50 text-violet-600",
+    accent: "bg-violet-50 dark:bg-violet-950/40 text-violet-600 dark:text-violet-400",
     title: "Custom App Development",
     desc: "When off-the-shelf tools don't fit your workflow, we build purpose-built apps — portals, booking systems, dashboards, and more — in 30 days.",
     points: [
@@ -1014,13 +1014,13 @@ function AIView({ industry }) {
   return (
     <div className="space-y-6">
       {/* Header callout */}
-      <div className="rounded-2xl border border-teal-200 bg-teal-50 p-5 flex items-start gap-4">
+      <div className="rounded-2xl border border-teal-200 dark:border-teal-800 bg-teal-50 dark:bg-teal-950/40 p-5 flex items-start gap-4">
         <div className="flex h-10 w-10 flex-none items-center justify-center rounded-xl bg-teal-500">
           <BrainCircuit className="h-5 w-5 text-white" strokeWidth={2} />
         </div>
         <div>
-          <div className="text-xs font-semibold uppercase tracking-widest text-teal-600 mb-1">AI Layer</div>
-          <p className="text-sm leading-relaxed text-teal-900">
+          <div className="text-xs font-semibold uppercase tracking-widest text-teal-600 dark:text-teal-400 mb-1">AI Layer</div>
+          <p className="text-sm leading-relaxed text-teal-900 dark:text-teal-300">
             Every system we build includes an AI layer — agents, intelligent workflows, and automation that help your <strong>{industry.label}</strong> business operate faster and grow without adding headcount.
           </p>
         </div>
@@ -1028,27 +1028,27 @@ function AIView({ industry }) {
 
       {/* AI Agents */}
       <div>
-        <div className="text-xs font-semibold uppercase tracking-widest text-slate-400 mb-3">AI Agents for {industry.label}</div>
+        <div className="text-xs font-semibold uppercase tracking-widest text-slate-400 dark:text-slate-500 mb-3">AI Agents for {industry.label}</div>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           {ai.agents.map((agent) => (
-            <div key={agent.name} className="rounded-2xl border border-slate-200 bg-white p-4">
+            <div key={agent.name} className="rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-4">
               <div className="text-2xl mb-2">{agent.icon}</div>
-              <div className="font-semibold text-sm tracking-tight text-slate-900 mb-1">{agent.name}</div>
-              <p className="text-xs leading-relaxed text-slate-500">{agent.desc}</p>
+              <div className="font-semibold text-sm tracking-tight text-slate-900 dark:text-white mb-1">{agent.name}</div>
+              <p className="text-xs leading-relaxed text-slate-500 dark:text-slate-400">{agent.desc}</p>
             </div>
           ))}
         </div>
       </div>
 
       {/* Intelligent Workflows */}
-      <div className="rounded-2xl border border-slate-200 bg-white p-5">
+      <div className="rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-5">
         <div className="flex items-center gap-2 mb-4">
           <Workflow className="h-4 w-4 text-teal-500" strokeWidth={2.5} />
-          <span className="text-xs font-semibold uppercase tracking-widest text-slate-400">Intelligent Workflows</span>
+          <span className="text-xs font-semibold uppercase tracking-widest text-slate-400 dark:text-slate-500">Intelligent Workflows</span>
         </div>
         <div className="space-y-2.5">
           {ai.workflows.map((wf, i) => (
-            <div key={i} className="flex items-start gap-3 text-sm text-slate-700">
+            <div key={i} className="flex items-start gap-3 text-sm text-slate-700 dark:text-slate-300">
               <div className="flex h-5 w-5 flex-none items-center justify-center rounded-full bg-teal-500 text-white text-xs font-bold mt-0.5">
                 {i + 1}
               </div>
@@ -1086,20 +1086,20 @@ const VIEWS = [
 function LeadCard({ lead }) {
   const h = HEAT[lead.heat];
   return (
-    <div className={`bg-white rounded-xl border border-slate-200 border-l-4 ${h.bar} p-3 shadow-sm`}>
+    <div className={`bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700 border-l-4 ${h.bar} p-3 shadow-sm`}>
       <div className="flex items-start justify-between gap-2">
         <div className="min-w-0">
-          <div className="text-sm font-semibold text-slate-900 truncate">{lead.company}</div>
-          <div className="text-xs text-slate-500 truncate">{lead.contact}</div>
+          <div className="text-sm font-semibold text-slate-900 dark:text-white truncate">{lead.company}</div>
+          <div className="text-xs text-slate-500 dark:text-slate-400 truncate">{lead.contact}</div>
         </div>
         <span className={`h-2 w-2 rounded-full flex-none mt-1 ${h.dot}`} />
       </div>
       <div className="mt-2.5 flex items-center justify-between">
         <span className="text-sm font-semibold text-teal-600">{lead.value}</span>
-        <span className="text-xs text-slate-400">{lead.days === 0 ? "Today" : `${lead.days}d in stage`}</span>
+        <span className="text-xs text-slate-400 dark:text-slate-500">{lead.days === 0 ? "Today" : `${lead.days}d in stage`}</span>
       </div>
       {lead.note && (
-        <p className="mt-1.5 text-xs text-slate-400 leading-relaxed">{lead.note}</p>
+        <p className="mt-1.5 text-xs text-slate-400 dark:text-slate-500 leading-relaxed">{lead.note}</p>
       )}
     </div>
   );
@@ -1109,40 +1109,40 @@ function LeadCard({ lead }) {
 
 function KanbanBoard({ industry }) {
   return (
-    <div className="rounded-2xl border border-slate-200 overflow-hidden shadow-sm">
-      <div className="flex items-center justify-between gap-3 bg-white border-b border-slate-200 px-4 py-3">
-        <div className="flex items-center gap-2 rounded-lg border border-slate-200 bg-slate-50 px-3 py-1.5 text-xs text-slate-400 flex-1 sm:w-48 sm:flex-none">
+    <div className="rounded-2xl border border-slate-200 dark:border-slate-700 overflow-hidden shadow-sm">
+      <div className="flex items-center justify-between gap-3 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-700 px-4 py-3">
+        <div className="flex items-center gap-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 px-3 py-1.5 text-xs text-slate-400 dark:text-slate-500 flex-1 sm:w-48 sm:flex-none">
           <Search className="h-3.5 w-3.5 flex-none" />
           <span>Search pipeline…</span>
         </div>
         <div className="flex items-center gap-2">
-          <button className="flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-2.5 py-1.5 text-xs text-slate-500 hover:bg-slate-50">
+          <button className="flex items-center gap-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-2.5 py-1.5 text-xs text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700">
             <Filter className="h-3.5 w-3.5" />
             <span className="hidden sm:inline">Filter</span>
           </button>
-          <button className="hidden sm:flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-2.5 py-1.5 text-xs text-slate-500 hover:bg-slate-50">
+          <button className="hidden sm:flex items-center gap-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-2.5 py-1.5 text-xs text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700">
             <Bell className="h-3.5 w-3.5" />
           </button>
           <div className="hidden sm:flex -space-x-1.5">
             {["SL","AR","JK"].map((i) => (
-              <div key={i} className="h-6 w-6 rounded-full bg-slate-700 border-2 border-white flex items-center justify-center text-[9px] font-bold text-white">{i}</div>
+              <div key={i} className="h-6 w-6 rounded-full bg-slate-700 border-2 border-white dark:border-slate-900 flex items-center justify-center text-[9px] font-bold text-white">{i}</div>
             ))}
           </div>
         </div>
       </div>
 
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-0 bg-slate-100">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-0 bg-slate-100 dark:bg-slate-800">
         {industry.stages.map((stage, si) => (
-          <div key={stage.name} className={`p-3 ${si < industry.stages.length - 1 ? "border-r border-slate-200" : ""}`}>
+          <div key={stage.name} className={`p-3 ${si < industry.stages.length - 1 ? "border-r border-slate-200 dark:border-slate-700" : ""}`}>
             <div className="flex items-center justify-between mb-3">
-              <span className="text-xs font-semibold text-slate-600 truncate">{stage.name}</span>
-              <span className="text-xs font-mono font-semibold text-slate-400">{stage.count}</span>
+              <span className="text-xs font-semibold text-slate-600 dark:text-slate-400 truncate">{stage.name}</span>
+              <span className="text-xs font-mono font-semibold text-slate-400 dark:text-slate-500">{stage.count}</span>
             </div>
             <div className="space-y-2">
               {stage.leads.map((lead) => (
                 <LeadCard key={lead.company} lead={lead} />
               ))}
-              <div className="rounded-xl border border-dashed border-slate-300 h-14 flex items-center justify-center text-xs text-slate-400">
+              <div className="rounded-xl border border-dashed border-slate-300 dark:border-slate-600 h-14 flex items-center justify-center text-xs text-slate-400 dark:text-slate-500">
                 + {stage.count - 2} more
               </div>
             </div>
@@ -1150,11 +1150,11 @@ function KanbanBoard({ industry }) {
         ))}
       </div>
 
-      <div className="flex items-center gap-6 bg-white border-t border-slate-200 px-4 py-2.5 overflow-x-auto">
+      <div className="flex items-center gap-6 bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-700 px-4 py-2.5 overflow-x-auto">
         {industry.metrics.map((m) => (
           <div key={m.label} className="flex items-center gap-2 flex-none text-xs">
-            <span className="text-slate-500">{m.label}</span>
-            <span className="font-semibold text-slate-900">{m.value}</span>
+            <span className="text-slate-500 dark:text-slate-400">{m.label}</span>
+            <span className="font-semibold text-slate-900 dark:text-white">{m.value}</span>
             <span className="text-teal-600">{m.gain}</span>
           </div>
         ))}
@@ -1173,40 +1173,40 @@ function TimelineView({ industry }) {
   ).sort((a, b) => b.days - a.days);
 
   return (
-    <div className="rounded-2xl border border-slate-200 overflow-hidden shadow-sm">
-      <div className="flex items-center justify-between gap-3 bg-white border-b border-slate-200 px-4 py-3">
-        <span className="text-xs font-semibold text-slate-600 uppercase tracking-wide">Deal Timeline — days in current stage</span>
+    <div className="rounded-2xl border border-slate-200 dark:border-slate-700 overflow-hidden shadow-sm">
+      <div className="flex items-center justify-between gap-3 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-700 px-4 py-3">
+        <span className="text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wide">Deal Timeline — days in current stage</span>
         <div className="flex items-center gap-3">
           {Object.entries(HEAT).map(([k, v]) => (
-            <span key={k} className="flex items-center gap-1.5 text-xs text-slate-500">
+            <span key={k} className="flex items-center gap-1.5 text-xs text-slate-500 dark:text-slate-400">
               <span className={`h-2 w-2 rounded-full ${v.dot}`} /> {v.label}
             </span>
           ))}
         </div>
       </div>
 
-      <div className="grid grid-cols-4 border-b border-slate-200 bg-slate-50">
+      <div className="grid grid-cols-4 border-b border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800">
         {weeks.map((w) => (
-          <div key={w} className="px-3 py-2 text-xs font-medium text-slate-400 text-center border-r last:border-r-0 border-slate-200">{w}</div>
+          <div key={w} className="px-3 py-2 text-xs font-medium text-slate-400 dark:text-slate-500 text-center border-r last:border-r-0 border-slate-200 dark:border-slate-700">{w}</div>
         ))}
       </div>
 
-      <div className="bg-white divide-y divide-slate-100">
+      <div className="bg-white dark:bg-slate-900 divide-y divide-slate-100 dark:divide-slate-800">
         {allLeads.map((lead) => {
           const pct = Math.min(100, Math.max(6, (lead.days / MAX_DAYS) * 100));
           return (
             <div key={lead.company + lead.contact} className="flex items-center gap-3 px-4 py-3">
               <div className="w-36 flex-none">
-                <div className="text-sm font-semibold text-slate-900 truncate">{lead.company}</div>
-                <div className="text-xs text-slate-400 truncate">{lead.stageName}</div>
+                <div className="text-sm font-semibold text-slate-900 dark:text-white truncate">{lead.company}</div>
+                <div className="text-xs text-slate-400 dark:text-slate-500 truncate">{lead.stageName}</div>
               </div>
-              <div className="flex-1 relative h-7 bg-slate-100 rounded-lg overflow-hidden">
+              <div className="flex-1 relative h-7 bg-slate-100 dark:bg-slate-800 rounded-lg overflow-hidden">
                 <div
                   className="absolute right-0 top-0 bottom-0 rounded-lg"
                   style={{ width: `${pct}%`, backgroundColor: HEAT[lead.heat].hex, opacity: 0.75 }}
                 />
                 <div className="absolute inset-0 flex items-center pl-3">
-                  <span className="text-xs font-semibold text-slate-700">
+                  <span className="text-xs font-semibold text-slate-700 dark:text-slate-200">
                     {lead.days === 0 ? "Today" : `${lead.days}d`}
                   </span>
                 </div>
@@ -1219,11 +1219,11 @@ function TimelineView({ industry }) {
         })}
       </div>
 
-      <div className="flex items-center gap-6 bg-white border-t border-slate-200 px-4 py-2.5 overflow-x-auto">
+      <div className="flex items-center gap-6 bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-700 px-4 py-2.5 overflow-x-auto">
         {industry.metrics.map((m) => (
           <div key={m.label} className="flex items-center gap-2 flex-none text-xs">
-            <span className="text-slate-500">{m.label}</span>
-            <span className="font-semibold text-slate-900">{m.value}</span>
+            <span className="text-slate-500 dark:text-slate-400">{m.label}</span>
+            <span className="font-semibold text-slate-900 dark:text-white">{m.value}</span>
             <span className="text-teal-600">{m.gain}</span>
           </div>
         ))}
@@ -1236,10 +1236,10 @@ function TimelineView({ industry }) {
 
 function KpiCard({ label, value, sub, accent }) {
   return (
-    <div className={`rounded-2xl border p-4 ${accent ? "border-teal-200 bg-teal-50" : "border-slate-200 bg-white"}`}>
-      <div className={`text-2xl font-bold tracking-tight ${accent ? "text-teal-700" : "text-slate-900"}`}>{value}</div>
-      <div className="text-xs font-medium text-slate-600 mt-0.5">{label}</div>
-      <div className={`text-xs mt-1 ${accent ? "text-teal-600" : "text-slate-400"}`}>{sub}</div>
+    <div className={`rounded-2xl border p-4 ${accent ? "border-teal-200 dark:border-teal-800 bg-teal-50 dark:bg-teal-950/40" : "border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900"}`}>
+      <div className={`text-2xl font-bold tracking-tight ${accent ? "text-teal-700 dark:text-teal-300" : "text-slate-900 dark:text-white"}`}>{value}</div>
+      <div className="text-xs font-medium text-slate-600 dark:text-slate-400 mt-0.5">{label}</div>
+      <div className={`text-xs mt-1 ${accent ? "text-teal-600" : "text-slate-400 dark:text-slate-500"}`}>{sub}</div>
     </div>
   );
 }
@@ -1265,15 +1265,15 @@ function DashboardView({ industry }) {
 
       {/* Funnel + top prospects */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        <div className="rounded-2xl border border-slate-200 bg-white p-5">
-          <div className="text-xs font-medium uppercase tracking-wider text-slate-500 mb-4">Pipeline Funnel</div>
+        <div className="rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-5">
+          <div className="text-xs font-medium uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-4">Pipeline Funnel</div>
           <div className="space-y-3">
             {industry.stages.map((stage, i) => {
               const pct = Math.max(12, Math.round((stage.count / maxCount) * 100));
               return (
                 <div key={stage.name} className="flex items-center gap-3">
-                  <div className="w-32 flex-none text-xs text-slate-600 text-right truncate">{stage.name}</div>
-                  <div className="flex-1 bg-slate-100 rounded-full h-7 overflow-hidden">
+                  <div className="w-32 flex-none text-xs text-slate-600 dark:text-slate-400 text-right truncate">{stage.name}</div>
+                  <div className="flex-1 bg-slate-100 dark:bg-slate-800 rounded-full h-7 overflow-hidden">
                     <div
                       className="h-7 rounded-full flex items-center px-3"
                       style={{ width: `${pct}%`, backgroundColor: funnelColors[i] }}
@@ -1281,7 +1281,7 @@ function DashboardView({ industry }) {
                       <span className="text-xs font-bold text-white">{stage.count}</span>
                     </div>
                   </div>
-                  <div className="w-8 flex-none text-xs text-slate-400 text-right">
+                  <div className="w-8 flex-none text-xs text-slate-400 dark:text-slate-500 text-right">
                     {Math.round((stage.count / totalCount) * 100)}%
                   </div>
                 </div>
@@ -1290,30 +1290,30 @@ function DashboardView({ industry }) {
           </div>
         </div>
 
-        <div className="rounded-2xl border border-slate-200 bg-white p-5">
-          <div className="text-xs font-medium uppercase tracking-wider text-slate-500 mb-4">Hottest Prospects</div>
+        <div className="rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-5">
+          <div className="text-xs font-medium uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-4">Hottest Prospects</div>
           <div className="space-y-3">
             {hotLeads.slice(0, 4).map((lead) => (
               <div key={lead.company + lead.contact} className="flex items-center gap-3">
-                <div className="flex h-8 w-8 flex-none items-center justify-center rounded-lg bg-teal-50 text-xs font-bold text-teal-600">
+                <div className="flex h-8 w-8 flex-none items-center justify-center rounded-lg bg-teal-50 dark:bg-teal-950/40 text-xs font-bold text-teal-600">
                   {lead.company.charAt(0)}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <div className="text-sm font-semibold text-slate-900 truncate">{lead.company}</div>
-                  <div className="text-xs text-slate-400 truncate">{lead.stageName}</div>
+                  <div className="text-sm font-semibold text-slate-900 dark:text-white truncate">{lead.company}</div>
+                  <div className="text-xs text-slate-400 dark:text-slate-500 truncate">{lead.stageName}</div>
                 </div>
                 <div className="text-sm font-semibold text-teal-600 flex-none">{lead.value}</div>
               </div>
             ))}
           </div>
 
-          <div className="mt-5 pt-4 border-t border-slate-100">
-            <div className="text-xs font-medium uppercase tracking-wider text-slate-500 mb-3">Latest Automation Activity</div>
+          <div className="mt-5 pt-4 border-t border-slate-100 dark:border-slate-800">
+            <div className="text-xs font-medium uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-3">Latest Automation Activity</div>
             <div className="space-y-2">
               {industry.automations.slice(0, 3).map((a, i) => (
                 <div key={i} className="flex items-start gap-2">
                   <span className="h-1.5 w-1.5 rounded-full bg-teal-400 mt-1.5 flex-none" />
-                  <span className="text-xs text-slate-500 leading-relaxed">{a}</span>
+                  <span className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">{a}</span>
                 </div>
               ))}
             </div>
@@ -1322,11 +1322,11 @@ function DashboardView({ industry }) {
       </div>
 
       {/* Stats bar */}
-      <div className="flex items-center gap-6 bg-white border border-slate-200 rounded-2xl px-5 py-3 overflow-x-auto">
+      <div className="flex items-center gap-6 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-2xl px-5 py-3 overflow-x-auto">
         {industry.metrics.map((m) => (
           <div key={m.label} className="flex items-center gap-2 flex-none text-xs">
-            <span className="text-slate-500">{m.label}</span>
-            <span className="font-semibold text-slate-900">{m.value}</span>
+            <span className="text-slate-500 dark:text-slate-400">{m.label}</span>
+            <span className="font-semibold text-slate-900 dark:text-white">{m.value}</span>
             <span className="text-teal-600">{m.gain}</span>
           </div>
         ))}
@@ -1343,51 +1343,51 @@ function TableView({ industry }) {
   );
 
   return (
-    <div className="rounded-2xl border border-slate-200 overflow-hidden shadow-sm">
-      <div className="flex items-center gap-3 bg-white border-b border-slate-200 px-4 py-3">
-        <div className="flex items-center gap-2 rounded-lg border border-slate-200 bg-slate-50 px-3 py-1.5 text-xs text-slate-400 w-48">
+    <div className="rounded-2xl border border-slate-200 dark:border-slate-700 overflow-hidden shadow-sm">
+      <div className="flex items-center gap-3 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-700 px-4 py-3">
+        <div className="flex items-center gap-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 px-3 py-1.5 text-xs text-slate-400 dark:text-slate-500 w-48">
           <Search className="h-3.5 w-3.5 flex-none" />
           <span>Search table…</span>
         </div>
-        <button className="ml-auto flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-2.5 py-1.5 text-xs text-slate-500 hover:bg-slate-50">
+        <button className="ml-auto flex items-center gap-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-2.5 py-1.5 text-xs text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700">
           <Filter className="h-3.5 w-3.5" /> Filter
         </button>
       </div>
 
-      <div className="overflow-x-auto bg-white">
+      <div className="overflow-x-auto bg-white dark:bg-slate-900">
         <table className="w-full text-sm">
           <thead>
-            <tr className="border-b border-slate-200 bg-slate-50">
-              <th className="text-left px-4 py-2.5 text-xs font-semibold text-slate-500 uppercase tracking-wider">Company</th>
-              <th className="text-left px-4 py-2.5 text-xs font-semibold text-slate-500 uppercase tracking-wider hidden sm:table-cell">Contact</th>
-              <th className="text-left px-4 py-2.5 text-xs font-semibold text-slate-500 uppercase tracking-wider">Stage</th>
-              <th className="text-left px-4 py-2.5 text-xs font-semibold text-slate-500 uppercase tracking-wider">Value</th>
-              <th className="text-left px-4 py-2.5 text-xs font-semibold text-slate-500 uppercase tracking-wider">Days</th>
-              <th className="text-left px-4 py-2.5 text-xs font-semibold text-slate-500 uppercase tracking-wider">Heat</th>
-              <th className="text-left px-4 py-2.5 text-xs font-semibold text-slate-500 uppercase tracking-wider hidden lg:table-cell">Note</th>
+            <tr className="border-b border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800">
+              <th className="text-left px-4 py-2.5 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Company</th>
+              <th className="text-left px-4 py-2.5 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider hidden sm:table-cell">Contact</th>
+              <th className="text-left px-4 py-2.5 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Stage</th>
+              <th className="text-left px-4 py-2.5 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Value</th>
+              <th className="text-left px-4 py-2.5 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Days</th>
+              <th className="text-left px-4 py-2.5 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Heat</th>
+              <th className="text-left px-4 py-2.5 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider hidden lg:table-cell">Note</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-slate-100">
+          <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
             {allLeads.map((lead) => {
               const h = HEAT[lead.heat];
               return (
-                <tr key={lead.company + lead.contact} className="hover:bg-slate-50 transition-colors">
-                  <td className="px-4 py-3 font-semibold text-slate-900 max-w-[140px] truncate">{lead.company}</td>
-                  <td className="px-4 py-3 text-slate-600 hidden sm:table-cell">{lead.contact}</td>
+                <tr key={lead.company + lead.contact} className="hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
+                  <td className="px-4 py-3 font-semibold text-slate-900 dark:text-white max-w-[140px] truncate">{lead.company}</td>
+                  <td className="px-4 py-3 text-slate-600 dark:text-slate-400 hidden sm:table-cell">{lead.contact}</td>
                   <td className="px-4 py-3">
-                    <span className="rounded-full bg-slate-100 px-2.5 py-0.5 text-xs font-medium text-slate-600 whitespace-nowrap">{lead.stageName}</span>
+                    <span className="rounded-full bg-slate-100 dark:bg-slate-800 px-2.5 py-0.5 text-xs font-medium text-slate-600 dark:text-slate-300 whitespace-nowrap">{lead.stageName}</span>
                   </td>
                   <td className="px-4 py-3 font-semibold text-teal-600 whitespace-nowrap">{lead.value}</td>
-                  <td className="px-4 py-3 text-slate-500 text-xs">{lead.days === 0 ? "Today" : `${lead.days}d`}</td>
+                  <td className="px-4 py-3 text-slate-500 dark:text-slate-400 text-xs">{lead.days === 0 ? "Today" : `${lead.days}d`}</td>
                   <td className="px-4 py-3">
                     <span className={`flex items-center gap-1.5 text-xs font-medium whitespace-nowrap ${
-                      lead.heat === "hot" ? "text-teal-600" : lead.heat === "warm" ? "text-teal-700" : "text-slate-400"
+                      lead.heat === "hot" ? "text-teal-600" : lead.heat === "warm" ? "text-teal-700 dark:text-teal-400" : "text-slate-400 dark:text-slate-500"
                     }`}>
                       <span className={`h-2 w-2 rounded-full flex-none ${h.dot}`} />
                       {h.label}
                     </span>
                   </td>
-                  <td className="px-4 py-3 text-xs text-slate-400 hidden lg:table-cell max-w-xs truncate">{lead.note}</td>
+                  <td className="px-4 py-3 text-xs text-slate-400 dark:text-slate-500 hidden lg:table-cell max-w-xs truncate">{lead.note}</td>
                 </tr>
               );
             })}
@@ -1395,11 +1395,11 @@ function TableView({ industry }) {
         </table>
       </div>
 
-      <div className="flex items-center gap-6 bg-white border-t border-slate-200 px-4 py-2.5 overflow-x-auto">
+      <div className="flex items-center gap-6 bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-700 px-4 py-2.5 overflow-x-auto">
         {industry.metrics.map((m) => (
           <div key={m.label} className="flex items-center gap-2 flex-none text-xs">
-            <span className="text-slate-500">{m.label}</span>
-            <span className="font-semibold text-slate-900">{m.value}</span>
+            <span className="text-slate-500 dark:text-slate-400">{m.label}</span>
+            <span className="font-semibold text-slate-900 dark:text-white">{m.value}</span>
             <span className="text-teal-600">{m.gain}</span>
           </div>
         ))}
@@ -1416,16 +1416,16 @@ function CustomAppGrid() {
       {CUSTOM_APPS.map((app) => (
         <div
           key={app.name}
-          className="rounded-2xl border border-slate-200 bg-white p-5 hover:border-slate-400 hover:shadow-sm transition-all"
+          className="rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-5 hover:border-slate-400 dark:hover:border-slate-500 hover:shadow-sm transition-all"
         >
           <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-slate-900 mb-4">
             <app.icon className="h-5 w-5 text-teal-400" strokeWidth={2} />
           </div>
-          <div className="font-semibold tracking-tight text-slate-900 mb-2">{app.name}</div>
-          <p className="text-sm leading-relaxed text-slate-600 mb-4">{app.desc}</p>
+          <div className="font-semibold tracking-tight text-slate-900 dark:text-white mb-2">{app.name}</div>
+          <p className="text-sm leading-relaxed text-slate-600 dark:text-slate-400 mb-4">{app.desc}</p>
           <ul className="space-y-1.5">
             {app.examples.map((ex) => (
-              <li key={ex} className="flex items-start gap-2 text-xs text-slate-600">
+              <li key={ex} className="flex items-start gap-2 text-xs text-slate-600 dark:text-slate-400">
                 <Check className="h-3.5 w-3.5 flex-none text-teal-500 mt-px" strokeWidth={3} />
                 {ex}
               </li>
@@ -1445,14 +1445,14 @@ export default function CRMSimulator() {
   const industry = INDUSTRIES[active];
 
   return (
-    <div className="min-h-screen w-full bg-slate-50 text-slate-900 font-sans">
+    <div className="min-h-screen w-full bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 font-sans">
       <div className="mx-auto max-w-6xl px-5 py-10 sm:py-14">
 
         {/* Nav */}
         <div className="flex items-center justify-between mb-10 sm:mb-14">
-          <a href="/"><WordMark dark /></a>
+          <a href="/"><WordMark /></a>
           <div className="flex items-center gap-3">
-            <a href="/calculator" className="hidden sm:inline-flex text-xs font-medium text-slate-500 hover:text-slate-900">
+            <a href="/calculator" className="hidden sm:inline-flex text-xs font-medium text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white">
               Free audit
             </a>
             <a href="/calculator?step=buildplan" className="inline-flex items-center gap-1.5 rounded-lg bg-slate-900 px-3 py-2 sm:px-4 text-xs font-semibold text-white hover:bg-slate-800">
@@ -1465,37 +1465,37 @@ export default function CRMSimulator() {
 
         {/* Hero */}
         <div className="max-w-2xl mb-12">
-          <div className="inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-white px-3 py-1 text-xs font-medium text-slate-500 mb-5">
+          <div className="inline-flex items-center gap-1.5 rounded-full border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-1 text-xs font-medium text-slate-500 dark:text-slate-400 mb-5">
             <span className="h-1.5 w-1.5 rounded-full bg-teal-500" /> Interactive example — pick your industry
           </div>
           <h1 className="text-4xl sm:text-5xl font-semibold tracking-tight leading-tight">
             See your pipeline.<br className="hidden sm:block" />
-            <span className="text-slate-400">Before you build it.</span>
+            <span className="text-slate-400 dark:text-slate-500">Before you build it.</span>
           </h1>
-          <p className="mt-4 text-lg text-slate-600 max-w-xl">
+          <p className="mt-4 text-lg text-slate-600 dark:text-slate-400 max-w-xl">
             Select your industry to see how a custom system would organise your leads, automate your follow-up, and surface the numbers that matter — built specifically for your business in 30 days.
           </p>
         </div>
 
         {/* Service overview */}
         <div className="mb-14">
-          <div className="text-xs font-medium uppercase tracking-wider text-slate-500 mb-2">What we build</div>
+          <div className="text-xs font-medium uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-2">What we build</div>
           <h2 className="text-2xl font-semibold tracking-tight mb-2">Three types of systems. One team. 30 days to live.</h2>
-          <p className="text-slate-600 mb-7 max-w-2xl">
+          <p className="text-slate-600 dark:text-slate-400 mb-7 max-w-2xl">
             Every system is custom-scoped to your business, built in 30 days, and handed over with full documentation.
             No vendor lock-in, no subscriptions for the system itself — you own it on day one.
           </p>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             {SERVICE_CARDS.map((card) => (
-              <div key={card.title} className="rounded-2xl border border-slate-200 bg-white p-5">
+              <div key={card.title} className="rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-5">
                 <div className={`flex h-9 w-9 items-center justify-center rounded-xl ${card.accent} mb-4`}>
                   <card.icon className="h-4.5 w-4.5" strokeWidth={2.5} />
                 </div>
                 <div className="font-semibold tracking-tight mb-2">{card.title}</div>
-                <p className="text-sm leading-relaxed text-slate-600 mb-4">{card.desc}</p>
+                <p className="text-sm leading-relaxed text-slate-600 dark:text-slate-400 mb-4">{card.desc}</p>
                 <ul className="space-y-1.5">
                   {card.points.map((p) => (
-                    <li key={p} className="flex items-start gap-2 text-xs text-slate-600">
+                    <li key={p} className="flex items-start gap-2 text-xs text-slate-600 dark:text-slate-400">
                       <Check className="h-3.5 w-3.5 flex-none text-teal-500 mt-px" strokeWidth={3} />
                       {p}
                     </li>
@@ -1507,7 +1507,7 @@ export default function CRMSimulator() {
         </div>
 
         {/* Industry picker */}
-        <div className="text-xs font-medium uppercase tracking-wider text-slate-500 mb-3">Explore by sector</div>
+        <div className="text-xs font-medium uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-3">Explore by sector</div>
         <div className="flex flex-wrap gap-2 mb-6">
           {INDUSTRIES.map((ind, i) => (
             <button
@@ -1516,7 +1516,7 @@ export default function CRMSimulator() {
               className={`flex items-center gap-1.5 rounded-xl border px-2.5 py-1.5 sm:px-3.5 sm:py-2 text-xs sm:text-sm font-medium transition-all ${
                 active === i
                   ? "border-slate-900 bg-slate-900 text-white shadow-sm"
-                  : "border-slate-200 bg-white text-slate-600 hover:border-slate-400 hover:text-slate-900"
+                  : "border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-400 hover:border-slate-400 dark:hover:border-slate-500 hover:text-slate-900 dark:hover:text-white"
               }`}
             >
               <span>{ind.icon}</span>
@@ -1528,15 +1528,15 @@ export default function CRMSimulator() {
         {/* Tagline */}
         <div className="flex items-start gap-2.5 mb-3">
           <span className="text-2xl flex-none mt-0.5">{industry.icon}</span>
-          <p className="text-lg font-semibold tracking-tight text-slate-800">{industry.tagline}</p>
+          <p className="text-lg font-semibold tracking-tight text-slate-800 dark:text-slate-200">{industry.tagline}</p>
         </div>
 
         {/* View toggle — hidden for Custom App sector */}
         {!industry.isCustomApp && (
           <div className="flex items-center gap-2 mb-5">
-            <span className="text-xs text-slate-400 flex-none hidden sm:block">View as:</span>
+            <span className="text-xs text-slate-400 dark:text-slate-500 flex-none hidden sm:block">View as:</span>
             <div className="overflow-x-auto pb-0.5 flex-1">
-              <div className="flex items-center gap-1 rounded-xl border border-slate-200 bg-white p-1 w-max">
+              <div className="flex items-center gap-1 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-1 w-max">
                 {VIEWS.map((v) => (
                   <button
                     key={v.id}
@@ -1544,7 +1544,7 @@ export default function CRMSimulator() {
                     className={`flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium transition-all whitespace-nowrap ${
                       view === v.id
                         ? "bg-slate-900 text-white"
-                        : "text-slate-500 hover:text-slate-900"
+                        : "text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
                     }`}
                   >
                     <v.icon className="h-3.5 w-3.5" />
@@ -1575,34 +1575,34 @@ export default function CRMSimulator() {
         {/* Insights + Automations */}
         <div className="mt-10 grid grid-cols-1 lg:grid-cols-3 gap-6">
           <div className="lg:col-span-2 space-y-4">
-            <div className="text-xs font-medium uppercase tracking-wider text-slate-500 mb-1">
+            <div className="text-xs font-medium uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-1">
               {industry.isCustomApp ? "Why custom apps work" : `Why it works for ${industry.label}`}
             </div>
             {industry.insights.map((ins) => (
-              <div key={ins.title} className="rounded-2xl border border-slate-200 bg-white p-5">
+              <div key={ins.title} className="rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-5">
                 <div className="flex items-start gap-3">
-                  <div className="flex h-8 w-8 flex-none items-center justify-center rounded-lg bg-teal-50">
+                  <div className="flex h-8 w-8 flex-none items-center justify-center rounded-lg bg-teal-50 dark:bg-teal-950/40">
                     <ins.icon className="h-4 w-4 text-teal-600" strokeWidth={2.5} />
                   </div>
                   <div>
-                    <div className="font-semibold tracking-tight text-slate-900">{ins.title}</div>
-                    <p className="mt-1 text-sm leading-relaxed text-slate-600">{ins.body}</p>
+                    <div className="font-semibold tracking-tight text-slate-900 dark:text-white">{ins.title}</div>
+                    <p className="mt-1 text-sm leading-relaxed text-slate-600 dark:text-slate-400">{ins.body}</p>
                   </div>
                 </div>
               </div>
             ))}
           </div>
 
-          <div className="rounded-2xl border border-slate-200 bg-white p-5 h-fit">
+          <div className="rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-5 h-fit">
             <div className="flex items-center gap-2 mb-4">
               <Zap className="h-4 w-4 text-teal-500" strokeWidth={2.5} />
-              <span className="text-xs font-medium uppercase tracking-wider text-slate-500">
+              <span className="text-xs font-medium uppercase tracking-wider text-slate-500 dark:text-slate-400">
                 {industry.isCustomApp ? "Delivery workflow" : "Built-in automations"}
               </span>
             </div>
             <ul className="space-y-3">
               {industry.automations.map((a, i) => (
-                <li key={i} className="flex gap-2.5 text-sm text-slate-700">
+                <li key={i} className="flex gap-2.5 text-sm text-slate-700 dark:text-slate-300">
                   <ChevronRight className="h-4 w-4 flex-none text-teal-500 mt-0.5" strokeWidth={2.5} />
                   <span className="leading-relaxed">{a}</span>
                 </li>
@@ -1613,21 +1613,21 @@ export default function CRMSimulator() {
 
         {/* Generic benefits */}
         <div className="mt-16">
-          <div className="text-xs font-medium uppercase tracking-wider text-slate-500 mb-2">Works for any business</div>
+          <div className="text-xs font-medium uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-2">Works for any business</div>
           <h2 className="text-2xl font-semibold tracking-tight mb-7">
             Three things every system we build does, regardless of industry
           </h2>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
             {BENEFITS.map((b) => (
-              <div key={b.title} className="rounded-2xl border border-slate-200 bg-white p-6">
+              <div key={b.title} className="rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-6">
                 <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-slate-900 mb-4">
                   <b.icon className="h-4 w-4 text-teal-400" strokeWidth={2.5} />
                 </div>
                 <div className="font-semibold tracking-tight mb-2">{b.title}</div>
-                <p className="text-sm leading-relaxed text-slate-600 mb-4">{b.body}</p>
+                <p className="text-sm leading-relaxed text-slate-600 dark:text-slate-400 mb-4">{b.body}</p>
                 <ul className="space-y-1.5">
                   {b.points.map((p) => (
-                    <li key={p} className="flex items-start gap-2 text-xs text-slate-600">
+                    <li key={p} className="flex items-start gap-2 text-xs text-slate-600 dark:text-slate-400">
                       <Check className="h-3.5 w-3.5 flex-none text-teal-500 mt-px" strokeWidth={3} />
                       {p}
                     </li>
@@ -1678,9 +1678,9 @@ export default function CRMSimulator() {
         </div>
 
         {/* Footer */}
-        <div className="mt-10 border-t border-slate-200 pt-6 flex flex-col sm:flex-row items-center justify-between gap-3">
-          <WordMark dark className="opacity-40 scale-75 origin-left" />
-          <p className="text-xs text-slate-400">* CRM systems are built on Monday.com where applicable.</p>
+        <div className="mt-10 border-t border-slate-200 dark:border-slate-700 pt-6 flex flex-col sm:flex-row items-center justify-between gap-3">
+          <WordMark className="opacity-40 scale-75 origin-left" />
+          <p className="text-xs text-slate-400 dark:text-slate-500">* CRM systems are built on Monday.com where applicable.</p>
         </div>
 
       </div>
