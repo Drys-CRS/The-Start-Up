@@ -29,7 +29,15 @@ const SCATTER_OFFSET = [
 
 function Chrome({ stage, children }) {
   return (
-    <div className="rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 shadow-xl overflow-hidden w-full">
+    <motion.div
+      className="rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 shadow-xl overflow-hidden w-full"
+      animate={
+        stage === "ai"
+          ? { boxShadow: ["0 0 0 0 rgba(20,184,166,0)", "0 0 0 10px rgba(20,184,166,0.14)", "0 0 0 0 rgba(20,184,166,0)"] }
+          : { boxShadow: "0 0 0 0 rgba(20,184,166,0)" }
+      }
+      transition={stage === "ai" ? { duration: 2.2, repeat: Infinity, ease: "easeInOut" } : { duration: 0.3 }}
+    >
       <div className="flex items-center gap-2 border-b border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/60 px-4 py-2.5">
         <span className="h-2.5 w-2.5 rounded-full bg-slate-300 dark:bg-slate-600" />
         <span className="h-2.5 w-2.5 rounded-full bg-slate-300 dark:bg-slate-600" />
@@ -67,7 +75,7 @@ function Chrome({ stage, children }) {
         </span>
       </div>
       {children}
-    </div>
+    </motion.div>
   );
 }
 
@@ -97,10 +105,21 @@ function BrokenBoard() {
             key={lead.id}
             className={`w-[46%] sm:w-[30%] ${SCATTER_ROTATE[i % SCATTER_ROTATE.length]}`}
             style={{ marginTop: i % 2 === 0 ? 0 : 10 }}
-            animate={i % 2 === 0 ? { rotate: [0, -3, 0] } : {}}
-            transition={i % 2 === 0 ? { duration: 3.5, repeat: Infinity, ease: "easeInOut", delay: i * 0.4 } : {}}
+            initial={{ opacity: 0, y: -16 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.4, delay: i * 0.1, ease: "easeOut" }}
           >
-            <LeadCard lead={lead} showValue={false} />
+            <motion.div
+              animate={i % 2 === 0 ? { rotate: [0, -4, 0, 3, 0] } : { y: [0, -3, 0] }}
+              transition={{
+                duration: 3.5 + i * 0.3,
+                repeat: Infinity,
+                ease: "easeInOut",
+                delay: 0.6 + i * 0.4,
+              }}
+            >
+              <LeadCard lead={lead} showValue={false} />
+            </motion.div>
           </motion.div>
         ))}
       </div>
@@ -144,8 +163,16 @@ function AIBoard() {
           <div key={col} className="bg-white dark:bg-slate-900 p-2.5 sm:p-3">
             <div className="mb-2.5 text-[10px] sm:text-[11px] font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500">{col}</div>
             <div className="space-y-2 min-h-[110px] sm:min-h-[130px]">
-              {BASE_LEADS.filter((_, i) => i % 3 === ci).map((lead) => (
-                <LeadCard key={lead.id} lead={lead} />
+              {BASE_LEADS.filter((_, i) => i % 3 === ci).map((lead, i) => (
+                <motion.div
+                  key={lead.id}
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  whileInView={{ opacity: 1, scale: 1 }}
+                  viewport={{ once: true, margin: "-40px" }}
+                  transition={{ duration: 0.35, delay: 0.1 + (ci * 2 + i) * 0.08, ease: "easeOut" }}
+                >
+                  <LeadCard lead={lead} />
+                </motion.div>
               ))}
             </div>
           </div>
@@ -155,7 +182,7 @@ function AIBoard() {
         initial={{ opacity: 0, y: 8 }}
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true, margin: "-40px" }}
-        transition={{ duration: 0.5, delay: 0.6, ease: "easeOut" }}
+        transition={{ duration: 0.5, delay: 0.7, ease: "easeOut" }}
         className="flex items-center gap-2 border-t border-teal-200 dark:border-teal-800 bg-teal-50 dark:bg-teal-950/40 px-3 sm:px-4 py-2.5"
       >
         <Sparkles className="h-3.5 w-3.5 flex-none text-teal-600 dark:text-teal-400" />
