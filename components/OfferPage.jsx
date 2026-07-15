@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
   ArrowRight, Check, X, ShieldCheck, FileText, ChevronDown, Monitor,
   Search, TrendingDown, ClipboardCheck, Hammer, LifeBuoy, Tag, Unlock, Zap, RefreshCw,
+  Sparkles, Target, Route, Mail, Bell, BarChart3, Gauge, Bot,
 } from "lucide-react";
 import WordMark from "./WordMark";
 import PipelinePreview from "./PipelinePreview";
@@ -65,6 +66,35 @@ const DEFERRED = [
   "Long chains of integrations",
 ];
 
+// Process-driven verticals shown in the top-of-page industry toggle. Labels, icons, and
+// taglines are kept in sync with the CRM demo's INDUSTRIES so the two pages tell one story.
+const INDUSTRIES = [
+  { id: "saas",         icon: "⚡",  label: "SaaS / Software",         line: "Turn free trials into revenue before the competition calls." },
+  { id: "agency",       icon: "🎯", label: "Agency / Marketing",      line: "Stop losing retainer clients to slow proposals and poor follow-through." },
+  { id: "professional", icon: "📋", label: "Professional Services",   line: "Win more mandates, manage capacity, and never miss a referral follow-up." },
+  { id: "recruitment",  icon: "🔍", label: "Recruitment / Staffing",  line: "Fill roles faster and build the client relationships that keep coming back." },
+  { id: "distribution", icon: "📦", label: "Distribution / Wholesale", line: "Convert first orders into lifetime accounts with zero manual follow-up." },
+  { id: "financial",    icon: "📈", label: "Financial Services",      line: "Onboard clients faster while keeping every step audit-ready." },
+  { id: "healthcare",   icon: "❤️", label: "Healthcare",              line: "Reduce admin, fill appointment gaps, and keep patients from falling through the cracks." },
+  { id: "realestate",   icon: "🏠", label: "Real Estate",             line: "Give every buyer, seller, and tenant the response speed that closes the deal." },
+  { id: "ecommerce",    icon: "🛒", label: "E-commerce & Retail",     line: "Turn first-time stockists into recurring wholesale accounts." },
+  { id: "construction", icon: "🏗️", label: "Construction & Property", line: "Win more tenders, track every site, and never miss a contract milestone." },
+  { id: "education",    icon: "🎓", label: "Education & Training",     line: "Convert more enquiries to enrolments and keep your intake calendar full." },
+];
+
+// Ways the AI layer keeps working after launch — powers the standout "AI takes over" block.
+const AI_CAPABILITIES = [
+  { icon: Target,    title: "Lead scoring",         body: "Ranks every lead by likelihood to close, updated in real time as they engage." },
+  { icon: Route,     title: "Smart routing",        body: "Auto-assigns each lead to the right rep by territory, skill, or current load." },
+  { icon: Mail,      title: "Follow-up sequencing", body: "Drafts and sends the next touch at the moment it's most likely to land." },
+  { icon: Bell,      title: "Deal-risk alerts",     body: "Flags deals going cold and nudges an owner before the revenue slips away." },
+  { icon: Sparkles,  title: "Auto-enrichment",      body: "Fills in company, contact, and intent data so records are never half-empty." },
+  { icon: FileText,  title: "Meeting summaries",    body: "Turns calls and email threads into clean CRM notes and clear next steps." },
+  { icon: BarChart3, title: "Pipeline forecasting", body: "Projects the month from live pipeline signal — not a rep's gut feel." },
+  { icon: Gauge,     title: "Inbox triage",         body: "Reads inbound messages and files each one to the right record instantly." },
+  { icon: Bot,       title: "24/7 first response",  body: "Answers and qualifies new enquiries the second they arrive, day or night." },
+];
+
 const GUARANTEES = [
   { icon: ShieldCheck, title: "30-day guarantee", body: "Miss the date for a reason that's on us, get 30 extra days of support free." },
   { icon: Tag, title: "Fixed price, always", body: "The price you sign is the price you pay. No surprise invoices." },
@@ -74,6 +104,7 @@ const GUARANTEES = [
 
 export default function OfferPage() {
   const [openFaq, setOpenFaq] = useState(0);
+  const [industry, setIndustry] = useState(null); // null = generic; otherwise an INDUSTRIES entry
   const tiers = TIERS;
 
   return (
@@ -90,6 +121,45 @@ export default function OfferPage() {
 
       <div className="mx-auto max-w-5xl px-5 py-10 sm:py-14">
 
+        {/* Industry toggle — tailors the page to process-driven verticals */}
+        <motion.div
+          initial={{ opacity: 0, y: -8 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4, ease: "easeOut" }}
+          className="mb-8"
+        >
+          <div className="mb-2.5 flex items-center gap-2 text-xs font-medium text-slate-500 dark:text-slate-400">
+            <span>Tailor this page to your industry</span>
+            {industry && (
+              <button
+                onClick={() => setIndustry(null)}
+                className="inline-flex items-center gap-1 text-teal-600 dark:text-teal-400 hover:underline"
+              >
+                <X className="h-3 w-3" /> Reset
+              </button>
+            )}
+          </div>
+          <div className="flex gap-2 overflow-x-auto pb-1.5 -mx-1 px-1" style={{ scrollbarWidth: "none" }}>
+            {INDUSTRIES.map((ind) => {
+              const on = industry?.id === ind.id;
+              return (
+                <button
+                  key={ind.id}
+                  onClick={() => setIndustry(on ? null : ind)}
+                  aria-pressed={on}
+                  className={`flex-none inline-flex items-center gap-1.5 rounded-full border px-3.5 py-1.5 text-xs font-medium whitespace-nowrap transition-colors ${
+                    on
+                      ? "border-teal-500 bg-teal-500 text-slate-950"
+                      : "border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-300 hover:border-teal-300 dark:hover:border-teal-700"
+                  }`}
+                >
+                  <span aria-hidden>{ind.icon}</span> {ind.label}
+                </button>
+              );
+            })}
+          </div>
+        </motion.div>
+
         {/* Hero */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-14 items-center">
           <motion.div
@@ -98,16 +168,31 @@ export default function OfferPage() {
             transition={{ duration: 0.5, ease: "easeOut" }}
           >
             <div className="inline-flex items-center gap-1.5 rounded-full border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-1 text-xs font-medium text-slate-500 dark:text-slate-400 mb-5">
-              <span className="h-1.5 w-1.5 rounded-full bg-teal-500" /> For businesses whose CRM isn't running the sales cycle
+              <span className="h-1.5 w-1.5 rounded-full bg-teal-500" />
+              {industry ? <>For {industry.label} teams whose CRM isn't running the pipeline</> : "For businesses whose CRM isn't running the sales cycle"}
             </div>
             <h1 className="text-4xl sm:text-5xl font-semibold tracking-tight leading-tight">
               Your CRM isn't broken.
               <br /> Your sales cycle is.
             </h1>
+            <AnimatePresence mode="wait">
+              {industry && (
+                <motion.p
+                  key={industry.id}
+                  initial={{ opacity: 0, y: -6 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -6 }}
+                  transition={{ duration: 0.25, ease: "easeOut" }}
+                  className="mt-4 text-base font-medium text-teal-700 dark:text-teal-300"
+                >
+                  {industry.line}
+                </motion.p>
+              )}
+            </AnimatePresence>
             <p className="mt-4 text-lg text-slate-600 dark:text-slate-400">
               Leads stall, reps skip steps, follow-up happens whenever someone remembers. We rebuild the process
-              and automation around your CRM so it actually runs your sales cycle. Shipped in 30 days.
-              Supported for <span className="font-mono tabular-nums">60–120</span>. No endless discovery. No disappearing act.
+              and automation around your CRM so it actually runs your sales cycle. Shipped in 30 days, with
+              60 days of support free. No endless discovery. No disappearing act.
             </p>
             <div className="mt-7 flex flex-col sm:flex-row gap-3">
               <motion.a whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} href="/calculator" className="inline-flex items-center justify-center gap-2 rounded-lg bg-teal-500 px-6 py-3 text-sm font-semibold text-slate-950 hover:bg-teal-400">
@@ -134,7 +219,9 @@ export default function OfferPage() {
               </div>
               <div className="min-w-0">
                 <div className="text-sm font-semibold text-slate-900 dark:text-slate-100 group-hover:text-teal-700 dark:group-hover:text-teal-400">See a live system example</div>
-                <div className="text-xs text-slate-400 dark:text-slate-500 group-hover:text-teal-600 dark:group-hover:text-teal-400">Pick your industry — see exactly what we'd build for you</div>
+                <div className="text-xs text-slate-400 dark:text-slate-500 group-hover:text-teal-600 dark:group-hover:text-teal-400">
+                  {industry ? `See exactly what we'd build for ${industry.label}` : "Pick your industry — see exactly what we'd build for you"}
+                </div>
               </div>
               <ArrowRight className="h-4 w-4 flex-none text-slate-300 dark:text-slate-600 group-hover:text-teal-500 ml-auto" />
             </a>
@@ -207,6 +294,97 @@ export default function OfferPage() {
           </div>
         </motion.div>
 
+        {/* AI power-up — standout block */}
+        <motion.div
+          {...reveal}
+          className="mt-16 relative overflow-hidden rounded-3xl border border-teal-500/30 bg-slate-950 p-8 sm:p-12"
+        >
+          {/* Pulsing aurora glow */}
+          <motion.div
+            aria-hidden
+            className="pointer-events-none absolute inset-0"
+            style={{ background: "radial-gradient(ellipse 65% 55% at 50% -5%, rgba(20,184,166,0.28) 0%, transparent 70%)" }}
+            animate={{ opacity: [0.45, 1, 0.45] }}
+            transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+          />
+          {/* Drifting accent orbs */}
+          <motion.div
+            aria-hidden
+            className="pointer-events-none absolute -top-20 -right-16 h-56 w-56 rounded-full"
+            style={{ background: "radial-gradient(circle, rgba(45,212,191,0.18) 0%, transparent 70%)" }}
+            animate={{ x: [0, -24, 0], y: [0, 18, 0] }}
+            transition={{ duration: 9, repeat: Infinity, ease: "easeInOut" }}
+          />
+          <motion.div
+            aria-hidden
+            className="pointer-events-none absolute -bottom-24 -left-16 h-56 w-56 rounded-full"
+            style={{ background: "radial-gradient(circle, rgba(20,184,166,0.15) 0%, transparent 70%)" }}
+            animate={{ x: [0, 20, 0], y: [0, -16, 0] }}
+            transition={{ duration: 11, repeat: Infinity, ease: "easeInOut" }}
+          />
+
+          <div className="relative">
+            <div className="text-center max-w-2xl mx-auto mb-10">
+              <motion.div
+                initial={{ opacity: 0, scale: 0.8 }}
+                whileInView={{ opacity: 1, scale: 1 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.5, ease: "easeOut" }}
+                className="inline-flex items-center gap-1.5 rounded-full border border-teal-500/40 bg-teal-500/10 px-3 py-1 text-xs font-semibold uppercase tracking-wider text-teal-300 mb-4"
+              >
+                <motion.span
+                  animate={{ scale: [1, 1.35, 1], rotate: [0, 12, 0] }}
+                  transition={{ duration: 1.8, repeat: Infinity, ease: "easeInOut" }}
+                >
+                  <Sparkles className="h-3.5 w-3.5" />
+                </motion.span>
+                AI layer
+              </motion.div>
+              <motion.h2
+                initial={{ opacity: 0, y: 14 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.5, ease: "easeOut" }}
+                className="text-3xl sm:text-4xl font-semibold tracking-tight text-white"
+              >
+                Then AI takes over the busywork.
+              </motion.h2>
+              <p className="mt-3 text-slate-400">
+                Scoring, routing, and follow-up sequencing run themselves — so your team spends time closing,
+                not chasing. And it keeps working long after launch:
+              </p>
+            </div>
+
+            {/* Live AI board */}
+            <div className="max-w-xl mx-auto mb-10">
+              <PipelinePreview stage="ai" />
+            </div>
+
+            {/* Ways AI works */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+              {AI_CAPABILITIES.map((c, i) => (
+                <motion.div
+                  key={c.title}
+                  initial={{ opacity: 0, y: 14, scale: 0.97 }}
+                  whileInView={{ opacity: 1, y: 0, scale: 1 }}
+                  viewport={{ once: true, margin: "-40px" }}
+                  transition={{ duration: 0.4, delay: (i % 3) * 0.08 + Math.floor(i / 3) * 0.06, ease: "easeOut" }}
+                  whileHover={{ y: -3 }}
+                  className="group relative rounded-xl border border-slate-800 bg-slate-900/60 p-4 transition-colors hover:border-teal-500/50"
+                >
+                  <div className="flex items-center gap-2.5 mb-1.5">
+                    <span className="flex h-8 w-8 flex-none items-center justify-center rounded-lg bg-teal-500/10 text-teal-400 transition-colors group-hover:bg-teal-500/20">
+                      <c.icon className="h-4 w-4" strokeWidth={2.25} />
+                    </span>
+                    <span className="text-sm font-semibold text-slate-100">{c.title}</span>
+                  </div>
+                  <p className="text-xs leading-relaxed text-slate-400">{c.body}</p>
+                </motion.div>
+              ))}
+            </div>
+          </div>
+        </motion.div>
+
         {/* Process Flow */}
         <motion.div {...reveal} id="how" className="mt-16 overflow-hidden rounded-2xl bg-slate-950 shadow-sm p-8 sm:p-10">
           <div className="text-xs font-medium uppercase tracking-wider text-slate-500 mb-8">How it works</div>
@@ -232,7 +410,7 @@ export default function OfferPage() {
           <div className="mt-8 pt-6 border-t border-slate-800 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
             <div className="flex items-center gap-3">
               <WordMark context="dark-bg" className="opacity-50 scale-75 origin-left" />
-              <span className="text-xs text-slate-500">Shipped in 30 · Supported for 60–120</span>
+              <span className="text-xs text-slate-500">Shipped in 30 days · 60 days support free</span>
             </div>
             <a href="/calculator" className="inline-flex items-center gap-1.5 rounded-lg bg-teal-500 px-4 py-2 text-xs font-semibold text-slate-950 hover:bg-teal-400">
               Start with the free audit <ArrowRight className="h-3.5 w-3.5" />
@@ -341,19 +519,6 @@ export default function OfferPage() {
             <a href="/calculator?step=buildplan" className="inline-flex items-center justify-center gap-2 rounded-lg border border-teal-300 dark:border-teal-700 bg-white dark:bg-slate-900 px-6 py-3 text-sm font-semibold text-slate-700 dark:text-slate-300 hover:bg-teal-50 dark:hover:bg-teal-950/60">
               Skip to Your Build Plan <ArrowRight className="h-4 w-4" />
             </a>
-          </div>
-        </motion.div>
-
-        {/* Pipeline preview — AI power-up */}
-        <motion.div {...reveal} className="mt-16">
-          <div className="text-center max-w-lg mx-auto mb-6">
-            <h2 className="text-2xl font-semibold tracking-tight">Then AI takes over the busywork.</h2>
-            <p className="mt-2 text-slate-600 dark:text-slate-400 text-sm">
-              Scoring, routing, and follow-up sequencing run themselves — so your team spends time closing, not chasing.
-            </p>
-          </div>
-          <div className="max-w-xl mx-auto">
-            <PipelinePreview stage="ai" />
           </div>
         </motion.div>
 
