@@ -69,17 +69,17 @@ const DEFERRED = [
 // Process-driven verticals shown in the top-of-page industry toggle. Labels, icons, and
 // taglines are kept in sync with the CRM demo's INDUSTRIES so the two pages tell one story.
 const INDUSTRIES = [
-  { id: "saas",         icon: "⚡",  label: "SaaS / Software",         line: "Turn free trials into revenue before the competition calls." },
-  { id: "agency",       icon: "🎯", label: "Agency / Marketing",      line: "Stop losing retainer clients to slow proposals and poor follow-through." },
-  { id: "professional", icon: "📋", label: "Professional Services",   line: "Win more mandates, manage capacity, and never miss a referral follow-up." },
-  { id: "recruitment",  icon: "🔍", label: "Recruitment / Staffing",  line: "Fill roles faster and build the client relationships that keep coming back." },
-  { id: "distribution", icon: "📦", label: "Distribution / Wholesale", line: "Convert first orders into lifetime accounts with zero manual follow-up." },
-  { id: "financial",    icon: "📈", label: "Financial Services",      line: "Onboard clients faster while keeping every step audit-ready." },
-  { id: "healthcare",   icon: "❤️", label: "Healthcare",              line: "Reduce admin, fill appointment gaps, and keep patients from falling through the cracks." },
-  { id: "realestate",   icon: "🏠", label: "Real Estate",             line: "Give every buyer, seller, and tenant the response speed that closes the deal." },
-  { id: "ecommerce",    icon: "🛒", label: "E-commerce & Retail",     line: "Turn first-time stockists into recurring wholesale accounts." },
-  { id: "construction", icon: "🏗️", label: "Construction & Property", line: "Win more tenders, track every site, and never miss a contract milestone." },
-  { id: "education",    icon: "🎓", label: "Education & Training",     line: "Convert more enquiries to enrolments and keep your intake calendar full." },
+  { id: "saas",         icon: "⚡",  label: "SaaS / Software",         line: "Turn free trials into revenue before the competition calls.",              stages: ["New Trial", "Demo Booked", "Closed Won"] },
+  { id: "agency",       icon: "🎯", label: "Agency / Marketing",      line: "Stop losing retainer clients to slow proposals and poor follow-through.",  stages: ["New Inquiry", "Proposal Out", "Won"] },
+  { id: "professional", icon: "📋", label: "Professional Services",   line: "Win more mandates, manage capacity, and never miss a referral follow-up.",  stages: ["Enquiry", "Proposal Sent", "Engaged"] },
+  { id: "recruitment",  icon: "🔍", label: "Recruitment / Staffing",  line: "Fill roles faster and build the client relationships that keep coming back.", stages: ["Job Brief", "Interview", "Placed"] },
+  { id: "distribution", icon: "📦", label: "Distribution / Wholesale", line: "Convert first orders into lifetime accounts with zero manual follow-up.",   stages: ["New Prospect", "Quote Sent", "Active Account"] },
+  { id: "financial",    icon: "📈", label: "Financial Services",      line: "Onboard clients faster while keeping every step audit-ready.",              stages: ["Enquiry", "Proposed", "Onboarded"] },
+  { id: "healthcare",   icon: "❤️", label: "Healthcare",              line: "Reduce admin, fill appointment gaps, and keep patients from falling through the cracks.", stages: ["Referral", "Booked", "In Care"] },
+  { id: "realestate",   icon: "🏠", label: "Real Estate",             line: "Give every buyer, seller, and tenant the response speed that closes the deal.", stages: ["New Enquiry", "Viewing", "Closed"] },
+  { id: "ecommerce",    icon: "🛒", label: "E-commerce & Retail",     line: "Turn first-time stockists into recurring wholesale accounts.",              stages: ["New Lead", "Sample Sent", "Stockist"] },
+  { id: "construction", icon: "🏗️", label: "Construction & Property", line: "Win more tenders, track every site, and never miss a contract milestone.",  stages: ["Tender", "Quote Submitted", "Awarded"] },
+  { id: "education",    icon: "🎓", label: "Education & Training",     line: "Convert more enquiries to enrolments and keep your intake calendar full.",  stages: ["Enquiry", "Applied", "Enrolled"] },
 ];
 
 // Ways the AI layer keeps working after launch — powers the standout "AI takes over" block.
@@ -290,7 +290,7 @@ export default function OfferPage() {
             </p>
           </div>
           <div className="max-w-xl mx-auto">
-            <PipelinePreview stage="organizing" />
+            <PipelinePreview stage="organizing" columns={industry?.stages} />
           </div>
         </motion.div>
 
@@ -357,7 +357,7 @@ export default function OfferPage() {
 
             {/* Live AI board */}
             <div className="max-w-xl mx-auto mb-10">
-              <PipelinePreview stage="ai" />
+              <PipelinePreview stage="ai" columns={industry?.stages} />
             </div>
 
             {/* Ways AI works */}
@@ -527,7 +527,7 @@ export default function OfferPage() {
           <div className="absolute inset-0 pointer-events-none" style={{ background: "radial-gradient(ellipse at 50% 0%, rgba(16,185,129,0.15) 0%, transparent 65%)" }} />
           <div className="relative">
             <div className="max-w-xl mx-auto mb-8 text-left">
-              <PipelinePreview stage="complete" />
+              <PipelinePreview stage="complete" columns={industry?.stages} />
             </div>
             <h2 className="text-2xl sm:text-3xl font-semibold tracking-tight text-white">Ready to fix your sales cycle?</h2>
             <p className="mt-2 text-slate-400 max-w-lg mx-auto">

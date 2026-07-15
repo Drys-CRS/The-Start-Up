@@ -127,7 +127,7 @@ function BrokenBoard() {
   );
 }
 
-function OrganizingBoard() {
+function OrganizingBoard({ columns = COLUMNS }) {
   return (
     <div className="grid grid-cols-3 gap-px bg-slate-100 dark:bg-slate-800">
       {COLUMNS.map((col, ci) => (
@@ -155,11 +155,11 @@ function OrganizingBoard() {
   );
 }
 
-function AIBoard() {
+function AIBoard({ columns = COLUMNS }) {
   return (
     <div>
       <div className="grid grid-cols-3 gap-px bg-slate-100 dark:bg-slate-800">
-        {COLUMNS.map((col, ci) => (
+        {columns.map((col, ci) => (
           <div key={col} className="bg-white dark:bg-slate-900 p-2.5 sm:p-3">
             <div className="mb-2.5 text-[10px] sm:text-[11px] font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500">{col}</div>
             <div className="space-y-2 min-h-[110px] sm:min-h-[130px]">
@@ -194,7 +194,7 @@ function AIBoard() {
   );
 }
 
-function CompleteBoard() {
+function CompleteBoard({ columns = COLUMNS }) {
   const [stages, setStages] = useState({ a: 0, b: 0, c: 1, d: 1, e: 2 });
 
   useEffect(() => {
@@ -239,13 +239,14 @@ function CompleteBoard() {
   );
 }
 
-export default function PipelinePreview({ stage = "complete" }) {
+export default function PipelinePreview({ stage = "complete", columns }) {
+  const cols = columns && columns.length === 3 ? columns : COLUMNS;
   return (
     <Chrome stage={stage}>
       {stage === "broken" && <BrokenBoard />}
-      {stage === "organizing" && <OrganizingBoard />}
-      {stage === "ai" && <AIBoard />}
-      {stage === "complete" && <CompleteBoard />}
+      {stage === "organizing" && <OrganizingBoard columns={cols} />}
+      {stage === "ai" && <AIBoard columns={cols} />}
+      {stage === "complete" && <CompleteBoard columns={cols} />}
     </Chrome>
   );
 }
