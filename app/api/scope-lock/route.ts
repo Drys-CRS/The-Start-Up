@@ -6,12 +6,6 @@ export async function POST(req: NextRequest) {
   if (!b || !/.+@.+\..+/.test(b.email || "")) {
     return NextResponse.json({ error: "A valid email is required" }, { status: 400 });
   }
-  // Capture the optional domain add-on alongside integrations (no dedicated column).
-  let integrations = b.integrations || "";
-  if (b.purchaseDomain) {
-    const dpart = `Domain to register: ${b.purchaseDomain}${b.purchaseDomainPrice ? ` (${b.purchaseDomainPrice})` : ""}`;
-    integrations = integrations ? `${integrations} · ${dpart}` : dpart;
-  }
   const columnValues: Record<string, unknown> = {
     [SCOPE.contact]: b.contact || "",
     [SCOPE.email]: { email: b.email, text: b.email },
@@ -21,7 +15,7 @@ export async function POST(req: NextRequest) {
     [SCOPE.bottleneck]: { text: b.bottleneck || "" },
     [SCOPE.workflow]: { text: b.workflow || "" },
     [SCOPE.musthaves]: { text: b.musthaves || "" },
-    [SCOPE.integrations]: integrations,
+    [SCOPE.integrations]: b.integrations || "",
     [SCOPE.startDate]: b.startDate ? { date: b.startDate } : { date: today() },
     [SCOPE.stage]: { label: "New" },
     [SCOPE.submitted]: { date: today() },

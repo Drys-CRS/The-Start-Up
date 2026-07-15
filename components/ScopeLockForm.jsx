@@ -37,13 +37,6 @@ export default function ScopeLockForm({ embedded = false, initialValues = {}, pr
   const [analyzeError, setAnalyzeError] = useState("");
   const [prefilled, setPrefilled] = useState(new Set(prefilledKeys));
   const [vertical, setVertical] = useState("");
-
-  // Optional domain add-on (capture-intent: we register the chosen domain during onboarding)
-  const [domainQuery, setDomainQuery] = useState("");
-  const [domainResults, setDomainResults] = useState(null); // null | []
-  const [domainChecking, setDomainChecking] = useState(false);
-  const [domainError, setDomainError] = useState("");
-
   const lastSubmission = useRef(null);
   const set = (k) => (e) => {
     setF({ ...f, [k]: e.target.value });
@@ -100,33 +93,6 @@ export default function ScopeLockForm({ embedded = false, initialValues = {}, pr
       setAnalyzing(false);
     }
   }
-
-  async function checkDomains() {
-    const q = domainQuery.trim();
-    if (!q || domainChecking) return;
-    setDomainChecking(true);
-    setDomainError("");
-    setDomainResults(null);
-    try {
-      const res = await fetch("/api/domains/check", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ domain: q }),
-      });
-      const data = await res.json().catch(() => ({}));
-      if (!res.ok) setDomainError(data.error || "Could not check that domain right now.");
-      else setDomainResults(Array.isArray(data.results) ? data.results : []);
-    } catch {
-      setDomainError("Could not check that domain right now.");
-    } finally {
-      setDomainChecking(false);
-    }
-  }
-
-  const selectDomain = (r) =>
-    setF((prev) => ({ ...prev, purchaseDomain: r.domain, purchaseDomainPrice: r.priceLabel || "" }));
-  const clearDomain = () =>
-    setF((prev) => ({ ...prev, purchaseDomain: "", purchaseDomainPrice: "" }));
 
   const valid = f.company && /.+@.+\..+/.test(f.email) && f.goal && f.bottleneck;
 
@@ -262,7 +228,6 @@ export default function ScopeLockForm({ embedded = false, initialValues = {}, pr
                   <Row label="Core workflow" value={s.workflow} />
                   <Row label="Must-have features" value={s.musthaves} />
                   <Row label="Integrations" value={s.integrations} />
-                  <Row label="Domain to register" value={s.purchaseDomain ? `${s.purchaseDomain}${s.purchaseDomainPrice ? ` · ${s.purchaseDomainPrice}` : ""}` : ""} />
                   <Row label="Proposed start date" value={s.startDate} />
                 </div>
               )}
@@ -555,86 +520,6 @@ export default function ScopeLockForm({ embedded = false, initialValues = {}, pr
           <div>
             <label className={label}>Ideal start date</label>
             <input type="date" className={input + " sm:w-56"} value={f.startDate} onChange={set("startDate")} />
-          </div>
-
-          {/* Optional: add a domain to the build */}
-          <div className="rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/40 p-4">
-            <div className="flex items-center gap-2 mb-1">
-              <Globe className="h-4 w-4 text-teal-500" />
-              <span className="text-sm font-semibold text-slate-900 dark:text-slate-100">Need a domain? (optional)</span>
-            </div>
-            <p className="text-xs text-slate-500 dark:text-slate-400 mb-3">
-              Check availability now and we'll register it for you as part of your build — added to your plan, nothing charged today.
-            </p>
-
-            {f.purchaseDomain ? (
-              <div className="flex items-center justify-between gap-3 rounded-lg border border-teal-400 dark:border-teal-600 bg-teal-50 dark:bg-teal-950/30 px-3 py-2.5">
-                <div className="min-w-0">
-                  <div className="flex items-center gap-1.5 text-sm font-semibold text-slate-900 dark:text-slate-100">
-                    <Check className="h-4 w-4 flex-none text-teal-500" strokeWidth={3} />
-                    <span className="truncate">{f.purchaseDomain}</span>
-                  </div>
-                  {f.purchaseDomainPrice && (
-                    <div className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">{f.purchaseDomainPrice} · registered during onboarding</div>
-                  )}
-                </div>
-                <button type="button" onClick={clearDomain}
-                  className="flex-none inline-flex items-center gap-1 text-xs font-medium text-slate-500 hover:text-rose-600">
-                  <X className="h-3.5 w-3.5" /> Remove
-                </button>
-              </div>
-            ) : (
-              <>
-                <div className="flex gap-2">
-                  <input
-                    className={input}
-                    value={domainQuery}
-                    onChange={(e) => setDomainQuery(e.target.value)}
-                    onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); checkDomains(); } }}
-                    placeholder="yourbrand.com or just yourbrand"
-                  />
-                  <button type="button" onClick={checkDomains} disabled={domainChecking || !domainQuery.trim()}
-                    className={"flex-none inline-flex items-center justify-center gap-1.5 rounded-lg px-4 py-2.5 text-sm font-semibold transition-colors " +
-                      (domainChecking || !domainQuery.trim()
-                        ? "bg-slate-200 dark:bg-slate-700 text-slate-400 cursor-not-allowed"
-                        : "bg-teal-500 text-slate-950 hover:bg-teal-400")}>
-                    {domainChecking ? <Loader2 className="h-4 w-4 animate-spin" /> : <>Check</>}
-                  </button>
-                </div>
-
-                {domainError && <p className="mt-2 text-xs text-rose-600">{domainError}</p>}
-
-                {domainResults && (
-                  <div className="mt-3 space-y-1.5">
-                    {domainResults.length === 0 && (
-                      <p className="text-xs text-slate-500 dark:text-slate-400">No results — try a different name.</p>
-                    )}
-                    {domainResults.map((r) => (
-                      <div key={r.domain}
-                        className="flex items-center justify-between gap-3 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-2">
-                        <div className="flex items-center gap-2 min-w-0">
-                          <span className={"h-1.5 w-1.5 flex-none rounded-full " + (r.available ? "bg-teal-500" : "bg-slate-300 dark:bg-slate-600")} />
-                          <span className={"text-sm truncate " + (r.available ? "text-slate-900 dark:text-slate-100 font-medium" : "text-slate-400 line-through")}>{r.domain}</span>
-                        </div>
-                        <div className="flex items-center gap-3 flex-none">
-                          {r.available ? (
-                            <>
-                              {r.priceLabel && <span className="text-xs font-mono text-slate-500 dark:text-slate-400">{r.priceLabel}</span>}
-                              <button type="button" onClick={() => selectDomain(r)}
-                                className="text-xs font-semibold text-teal-600 dark:text-teal-400 hover:text-teal-700 dark:hover:text-teal-300">
-                                Add
-                              </button>
-                            </>
-                          ) : (
-                            <span className="text-xs text-slate-400">Taken</span>
-                          )}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </>
-            )}
           </div>
 
           {status === "error" && (
