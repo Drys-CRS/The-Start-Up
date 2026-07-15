@@ -13,17 +13,8 @@ const TIERS = [
     sublabel: "Base + Free 2 Months",
     price: "$1,500 flat",
     wasPrice: "$3,000",
-    note: "30-day build · 60 days support FREE",
+    note: "30-day build · 60 days support FREE · then optional $150/mo retainer",
     promo: true,
-  },
-  {
-    value: "Premium",
-    label: "Premium",
-    sublabel: "120 days total",
-    price: "$2,500 flat",
-    wasPrice: "$5,000",
-    note: "30-day build · 60 days support · +30 days FREE",
-    promo: false,
   },
 ];
 
@@ -443,7 +434,7 @@ export default function ScopeLockForm({ embedded = false, initialValues = {}, pr
 
           {/* Tier picker */}
           <div>
-            <span className={label}>Select your tier</span>
+            <span className={label}>Your package</span>
             <div className="space-y-2.5">
               {TIERS.map((t) => {
                 const selected = f.tier === t.value;

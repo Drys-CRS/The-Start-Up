@@ -3,7 +3,7 @@ import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   ArrowRight, Check, X, ShieldCheck, FileText, ChevronDown, Monitor,
-  Search, TrendingDown, ClipboardCheck, Hammer, LifeBuoy, Tag, Unlock, Zap,
+  Search, TrendingDown, ClipboardCheck, Hammer, LifeBuoy, Tag, Unlock, Zap, RefreshCw,
 } from "lucide-react";
 import WordMark from "./WordMark";
 import PipelinePreview from "./PipelinePreview";
@@ -30,9 +30,7 @@ const OFFER_DEADLINE = "30 Sep 2026";
 const TIERS = {
   sym: "$",
   offer: { total: "1,500", was: "3,000", tag: "30-day build · 60 days support FREE" },
-  items: [
-    { name: "Premium", total: "2,500", was: "5,000", tag: "Complex / multi-system builds" },
-  ],
+  retainer: "150", // optional monthly retainer, starts only after the free support period ends
 };
 
 const TRUST_POINTS = [
@@ -47,14 +45,14 @@ const STEPS = [
   { n: "02", icon: TrendingDown, label: "Bottleneck Report", sub: "AI pinpoints where revenue leaks and what fixes it, no call needed" },
   { n: "03", icon: ClipboardCheck, label: "Your Build Plan", sub: "Same page, a few more questions — fixes scope, price, and ship date" },
   { n: "04", icon: Hammer, label: "30-Day Build", sub: "Your sales cycle rebuilt and live in your CRM — fixed date, no delays" },
-  { n: "05", icon: LifeBuoy, label: "Support Period", sub: "60 days (Promotional) or 120 days (Premium) — training, optimisation, documentation" },
+  { n: "05", icon: LifeBuoy, label: "Support Period", sub: "60 days free — training, optimisation, documentation. Keep it running after with an optional monthly retainer." },
 ];
 
 const INCLUDED = [
   { icon: Zap, title: "Core workflow, end-to-end", body: "Capture → score → route → report, built and tested — not a demo.", big: true },
   { icon: ClipboardCheck, title: "CRM board your team knows", body: "Configured on the platform that fits your workflow." },
   { icon: TrendingDown, title: "One reporting dashboard", body: "The metrics leadership actually watches, nothing else." },
-  { icon: Check, title: "One integration in scope", body: "Your CRM, enrichment tool, or calendar — connected." },
+  { icon: Check, title: "Integrations in scope", body: "Your CRM, enrichment tools, calendars — connected." },
   { icon: FileText, title: "Recorded team training", body: "Yours to keep and reuse as your team grows." },
   { icon: ShieldCheck, title: "Full handover documentation", body: "You fully own it — no dependency on us to run it." },
 ];
@@ -246,8 +244,8 @@ export default function OfferPage() {
         <motion.div {...reveal} id="pricing" className="mt-16">
           <div className="mb-7">
             <div className="text-xs font-medium uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-1">Pricing</div>
-            <h2 className="text-2xl font-semibold tracking-tight">Two tiers. Fixed scope. 50% off.</h2>
-            <p className="mt-1.5 text-sm text-slate-600 dark:text-slate-400">Promotional: 30-day build + 60 days FREE support. Premium: 30-day build + 60 days support + 30 days FREE = 120 days total.</p>
+            <h2 className="text-2xl font-semibold tracking-tight">One package. Fixed scope. 50% off.</h2>
+            <p className="mt-1.5 text-sm text-slate-600 dark:text-slate-400">One flat build fee — 30-day build + 60 days FREE support. Keep it running after with an optional {tiers.sym}{tiers.retainer}/mo retainer, plus third-party tools &amp; subscriptions billed at cost. Both are opt-in at signing — nothing recurring during your build.</p>
           </div>
 
           {/* Limited Time Offer — full-width feature block */}
@@ -281,6 +279,26 @@ export default function OfferPage() {
                     <Check className="h-4 w-4 text-teal-400" strokeWidth={3} /> Full handover docs
                   </span>
                 </div>
+                <div className="mt-4 rounded-xl border border-slate-800 bg-slate-900/60 p-3.5 max-w-md">
+                  <div className="text-xs font-semibold uppercase tracking-wider text-slate-400 mb-2">After your free support — both opt-in</div>
+                  <div className="flex flex-col gap-2">
+                    <div className="flex items-baseline justify-between gap-3">
+                      <span className="flex items-center gap-1.5 text-sm text-slate-300">
+                        <RefreshCw className="h-3.5 w-3.5 text-teal-400" /> Monthly retainer
+                      </span>
+                      <span className="font-mono text-sm text-white whitespace-nowrap">{tiers.sym}{tiers.retainer}<span className="text-slate-500">/mo</span></span>
+                    </div>
+                    <div className="flex items-baseline justify-between gap-3">
+                      <span className="flex items-center gap-1.5 text-sm text-slate-300">
+                        <Tag className="h-3.5 w-3.5 text-teal-400" /> Tools &amp; subscriptions
+                      </span>
+                      <span className="font-mono text-sm text-slate-400 whitespace-nowrap">at cost</span>
+                    </div>
+                  </div>
+                  <p className="mt-2 text-[11px] leading-relaxed text-slate-500">
+                    Support, maintenance, and hosting/APIs to keep your system running. Nothing recurring is charged during your build — you opt in when you sign.
+                  </p>
+                </div>
                 <p className="mt-3 text-xs text-slate-500 max-w-md">
                   50% off for a small cohort of case-study partners. Once the September window closes, price returns to full rate.
                 </p>
@@ -295,51 +313,6 @@ export default function OfferPage() {
             </div>
           </div>
 
-          {/* Standard tier — Premium */}
-          {tiers.items.map((t) => (
-            <div key={t.name}
-              className="relative flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6 rounded-2xl border border-slate-900 bg-slate-950 text-slate-100 shadow-lg p-6 sm:p-8">
-              <span className="absolute -top-2.5 left-6 rounded-full bg-teal-500 px-2.5 py-0.5 text-xs font-semibold text-slate-950">
-                50% Off
-              </span>
-              <div className="flex-1">
-                <div className="text-base font-semibold tracking-tight">{t.name}</div>
-                <div className="text-xs text-slate-400 mt-0.5">{t.tag}</div>
-                <div className="mt-4 flex flex-wrap items-center gap-4">
-                  <span className="flex items-center gap-1.5 text-sm text-slate-300">
-                    <Check className="h-4 w-4 text-teal-400" strokeWidth={3} /> 30-day build, fixed date
-                  </span>
-                  <span className="flex items-center gap-1.5 text-sm text-slate-300">
-                    <Check className="h-4 w-4 text-teal-400" strokeWidth={3} /> 60 days support included
-                  </span>
-                  <span className="flex items-center gap-1.5 text-sm text-slate-300">
-                    <Check className="h-4 w-4 text-teal-400" strokeWidth={3} /> +30 days FREE — <span className="text-teal-400 font-semibold">120 days total</span>
-                  </span>
-                  <span className="flex items-center gap-1.5 text-sm text-slate-300">
-                    <Check className="h-4 w-4 text-teal-400" strokeWidth={3} /> Full handover documentation
-                  </span>
-                </div>
-              </div>
-              <div className="flex-none flex flex-col sm:items-end gap-3">
-                <div>
-                  <div className="flex items-baseline gap-1.5">
-                    <span className="font-mono text-lg text-slate-500 line-through tabular-nums">
-                      {tiers.sym}{t.was}
-                    </span>
-                    <span className="font-mono text-3xl font-semibold tracking-tight tabular-nums">
-                      {tiers.sym}{t.total}
-                    </span>
-                    <span className="text-sm text-slate-400">flat · all-in</span>
-                  </div>
-                  <div className="text-xs text-slate-400 mt-0.5">90 days included · +30 days FREE</div>
-                </div>
-                <a href="/calculator?step=buildplan"
-                  className="inline-flex items-center justify-center gap-2 rounded-lg bg-teal-500 px-6 py-2.5 text-sm font-semibold text-slate-950 hover:bg-teal-400 transition-colors whitespace-nowrap">
-                  Start <ArrowRight className="h-4 w-4" />
-                </a>
-              </div>
-            </div>
-          ))}
         </motion.div>
 
         {/* Start (no-call) */}
@@ -384,7 +357,29 @@ export default function OfferPage() {
           </div>
         </motion.div>
 
-        {/* FAQ */}
+        {/* Final CTA band */}
+        <motion.div {...reveal} className="mt-16 relative overflow-hidden rounded-2xl bg-slate-950 p-8 sm:p-12 text-center">
+          <div className="absolute inset-0 pointer-events-none" style={{ background: "radial-gradient(ellipse at 50% 0%, rgba(16,185,129,0.15) 0%, transparent 65%)" }} />
+          <div className="relative">
+            <div className="max-w-xl mx-auto mb-8 text-left">
+              <PipelinePreview stage="complete" />
+            </div>
+            <h2 className="text-2xl sm:text-3xl font-semibold tracking-tight text-white">Ready to fix your sales cycle?</h2>
+            <p className="mt-2 text-slate-400 max-w-lg mx-auto">
+              Run the free audit, see your number, and turn it into a fixed Build Plan — all on one page. No call required.
+            </p>
+            <div className="mt-6 flex flex-col sm:flex-row items-center justify-center gap-3">
+              <motion.a whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} href="/calculator" className="inline-flex items-center justify-center gap-2 rounded-lg bg-teal-500 px-6 py-3 text-sm font-semibold text-slate-950 hover:bg-teal-400">
+                Get your free audit <ArrowRight className="h-4 w-4" />
+              </motion.a>
+              <motion.a whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} href="/calculator?step=buildplan" className="inline-flex items-center justify-center gap-2 rounded-lg border border-slate-700 px-6 py-3 text-sm font-semibold text-slate-200 hover:border-slate-500">
+                Start Your Build Plan <ArrowRight className="h-4 w-4" />
+              </motion.a>
+            </div>
+          </div>
+        </motion.div>
+
+        {/* FAQ — last content section */}
         <motion.div {...reveal} className="mt-16">
           <div className="text-xs font-medium uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-5">Questions</div>
           <div className="divide-y divide-slate-200 dark:divide-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900">
@@ -410,28 +405,6 @@ export default function OfferPage() {
                 </AnimatePresence>
               </div>
             ))}
-          </div>
-        </motion.div>
-
-        {/* Final CTA band */}
-        <motion.div {...reveal} className="mt-16 relative overflow-hidden rounded-2xl bg-slate-950 p-8 sm:p-12 text-center">
-          <div className="absolute inset-0 pointer-events-none" style={{ background: "radial-gradient(ellipse at 50% 0%, rgba(16,185,129,0.15) 0%, transparent 65%)" }} />
-          <div className="relative">
-            <div className="max-w-xl mx-auto mb-8 text-left">
-              <PipelinePreview stage="complete" />
-            </div>
-            <h2 className="text-2xl sm:text-3xl font-semibold tracking-tight text-white">Ready to fix your sales cycle?</h2>
-            <p className="mt-2 text-slate-400 max-w-lg mx-auto">
-              Run the free audit, see your number, and turn it into a fixed Build Plan — all on one page. No call required.
-            </p>
-            <div className="mt-6 flex flex-col sm:flex-row items-center justify-center gap-3">
-              <motion.a whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} href="/calculator" className="inline-flex items-center justify-center gap-2 rounded-lg bg-teal-500 px-6 py-3 text-sm font-semibold text-slate-950 hover:bg-teal-400">
-                Get your free audit <ArrowRight className="h-4 w-4" />
-              </motion.a>
-              <motion.a whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} href="/calculator?step=buildplan" className="inline-flex items-center justify-center gap-2 rounded-lg border border-slate-700 px-6 py-3 text-sm font-semibold text-slate-200 hover:border-slate-500">
-                Start Your Build Plan <ArrowRight className="h-4 w-4" />
-              </motion.a>
-            </div>
           </div>
         </motion.div>
 

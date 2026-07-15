@@ -30,7 +30,7 @@ const KEY_TERMS = [
 export default function SignPage() {
   const [ref,         setRef]         = useState("");
   const [item,        setItem]        = useState("");
-  const [tier,        setTier]        = useState("premium");
+  const [tier,        setTier]        = useState("promo");
   const cur = "USD";
   const [email,       setEmail]       = useState("");
   const [monthlyTools, setMonthlyTools] = useState<number | null>(null);
@@ -48,7 +48,7 @@ export default function SignPage() {
     const p = new URLSearchParams(window.location.search);
     setRef(p.get("ref")   || "");
     setItem(p.get("item") || "");
-    setTier(p.get("t")    || "premium");
+    setTier(p.get("t")    || "promo");
     setEmail(p.get("e")   || "");
     const mt = p.get("mtools");
     if (mt && !isNaN(Number(mt))) setMonthlyTools(Number(mt));
@@ -121,7 +121,7 @@ export default function SignPage() {
     }
   }
 
-  const amountInfo = AMOUNTS[tier] ?? AMOUNTS.premium;
+  const amountInfo = AMOUNTS[tier] ?? AMOUNTS.promo;
   const ai = amountInfo; // shorthand
   const canSign    = name.trim().length > 0 && agreed;
 
