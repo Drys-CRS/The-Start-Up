@@ -95,12 +95,12 @@ function LeadCard({ lead, className = "", showValue = true }) {
   );
 }
 
-function BrokenBoard() {
+function BrokenBoard({ leads = BASE_LEADS }) {
   return (
     <div className="p-3 sm:p-4">
       <p className="mb-3 text-[11px] text-slate-400 dark:text-slate-500">5 leads, no clear next step, nobody owns the follow-up.</p>
       <div className="flex flex-wrap gap-2.5">
-        {BASE_LEADS.map((lead, i) => (
+        {leads.map((lead, i) => (
           <motion.div
             key={lead.id}
             className={`w-[46%] sm:w-[30%] ${SCATTER_ROTATE[i % SCATTER_ROTATE.length]}`}
@@ -127,14 +127,14 @@ function BrokenBoard() {
   );
 }
 
-function OrganizingBoard({ columns = COLUMNS }) {
+function OrganizingBoard({ columns = COLUMNS, leads = BASE_LEADS }) {
   return (
     <div className="grid grid-cols-3 gap-px bg-slate-100 dark:bg-slate-800">
-      {COLUMNS.map((col, ci) => (
+      {columns.map((col, ci) => (
         <div key={col} className="bg-white dark:bg-slate-900 p-2.5 sm:p-3">
           <div className="mb-2.5 text-[10px] sm:text-[11px] font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500">{col}</div>
           <div className="space-y-2 min-h-[130px] sm:min-h-[150px]">
-            {BASE_LEADS.filter((_, i) => i % 3 === ci).map((lead, i) => {
+            {leads.filter((_, i) => i % 3 === ci).map((lead, i) => {
               const off = SCATTER_OFFSET[(ci + i) % SCATTER_OFFSET.length];
               return (
                 <motion.div
@@ -155,7 +155,7 @@ function OrganizingBoard({ columns = COLUMNS }) {
   );
 }
 
-function AIBoard({ columns = COLUMNS }) {
+function AIBoard({ columns = COLUMNS, leads = BASE_LEADS }) {
   return (
     <div>
       <div className="grid grid-cols-3 gap-px bg-slate-100 dark:bg-slate-800">
@@ -163,7 +163,7 @@ function AIBoard({ columns = COLUMNS }) {
           <div key={col} className="bg-white dark:bg-slate-900 p-2.5 sm:p-3">
             <div className="mb-2.5 text-[10px] sm:text-[11px] font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500">{col}</div>
             <div className="space-y-2 min-h-[110px] sm:min-h-[130px]">
-              {BASE_LEADS.filter((_, i) => i % 3 === ci).map((lead, i) => (
+              {leads.filter((_, i) => i % 3 === ci).map((lead, i) => (
                 <motion.div
                   key={lead.id}
                   initial={{ opacity: 0, scale: 0.9 }}
@@ -194,7 +194,7 @@ function AIBoard({ columns = COLUMNS }) {
   );
 }
 
-function CompleteBoard({ columns = COLUMNS }) {
+function CompleteBoard({ columns = COLUMNS, leads = BASE_LEADS }) {
   const [stages, setStages] = useState({ a: 0, b: 0, c: 1, d: 1, e: 2 });
 
   useEffect(() => {
@@ -206,12 +206,12 @@ function CompleteBoard({ columns = COLUMNS }) {
 
   return (
     <div className="grid grid-cols-3 gap-px bg-slate-100 dark:bg-slate-800">
-      {COLUMNS.map((col, ci) => (
+      {columns.map((col, ci) => (
         <div key={col} className="bg-white dark:bg-slate-900 p-2.5 sm:p-3">
           <div className="mb-2.5 flex items-center justify-between">
             <span className="text-[10px] sm:text-[11px] font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500">{col}</span>
             <span className="text-[10px] font-mono text-slate-300 dark:text-slate-600">
-              {BASE_LEADS.filter((l) => stages[l.id] === ci).length}
+              {leads.filter((l) => stages[l.id] === ci).length}
             </span>
           </div>
           {/* Fixed height (not min-h): lead "a" cycles between columns, so a column can
@@ -219,7 +219,7 @@ function CompleteBoard({ columns = COLUMNS }) {
               growing/shrinking and jolting the CTA buttons below. */}
           <div className="space-y-2 h-[192px] sm:h-[208px]">
             <AnimatePresence>
-              {BASE_LEADS.filter((l) => stages[l.id] === ci).map((lead) => (
+              {leads.filter((l) => stages[l.id] === ci).map((lead) => (
                 <motion.div
                   key={lead.id}
                   layout
@@ -239,14 +239,16 @@ function CompleteBoard({ columns = COLUMNS }) {
   );
 }
 
-export default function PipelinePreview({ stage = "complete", columns }) {
+export default function PipelinePreview({ stage = "complete", columns, leads }) {
   const cols = columns && columns.length === 3 ? columns : COLUMNS;
+  // Lead ids must stay "a".."e" — CompleteBoard keys its stage cycling off them.
+  const rows = leads && leads.length === 5 ? leads : BASE_LEADS;
   return (
     <Chrome stage={stage}>
-      {stage === "broken" && <BrokenBoard />}
-      {stage === "organizing" && <OrganizingBoard columns={cols} />}
-      {stage === "ai" && <AIBoard columns={cols} />}
-      {stage === "complete" && <CompleteBoard columns={cols} />}
+      {stage === "broken" && <BrokenBoard leads={rows} />}
+      {stage === "organizing" && <OrganizingBoard columns={cols} leads={rows} />}
+      {stage === "ai" && <AIBoard columns={cols} leads={rows} />}
+      {stage === "complete" && <CompleteBoard columns={cols} leads={rows} />}
     </Chrome>
   );
 }

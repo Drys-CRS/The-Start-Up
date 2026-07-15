@@ -82,6 +82,88 @@ const INDUSTRIES = [
   { id: "education",    icon: "🎓", label: "Education & Training",     line: "Convert more enquiries to enrolments and keep your intake calendar full.",  stages: ["Enquiry", "Applied", "Enrolled"] },
 ];
 
+// Industry-appropriate sample leads for the pipeline boards. Ids MUST stay "a".."e" —
+// PipelinePreview's CompleteBoard cycles a lead between columns keyed by those ids.
+const INDUSTRY_LEADS = {
+  saas: [
+    { id: "a", company: "Fintrack",       value: "$24k /yr", heat: "hot",  stale: "2d untouched" },
+    { id: "b", company: "Loopback AI",    value: "$8.4k /yr", heat: "warm", stale: "5d untouched" },
+    { id: "c", company: "CloudNine",      value: "$36k /yr", heat: "hot",  stale: "1d untouched" },
+    { id: "d", company: "Strata HQ",      value: "$48k /yr", heat: "cold", stale: "9d untouched" },
+    { id: "e", company: "Mosaic Labs",    value: "$96k /yr", heat: "hot",  stale: "3d untouched" },
+  ],
+  agency: [
+    { id: "a", company: "Northwind Co.",  value: "$6k /mo",  heat: "hot",  stale: "2d untouched" },
+    { id: "b", company: "Bright Media",   value: "$3.5k /mo", heat: "warm", stale: "6d untouched" },
+    { id: "c", company: "Vantage Retail", value: "$9k /mo",  heat: "hot",  stale: "1d untouched" },
+    { id: "d", company: "Halo Foods",     value: "$4.2k /mo", heat: "cold", stale: "8d untouched" },
+    { id: "e", company: "Peak Fitness",   value: "$7.5k /mo", heat: "warm", stale: "4d untouched" },
+  ],
+  professional: [
+    { id: "a", company: "Harbor & Vale",     value: "$65k", heat: "hot",  stale: "3d untouched" },
+    { id: "b", company: "Ridgeline LLP",     value: "$28k", heat: "warm", stale: "7d untouched" },
+    { id: "c", company: "Meridian Advisory", value: "$40k", heat: "hot",  stale: "2d untouched" },
+    { id: "d", company: "Oakstone Partners", value: "$52k", heat: "cold", stale: "10d untouched" },
+    { id: "e", company: "Clearwater Group",  value: "$33k", heat: "warm", stale: "5d untouched" },
+  ],
+  recruitment: [
+    { id: "a", company: "Novus Health",   value: "$55k fee", heat: "hot",  stale: "2d untouched" },
+    { id: "b", company: "Apex Digital",   value: "$32k fee", heat: "warm", stale: "8d untouched" },
+    { id: "c", company: "Orbit Logistics", value: "$28k fee", heat: "hot", stale: "1d untouched" },
+    { id: "d", company: "Vertex Finance", value: "$60k fee", heat: "cold", stale: "11d untouched" },
+    { id: "e", company: "Summit Retail",  value: "$24k fee", heat: "warm", stale: "4d untouched" },
+  ],
+  distribution: [
+    { id: "a", company: "Metro Wholesale", value: "$18k /yr", heat: "hot",  stale: "3d untouched" },
+    { id: "b", company: "Coastal Supply",  value: "$9k /yr",  heat: "warm", stale: "6d untouched" },
+    { id: "c", company: "Ironline Parts",  value: "$32k /yr", heat: "hot",  stale: "1d untouched" },
+    { id: "d", company: "Harvest Foods",   value: "$14k /yr", heat: "cold", stale: "9d untouched" },
+    { id: "e", company: "Peak Trade Co.",  value: "$22k /yr", heat: "warm", stale: "5d untouched" },
+  ],
+  financial: [
+    { id: "a", company: "Sterling Wealth", value: "$40k", heat: "hot",  stale: "2d untouched" },
+    { id: "b", company: "Cedar Advisory",  value: "$22k", heat: "warm", stale: "7d untouched" },
+    { id: "c", company: "Halcyon Capital", value: "$75k", heat: "hot",  stale: "1d untouched" },
+    { id: "d", company: "Fairview Group",  value: "$30k", heat: "cold", stale: "10d untouched" },
+    { id: "e", company: "Northbridge",     value: "$55k", heat: "warm", stale: "4d untouched" },
+  ],
+  healthcare: [
+    { id: "a", company: "Dr. Patel Clinic",  value: "$320 /visit", heat: "hot",  stale: "1d untouched" },
+    { id: "b", company: "Riverside Physio",  value: "$180 /visit", heat: "warm", stale: "5d untouched" },
+    { id: "c", company: "Meadow Dental",     value: "$240 /visit", heat: "hot",  stale: "2d untouched" },
+    { id: "d", company: "Coastal GP",        value: "$150 /visit", heat: "cold", stale: "8d untouched" },
+    { id: "e", company: "Summit Ortho",      value: "$410 /visit", heat: "warm", stale: "3d untouched" },
+  ],
+  realestate: [
+    { id: "a", company: "14 Marine Dr",    value: "$5.4k /mo", heat: "hot",  stale: "1d untouched" },
+    { id: "b", company: "Oakwood Villa",   value: "$780k",    heat: "warm", stale: "6d untouched" },
+    { id: "c", company: "Unit 7, Central", value: "$2.1k /mo", heat: "hot",  stale: "2d untouched" },
+    { id: "d", company: "Hillcrest Plot",  value: "$1.2M",    heat: "cold", stale: "9d untouched" },
+    { id: "e", company: "Pulse Fitness",   value: "$5.4k /mo", heat: "warm", stale: "4d untouched" },
+  ],
+  ecommerce: [
+    { id: "a", company: "Bloom & Co.",      value: "$4.5k /order", heat: "hot",  stale: "2d untouched" },
+    { id: "b", company: "Urban Pantry",     value: "$2.2k /order", heat: "warm", stale: "6d untouched" },
+    { id: "c", company: "Coastal Goods",    value: "$9k /order",   heat: "hot",  stale: "1d untouched" },
+    { id: "d", company: "Willow Home",      value: "$3.1k /order", heat: "cold", stale: "8d untouched" },
+    { id: "e", company: "Peak Supplements", value: "$6k /order",   heat: "warm", stale: "4d untouched" },
+  ],
+  construction: [
+    { id: "a", company: "Harborpoint Devs", value: "$420k", heat: "hot",  stale: "3d untouched" },
+    { id: "b", company: "Redline Civil",    value: "$180k", heat: "warm", stale: "7d untouched" },
+    { id: "c", company: "Summit Estates",   value: "$650k", heat: "hot",  stale: "1d untouched" },
+    { id: "d", company: "Fairbanks Retail", value: "$95k",  heat: "cold", stale: "10d untouched" },
+    { id: "e", company: "Meridian Fitout",  value: "$240k", heat: "warm", stale: "5d untouched" },
+  ],
+  education: [
+    { id: "a", company: "Bright Futures",    value: "$12k",  heat: "hot",  stale: "2d untouched" },
+    { id: "b", company: "Summit Academy",    value: "$8k",   heat: "warm", stale: "6d untouched" },
+    { id: "c", company: "Riverside College", value: "$15k",  heat: "hot",  stale: "1d untouched" },
+    { id: "d", company: "Oakhill Prep",      value: "$9.5k", heat: "cold", stale: "8d untouched" },
+    { id: "e", company: "Metro Skills",      value: "$6k",   heat: "warm", stale: "4d untouched" },
+  ],
+};
+
 // Ways the AI layer keeps working after launch — powers the standout "AI takes over" block.
 const AI_CAPABILITIES = [
   { icon: Target,    title: "Lead scoring",         body: "Ranks every lead by likelihood to close, updated in real time as they engage." },
@@ -212,7 +294,7 @@ export default function OfferPage() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.15, ease: "easeOut" }}
           >
-            <PipelinePreview stage="broken" />
+            <PipelinePreview stage="broken" leads={industry ? INDUSTRY_LEADS[industry.id] : undefined} />
             <a href="/crm-demo" className="mt-4 group flex items-center gap-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-4 py-3 hover:border-teal-300 dark:hover:border-teal-700 hover:bg-teal-50 dark:hover:bg-teal-950/40 transition-colors">
               <div className="flex h-8 w-8 flex-none items-center justify-center rounded-lg bg-slate-100 dark:bg-slate-800 group-hover:bg-teal-100 dark:group-hover:bg-teal-900 transition-colors">
                 <Monitor className="h-4 w-4 text-slate-500 dark:text-slate-400 group-hover:text-teal-600 dark:group-hover:text-teal-400" />
@@ -290,7 +372,7 @@ export default function OfferPage() {
             </p>
           </div>
           <div className="max-w-xl mx-auto">
-            <PipelinePreview stage="organizing" columns={industry?.stages} />
+            <PipelinePreview stage="organizing" columns={industry?.stages} leads={industry ? INDUSTRY_LEADS[industry.id] : undefined} />
           </div>
         </motion.div>
 
@@ -357,7 +439,7 @@ export default function OfferPage() {
 
             {/* Live AI board */}
             <div className="max-w-xl mx-auto mb-10">
-              <PipelinePreview stage="ai" columns={industry?.stages} />
+              <PipelinePreview stage="ai" columns={industry?.stages} leads={industry ? INDUSTRY_LEADS[industry.id] : undefined} />
             </div>
 
             {/* Ways AI works */}
@@ -527,7 +609,7 @@ export default function OfferPage() {
           <div className="absolute inset-0 pointer-events-none" style={{ background: "radial-gradient(ellipse at 50% 0%, rgba(16,185,129,0.15) 0%, transparent 65%)" }} />
           <div className="relative">
             <div className="max-w-xl mx-auto mb-8 text-left">
-              <PipelinePreview stage="complete" columns={industry?.stages} />
+              <PipelinePreview stage="complete" columns={industry?.stages} leads={industry ? INDUSTRY_LEADS[industry.id] : undefined} />
             </div>
             <h2 className="text-2xl sm:text-3xl font-semibold tracking-tight text-white">Ready to fix your sales cycle?</h2>
             <p className="mt-2 text-slate-400 max-w-lg mx-auto">
