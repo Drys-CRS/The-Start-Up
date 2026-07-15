@@ -214,7 +214,10 @@ function CompleteBoard() {
               {BASE_LEADS.filter((l) => stages[l.id] === ci).length}
             </span>
           </div>
-          <div className="space-y-2 min-h-[130px] sm:min-h-[150px]">
+          {/* Fixed height (not min-h): lead "a" cycles between columns, so a column can
+              briefly hold 3 cards. A fixed height sized for the max keeps the widget from
+              growing/shrinking and jolting the CTA buttons below. */}
+          <div className="space-y-2 h-[192px] sm:h-[208px]">
             <AnimatePresence>
               {BASE_LEADS.filter((l) => stages[l.id] === ci).map((lead) => (
                 <motion.div

@@ -6,13 +6,16 @@
 //  "dark-bg"  — always sits on a dark surface regardless of site theme (e.g. inside a panel
 //              that's intentionally black in both themes).
 export default function WordMark({ context = "auto", className = "" }) {
+  // NOTE: display is driven by the Tailwind classes below, NOT inline style — an inline
+  // `display: block` would beat `hidden`/`dark:hidden` (inline styles outrank classes) and
+  // both variants would render at once, stacking two logos in the bar.
   const lightBgImg = (
     <img
       src="/logo-light.png"
       alt="The Startup"
       height={72}
-      style={{ height: 72, width: "auto", display: "block", mixBlendMode: "multiply" }}
-      className={context === "auto" ? "block dark:hidden" : undefined}
+      style={{ height: 72, width: "auto", mixBlendMode: "multiply" }}
+      className={context === "auto" ? "block dark:hidden" : "block"}
     />
   );
   const darkBgImg = (
@@ -20,8 +23,8 @@ export default function WordMark({ context = "auto", className = "" }) {
       src="/logo-dark.png"
       alt="The Startup"
       height={72}
-      style={{ height: 72, width: "auto", display: "block", mixBlendMode: "screen" }}
-      className={context === "auto" ? "hidden dark:block" : undefined}
+      style={{ height: 72, width: "auto", mixBlendMode: "screen" }}
+      className={context === "auto" ? "hidden dark:block" : "block"}
     />
   );
 
