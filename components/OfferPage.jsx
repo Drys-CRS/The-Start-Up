@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
   ArrowRight, Check, X, ShieldCheck, FileText, ChevronDown, Monitor,
   Search, TrendingDown, ClipboardCheck, Hammer, LifeBuoy, Tag, Unlock, Zap, RefreshCw,
-  Sparkles, Target, Route, Mail, Bell, BarChart3, Gauge, Bot,
+  Sparkles, Target, Route, Mail, Bell, BarChart3, Gauge, Bot, Loader2,
 } from "lucide-react";
 import WordMark from "./WordMark";
 import PipelinePreview from "./PipelinePreview";
@@ -192,6 +192,20 @@ export default function OfferPage() {
               <br /> Your sales cycle is.
             </h1>
             <AnimatePresence mode="wait">
+              {tailoring && !tailored && (
+                <motion.div
+                  key="tagline-skeleton"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 0.2 }}
+                  className="mt-4 space-y-2"
+                  aria-hidden
+                >
+                  <div className="h-4 w-4/5 rounded bg-teal-100 dark:bg-teal-900/40 animate-pulse" />
+                  <div className="h-4 w-3/5 rounded bg-teal-100 dark:bg-teal-900/40 animate-pulse" />
+                </motion.div>
+              )}
               {tailored && (
                 <motion.p
                   key={tailored.sector}
@@ -228,7 +242,25 @@ export default function OfferPage() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.15, ease: "easeOut" }}
           >
-            <PipelinePreview stage="broken" leads={tailored?.leads} />
+            <div className="relative">
+              <PipelinePreview stage="broken" leads={tailored?.leads} />
+              <AnimatePresence>
+                {tailoring && (
+                  <motion.div
+                    key="pipeline-tailoring"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 0.2 }}
+                    className="absolute inset-0 flex items-center justify-center rounded-2xl bg-white/70 dark:bg-slate-950/70 backdrop-blur-[2px]"
+                  >
+                    <span className="inline-flex items-center gap-2 rounded-full border border-teal-300 dark:border-teal-700 bg-white dark:bg-slate-900 px-3.5 py-1.5 text-xs font-medium text-teal-700 dark:text-teal-300 shadow-sm">
+                      <Loader2 className="h-3.5 w-3.5 animate-spin" /> Tailoring to your business…
+                    </span>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
             <a href="/crm-demo" className="mt-4 group flex items-center gap-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-4 py-3 hover:border-teal-300 dark:hover:border-teal-700 hover:bg-teal-50 dark:hover:bg-teal-950/40 transition-colors">
               <div className="flex h-8 w-8 flex-none items-center justify-center rounded-lg bg-slate-100 dark:bg-slate-800 group-hover:bg-teal-100 dark:group-hover:bg-teal-900 transition-colors">
                 <Monitor className="h-4 w-4 text-slate-500 dark:text-slate-400 group-hover:text-teal-600 dark:group-hover:text-teal-400" />

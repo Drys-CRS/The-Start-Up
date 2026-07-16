@@ -8,9 +8,12 @@ export const runtime = "nodejs";
 // pipeline stages, sample leads, and "how we'd help" points. The raw description + the
 // tailored result are saved as an update on the Monday lead item created from the query.
 const GATEWAY_URL = "https://ai-gateway.vercel.sh/v1/chat/completions";
-// Confirmed valid AI Gateway slug; override with TAILOR_MODEL if desired (e.g. a cheaper model).
-const MODEL = process.env.TAILOR_MODEL || "anthropic/claude-opus-4.8";
-const KEY = () => process.env.AI_GATEWAY_API_KEY || "";
+// Confirmed valid AI Gateway slug; override with TAILOR_MODEL if desired.
+const MODEL = process.env.TAILOR_MODEL || "anthropic/claude-haiku-4.5";
+// On Vercel the AI Gateway also accepts the auto-injected OIDC token, so deployed
+// functions need no explicit key. Locally, `vercel env pull` / `vercel dev` provide it,
+// or set AI_GATEWAY_API_KEY directly.
+const KEY = () => process.env.AI_GATEWAY_API_KEY || process.env.VERCEL_OIDC_TOKEN || "";
 
 function buildPrompt(description: string): string {
   return `You are a senior solutions consultant at "The Start Up", a firm that builds custom CRM / pipeline systems and AI automation for process-driven businesses, shipped in 30 days.
