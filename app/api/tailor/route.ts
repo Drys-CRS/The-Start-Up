@@ -7,13 +7,91 @@ export const runtime = "nodejs";
 // enquiry to Monday.com. The AI classifies the sector and generates tailored hero copy,
 // pipeline stages, sample leads, and "how we'd help" points. The raw description + the
 // tailored result are saved as an update on the Monday lead item created from the query.
-const GATEWAY_URL = "https://ai-gateway.vercel.sh/v1/chat/completions";
-// Confirmed valid AI Gateway slug; override with TAILOR_MODEL if desired.
-const MODEL = process.env.TAILOR_MODEL || "anthropic/claude-haiku-4.5";
-// On Vercel the AI Gateway also accepts the auto-injected OIDC token, so deployed
-// functions need no explicit key. Locally, `vercel env pull` / `vercel dev` provide it,
-// or set AI_GATEWAY_API_KEY directly.
-const KEY = () => process.env.AI_GATEWAY_API_KEY || process.env.VERCEL_OIDC_TOKEN || "";
+// Model call cascades through whichever provider is configured in the environment, so
+// tailoring works with the keys the rest of the app already uses in production:
+//   1. Vercel AI Gateway  (AI_GATEWAY_API_KEY or the auto-injected VERCEL_OIDC_TOKEN)
+//   2. OpenRouter         (OPENROUTER_API_KEY — same key that powers the Bottleneck Report)
+//   3. Google Gemini      (GOOGLE_AI_API_KEY — same key that powers Build-Plan auto-fill)
+const GATEWAY_KEY = () => process.env.AI_GATEWAY_API_KEY || process.env.VERCEL_OIDC_TOKEN || "";
+const GATEWAY_MODEL = process.env.TAILOR_MODEL || "anthropic/claude-haiku-4.5";
+const OPENROUTER_MODEL = process.env.TAILOR_MODEL_OPENROUTER || "anthropic/claude-3.5-haiku";
+const GEMINI_MODEL = process.env.TAILOR_MODEL_GEMINI || "gemini-2.5-flash";
+
+function isConfigured(): boolean {
+  return !!(GATEWAY_KEY() || process.env.OPENROUTER_API_KEY || process.env.GOOGLE_AI_API_KEY);
+}
+
+// One OpenAI-compatible chat call (used for both the AI Gateway and OpenRouter).
+async function openAiCompatible(
+  url: string,
+  apiKey: string,
+  model: string,
+  prompt: string,
+  extraHeaders: Record<string, string> = {},
+): Promise<string | null> {
+  try {
+    const res = await fetch(url, {
+      method: "POST",
+      headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json", ...extraHeaders },
+      body: JSON.stringify({
+        model,
+        max_tokens: 1100,
+        temperature: 0.5,
+        messages: [{ role: "user", content: prompt }],
+      }),
+    });
+    if (!res.ok) return null;
+    const data = await res.json();
+    return data.choices?.[0]?.message?.content || null;
+  } catch {
+    return null;
+  }
+}
+
+async function gemini(prompt: string): Promise<string | null> {
+  try {
+    const res = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${process.env.GOOGLE_AI_API_KEY}`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          contents: [{ role: "user", parts: [{ text: prompt }] }],
+          generationConfig: { responseMimeType: "application/json", temperature: 0.5 },
+        }),
+      },
+    );
+    if (!res.ok) return null;
+    const data = await res.json();
+    return data.candidates?.[0]?.content?.parts?.[0]?.text || null;
+  } catch {
+    return null;
+  }
+}
+
+// Try each configured provider in order; return the first non-empty completion.
+async function callModel(prompt: string): Promise<string | null> {
+  const gwKey = GATEWAY_KEY();
+  if (gwKey) {
+    const t = await openAiCompatible("https://ai-gateway.vercel.sh/v1/chat/completions", gwKey, GATEWAY_MODEL, prompt);
+    if (t) return t;
+  }
+  if (process.env.OPENROUTER_API_KEY) {
+    const t = await openAiCompatible(
+      "https://openrouter.ai/api/v1/chat/completions",
+      process.env.OPENROUTER_API_KEY,
+      OPENROUTER_MODEL,
+      prompt,
+      { "HTTP-Referer": "https://tsu.agency", "X-Title": "The Start Up — Tailor" },
+    );
+    if (t) return t;
+  }
+  if (process.env.GOOGLE_AI_API_KEY) {
+    const t = await gemini(prompt);
+    if (t) return t;
+  }
+  return null;
+}
 
 function buildPrompt(description: string): string {
   return `You are a senior solutions consultant at "The Start Up", a firm that builds custom CRM / pipeline systems and AI automation for process-driven businesses, shipped in 30 days.
@@ -101,29 +179,12 @@ export async function POST(req: NextRequest) {
   if (desc.length < 8) {
     return NextResponse.json({ error: "Tell us a little more about your business." }, { status: 400 });
   }
-  if (!KEY()) {
+  if (!isConfigured()) {
     return NextResponse.json({ error: "Tailoring isn't configured yet." }, { status: 503 });
   }
 
-  let tailored: any = null;
-  try {
-    const res = await fetch(GATEWAY_URL, {
-      method: "POST",
-      headers: { Authorization: `Bearer ${KEY()}`, "Content-Type": "application/json" },
-      body: JSON.stringify({
-        model: MODEL,
-        max_tokens: 1100,
-        temperature: 0.5,
-        messages: [{ role: "user", content: buildPrompt(desc.slice(0, 1500)) }],
-      }),
-    });
-    if (res.ok) {
-      const data = await res.json();
-      tailored = normalise(safeParse(data.choices?.[0]?.message?.content || ""));
-    }
-  } catch {
-    // network / provider error — handled below
-  }
+  const completion = await callModel(buildPrompt(desc.slice(0, 1500)));
+  const tailored: any = normalise(safeParse(completion || ""));
 
   // Best-effort capture to Monday. Never blocks or fails the response (token is prod-only).
   try {
