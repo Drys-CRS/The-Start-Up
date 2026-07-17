@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
   ArrowRight, Check, X, ShieldCheck, FileText, ChevronDown, Monitor,
   Search, TrendingDown, ClipboardCheck, Hammer, LifeBuoy, Tag, Unlock, Zap, RefreshCw,
-  Sparkles, Target, Route, Mail, Bell, BarChart3, Gauge, Bot, Loader2,
+  Sparkles, Target, Route, Mail, Bell, BarChart3, Gauge, Bot, Loader2, Puzzle,
 } from "lucide-react";
 import WordMark from "./WordMark";
 import PipelinePreview from "./PipelinePreview";
@@ -51,6 +51,7 @@ const STEPS = [
 
 const INCLUDED = [
   { icon: Zap, title: "Core workflow, end-to-end", body: "Capture → score → route → report, built and tested — not a demo.", big: true },
+  { icon: Puzzle, title: "Fits how you actually work", body: "No rigid templates — we shape the CRM around your workflow, not the other way around." },
   { icon: ClipboardCheck, title: "CRM board your team knows", body: "Configured on the platform that fits your workflow." },
   { icon: TrendingDown, title: "One reporting dashboard", body: "The metrics leadership actually watches, nothing else." },
   { icon: Check, title: "Integrations in scope", body: "Your CRM, enrichment tools, calendars — connected." },
