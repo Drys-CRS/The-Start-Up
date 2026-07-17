@@ -220,9 +220,10 @@ export default function OfferPage() {
               )}
             </AnimatePresence>
             <p className="mt-4 text-lg text-slate-600 dark:text-slate-400">
-              Leads stall, reps skip steps, follow-up happens whenever someone remembers. We rebuild the process
-              and automation around your CRM so it actually runs your sales cycle. Shipped in 30 days, with
-              60 days of support free. No endless discovery. No disappearing act.
+              Leads stall, reps skip steps, follow-up happens whenever someone remembers — and your CRM isn't
+              as flexible as you need it to be. That's why we're here. We rebuild the process and automation
+              around your CRM so it actually runs your sales cycle. Shipped in 30 days, with 60 days of support
+              free. No endless discovery. No disappearing act.
             </p>
             <div className="mt-7 flex flex-col sm:flex-row gap-3">
               <motion.a whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} href="/calculator" className="inline-flex items-center justify-center gap-2 rounded-lg bg-teal-500 px-6 py-3 text-sm font-semibold text-slate-950 hover:bg-teal-400">
