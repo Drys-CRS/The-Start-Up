@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { waitUntil } from "@vercel/functions";
 import { createItem, addUpdateToItem, LEADS, LEADS_BOARD_ID, today } from "@/lib/monday";
 
 export const runtime = "nodejs";
@@ -186,9 +187,10 @@ export async function POST(req: NextRequest) {
   const completion = await callModel(buildPrompt(desc.slice(0, 1500)));
   const tailored: any = normalise(safeParse(completion || ""));
 
-  // Fire-and-forget: capture the lead in the background so the visitor gets their tailored
-  // result immediately instead of waiting on two sequential Monday.com writes.
-  void captureLead(desc, tailored);
+  // Capture the lead without blocking the response: waitUntil keeps the function alive
+  // until the Monday writes finish (guaranteed on Fluid Compute), so the visitor gets their
+  // tailored result immediately while the two Monday round-trips complete in the background.
+  waitUntil(captureLead(desc, tailored));
 
   if (!tailored) {
     return NextResponse.json(
