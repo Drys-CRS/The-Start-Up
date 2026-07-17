@@ -35,8 +35,8 @@ async function openAiCompatible(
       headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json", ...extraHeaders },
       body: JSON.stringify({
         model,
-        max_tokens: 1100,
-        temperature: 0.5,
+        max_tokens: 700,
+        temperature: 0.4,
         messages: [{ role: "user", content: prompt }],
       }),
     });
@@ -113,13 +113,13 @@ Tailor our landing page to their sector. Respond with ONLY valid JSON (no markdo
     { "company": "realistic sample client/deal name for their sector", "value": "$ amount with unit that fits (e.g. '$24k /yr', '$320 /visit', '$650k')", "heat": "hot | warm | cold", "stale": "Nd untouched (a small number of days)" }
   ],
   "help": [
-    { "title": "3-5 word capability", "body": "one sentence on how we'd solve a specific problem for their sector" }
+    { "title": "3-5 word capability", "body": "one concise sentence on how we'd solve a specific problem for their sector" }
   ]
 }
 
 Rules:
-- "leads" MUST contain EXACTLY 5 objects; vary heat and staleness realistically.
-- "help" MUST contain EXACTLY 4 objects, concrete to their sector (not generic).
+- "leads" MUST contain EXACTLY 5 objects; vary heat and staleness realistically. Keep every string short.
+- "help" MUST contain EXACTLY 3 objects, concrete to their sector (not generic).
 - Be faithful to what they wrote; infer sensibly, invent nothing they'd find irrelevant.
 - No flattery. Return ONLY the JSON object.`;
 }
@@ -186,7 +186,21 @@ export async function POST(req: NextRequest) {
   const completion = await callModel(buildPrompt(desc.slice(0, 1500)));
   const tailored: any = normalise(safeParse(completion || ""));
 
-  // Best-effort capture to Monday. Never blocks or fails the response (token is prod-only).
+  // Fire-and-forget: capture the lead in the background so the visitor gets their tailored
+  // result immediately instead of waiting on two sequential Monday.com writes.
+  void captureLead(desc, tailored);
+
+  if (!tailored) {
+    return NextResponse.json(
+      { error: "Couldn't tailor the page just now — please try again." },
+      { status: 502 },
+    );
+  }
+  return NextResponse.json({ tailored });
+}
+
+// Best-effort lead capture. Runs detached from the response; failures are swallowed.
+async function captureLead(desc: string, tailored: any): Promise<void> {
   try {
     const name = (tailored?.sector || desc.slice(0, 60)) || "Website enquiry";
     const itemId = await createItem(LEADS_BOARD_ID, name, {
@@ -197,16 +211,8 @@ export async function POST(req: NextRequest) {
     });
     await addUpdateToItem(itemId, formatUpdate(desc, tailored));
   } catch {
-    // swallow — lead capture is best-effort and must not affect the visitor experience
+    // swallow — lead capture must never affect the visitor experience
   }
-
-  if (!tailored) {
-    return NextResponse.json(
-      { error: "Couldn't tailor the page just now — please try again." },
-      { status: 502 },
-    );
-  }
-  return NextResponse.json({ tailored });
 }
 
 function formatUpdate(description: string, tailored: any): string {
