@@ -329,7 +329,7 @@ export async function POST(req: NextRequest) {
     ["8. Cancellation Policy", "Before build start: full refund minus 10% scoping and admin fee. After build start: deposit is non-refundable; remaining work invoiced at a pro-rata day rate."],
     ["9. Limitation of Liability", "The Startup's total liability is limited to the fees paid under this agreement. We are not liable for indirect, consequential, or incidental losses."],
     ["10. Force Majeure", "Neither party is liable for delays caused by circumstances beyond reasonable control, including natural disasters, government actions, or infrastructure failure."],
-    ["11. Governing Law", "This agreement is governed by the laws of the United States and of the state in which Cyber Retaliator Solutions LLC is organized, without regard to conflict-of-law rules. Disputes are subject to the courts located in that state."],
+    ["11. Governing Law", "This agreement is governed by the laws of the State of Texas and applicable U.S. federal law, without regard to conflict-of-law rules. Disputes are subject to the state and federal courts located in Williamson County, Texas."],
   ];
   tcs.forEach(([title, body]) => {
     const bodyLines = wrapText(body, (s) => fontR.widthOfTextAtSize(s, 7.5), CW);

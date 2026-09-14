@@ -152,9 +152,9 @@ export default function TermsPage() {
 
       <LegalSection title="17. Governing law">
         <p>
-          These Terms and any agreement with us are governed by the laws of the United States and of the state in
-          which {COMPANY.legalName} is organized, without regard to conflict-of-law rules. Disputes will be heard in
-          the courts located in that state.
+          These Terms and any agreement with us are governed by the laws of the State of Texas and applicable U.S.
+          federal law, without regard to conflict-of-law rules. Disputes will be heard in the state and federal courts
+          located in Williamson County, Texas.
         </p>
       </LegalSection>
 
