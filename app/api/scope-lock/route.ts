@@ -1,5 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { rateLimit } from "@/lib/rate-limit";
+import { waitUntil } from "@vercel/functions";
+import { sendBuildPlanConfirmation, sendTeamAlert } from "@/lib/email";
+import { mondayBoardUrl, signUrl } from "@/lib/links";
 import { createItem, SCOPE, SCOPE_BOARD_ID, today } from "@/lib/monday";
 
 export async function POST(req: NextRequest) {
@@ -28,7 +31,33 @@ export async function POST(req: NextRequest) {
   };
   try {
     const id = await createItem(SCOPE_BOARD_ID, b.company || b.email, columnValues);
-    return NextResponse.json({ ok: true, itemId: id, refNo });
+
+    // Email the signing link right away, so the deal survives a closed tab.
+    const emailed = await sendBuildPlanConfirmation({
+      to: b.email,
+      company: b.company || "",
+      ref: refNo,
+      signUrl: signUrl({ ref: refNo, itemId: id, email: b.email, tierLabel: b.tier || "Premium" }),
+    });
+    waitUntil(
+      sendTeamAlert({
+        subject: `New Build Plan: ${b.company || b.email}`,
+        heading: "A new Build Plan was submitted",
+        rows: [
+          ["Company", b.company],
+          ["Contact", b.contact],
+          ["Email", b.email],
+          ["Tier", b.tier],
+          ["Primary goal", b.goal],
+          ["Bottleneck", b.bottleneck],
+          ["Target start", b.startDate],
+          ["Reference", refNo],
+          ["Confirmation emailed", emailed ? "Yes" : "No — check Resend configuration"],
+        ],
+        link: { label: "Open Scope Locks board", url: mondayBoardUrl(SCOPE_BOARD_ID) },
+      }),
+    );
+    return NextResponse.json({ ok: true, itemId: id, refNo, emailed });
   } catch (e: any) {
     return NextResponse.json({ error: "Could not save scope lock", detail: String(e?.message || e) }, { status: 502 });
   }

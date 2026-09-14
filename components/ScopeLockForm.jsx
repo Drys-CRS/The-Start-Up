@@ -1,4 +1,5 @@
 "use client";
+import { track } from "@vercel/analytics";
 import React, { useState, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ArrowRight, Check, Download, FileText, Globe, Loader2, PenLine, ShieldCheck, Sparkles, X } from "lucide-react";
@@ -108,7 +109,8 @@ export default function ScopeLockForm({ embedded = false, initialValues = {}, pr
       });
       if (res.ok) {
         const data = await res.json().catch(() => ({}));
-        lastSubmission.current = { ...payload, mondayItemId: data.itemId, refNo: data.refNo };
+        lastSubmission.current = { ...payload, mondayItemId: data.itemId, refNo: data.refNo, emailed: !!data.emailed };
+        track("Build Plan Submitted");
         setStatus("done");
       } else {
         setStatus("error");
@@ -191,7 +193,10 @@ export default function ScopeLockForm({ embedded = false, initialValues = {}, pr
             </motion.div>
             <h1 className="text-2xl font-semibold tracking-tight text-slate-900 dark:text-white">Your Build Plan is in.</h1>
             <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">
-              We will turn this into a fixed scope, price, and start date — sent to your email. No call needed.
+              {s.emailed
+                ? <>We&apos;ve emailed your signing link to {s.email}, so you can come back to it anytime.</>
+                : "Sign your agreement below to lock in your start date."}{" "}
+              No call needed.
             </p>
           </div>
 

@@ -1,4 +1,5 @@
 "use client";
+import { track } from "@vercel/analytics";
 import React, { useState, useMemo, useEffect, useRef } from "react";
 import { useTheme } from "next-themes";
 import { motion, AnimatePresence } from "framer-motion";
@@ -211,6 +212,7 @@ Be concrete and non-generic. No flattery, no filler.`;
       responseTime: RESPONSE[response].label,
       annualLeak: Math.round(calc.annualLeak),
     });
+    track("Audit Completed", { industry });
     generateReport();
   }
 

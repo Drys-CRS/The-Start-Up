@@ -1,4 +1,5 @@
 "use client";
+import { track } from "@vercel/analytics";
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -110,6 +111,7 @@ export default function OfferPage() {
       const data = await res.json().catch(() => ({}));
       if (res.ok && data.tailored) {
         setTailored(data.tailored);
+        track("Homepage Tailored");
         if (typeof window !== "undefined") window.scrollTo({ top: 0, behavior: "smooth" });
       } else {
         setTailorErr(data.error || "Couldn't tailor the page just now — please try again.");

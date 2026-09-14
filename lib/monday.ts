@@ -20,6 +20,7 @@ export const LEADS = {
   source:    "text_mm4mznjj",
   captured:  "date_mm4myq95",
   stage:     "color_mm4m7tjx",
+  followups: process.env.MONDAY_LEADS_FOLLOWUP_COL || "text_mm7669jr",
 };
 
 // Scope Locks board column IDs (board 18419179036)
@@ -37,6 +38,7 @@ export const SCOPE = {
   stage:        "color_mm4m4qbe",
   submitted:    "date_mm4mqmp0",
   ref:          process.env.MONDAY_SCOPE_REF_COL || "text_mm5b6hh4",
+  followups:    process.env.MONDAY_SCOPE_FOLLOWUP_COL || "text_mm76ve76",
 };
 
 // Delivery & Support board column IDs (board 18419179069)
@@ -127,7 +129,9 @@ export async function addUpdateToItem(itemId: string, body: string): Promise<str
   return json?.data?.create_update?.id ?? null;
 }
 
-// Change the stage/status column value on a scope-lock item.
+// Change the stage/status column value on a scope-lock item. Creates the label when
+// the board lacks it: "Signed" isn't one of the Scope Locks board's original labels,
+// and without this the update was silently rejected.
 export async function changeItemStage(
   itemId: string,
   label: string,
@@ -135,16 +139,7 @@ export async function changeItemStage(
   columnId = SCOPE.stage,
 ): Promise<void> {
   if (!TOKEN) return;
-  await fetch(MONDAY_API, {
-    method: "POST",
-    headers: { Authorization: TOKEN, "Content-Type": "application/json", "API-Version": "2024-10" },
-    body: JSON.stringify({
-      query: `mutation ($iid: ID!, $bid: ID!, $cid: String!, $val: JSON!) {
-        change_column_value(item_id: $iid, board_id: $bid, column_id: $cid, value: $val) { id }
-      }`,
-      variables: { iid: itemId, bid: boardId, cid: columnId, val: JSON.stringify({ label }) },
-    }),
-  }).catch(() => null);
+  await setSimpleColumn(boardId, itemId, columnId, label).catch(e => console.error("changeItemStage failed", itemId, label, e));
 }
 
 // Attach a file to a Monday.com item by creating an update then uploading to it.
@@ -248,15 +243,15 @@ export async function getScopeStatus(ref: string): Promise<ScopeStatus | null> {
   };
 }
 
-// Read the stored ref, email, and tier for a Scope Lock by its Monday item id.
+// Read the stored ref, email, tier, and stage for a Scope Lock by its Monday item id.
 // Used by the Stripe webhook (which only knows the item id) and resolveScopeLock. Best-effort — null on error.
 export async function getScopeById(
   itemId: string,
-): Promise<{ ref: string; email: string; tierLabel: string } | null> {
+): Promise<{ ref: string; email: string; tierLabel: string; stageLabel: string } | null> {
   if (!TOKEN || !itemId) return null;
   const query = `query ($ids: [ID!]) {
     items(ids: $ids) {
-      column_values(ids: ["${SCOPE.ref}", "${SCOPE.email}", "${SCOPE.tier}"]) { id text }
+      column_values(ids: ["${SCOPE.ref}", "${SCOPE.email}", "${SCOPE.tier}", "${SCOPE.stage}"]) { id text }
     }
   }`;
   let res: Response;
@@ -273,7 +268,7 @@ export async function getScopeById(
   const cols: Array<{ id: string; text: string | null }> = data?.data?.items?.[0]?.column_values || [];
   if (!cols.length) return null;
   const byId = (id: string) => cols.find(c => c.id === id)?.text || "";
-  return { ref: byId(SCOPE.ref), email: byId(SCOPE.email), tierLabel: byId(SCOPE.tier) };
+  return { ref: byId(SCOPE.ref), email: byId(SCOPE.email), tierLabel: byId(SCOPE.tier), stageLabel: byId(SCOPE.stage) };
 }
 
 export type VerifiedScopeLock = {
@@ -281,6 +276,7 @@ export type VerifiedScopeLock = {
   ref: string;
   email: string;
   tierLabel: string;
+  stageLabel: string;
 };
 
 // Resolve a Scope Lock from identifiers a customer supplied (sign link, checkout)
@@ -304,9 +300,83 @@ export async function resolveScopeLock(opts: {
     if (r) record = { itemId: item, ...r };
   } else if (ref) {
     const r = await getScopeStatus(ref);
-    if (r) record = { itemId: r.itemId, ref: r.ref, email: r.email, tierLabel: r.tierLabel };
+    if (r) record = { itemId: r.itemId, ref: r.ref, email: r.email, tierLabel: r.tierLabel, stageLabel: r.stageLabel };
   }
 
   if (!record || record.email.trim().toLowerCase() !== email) return null;
   return record;
+}
+
+export type BoardItem = {
+  id: string;
+  name: string;
+  createdAt: string;
+  texts: Record<string, string>; // column id → display text
+  values: Record<string, string>; // column id → raw JSON value
+};
+
+// Every item on a board with the requested columns, following items_page cursors.
+// Capped at maxPages × 200 items so a runaway board can't stall the caller. Throws
+// on API errors so a scheduled job fails loudly instead of silently doing nothing.
+export async function listBoardItems(boardId: string, columnIds: string[], maxPages = 10): Promise<BoardItem[]> {
+  if (!TOKEN) return [];
+  const fields = "cursor items { id name created_at column_values(ids: $cols) { id text value } }";
+  const firstQuery = `query ($boardId: ID!, $cols: [String!]) { boards(ids: [$boardId]) { items_page(limit: 200) { ${fields} } } }`;
+  const nextQuery = `query ($cursor: String!, $cols: [String!]) { next_items_page(limit: 200, cursor: $cursor) { ${fields} } }`;
+
+  const items: BoardItem[] = [];
+  let cursor: string | null = null;
+  for (let page = 0; page < maxPages; page++) {
+    const res = await fetch(MONDAY_API, {
+      method: "POST",
+      headers: { Authorization: TOKEN, "Content-Type": "application/json", "API-Version": "2024-10" },
+      body: JSON.stringify(
+        page === 0
+          ? { query: firstQuery, variables: { boardId, cols: columnIds } }
+          : { query: nextQuery, variables: { cursor, cols: columnIds } },
+      ),
+    });
+    const data = await res.json();
+    if (!res.ok || data.errors) throw new Error(`Monday.com API error: ${JSON.stringify(data.errors || data)}`);
+
+    const pageData = page === 0 ? data.data?.boards?.[0]?.items_page : data.data?.next_items_page;
+    for (const it of pageData?.items || []) {
+      const texts: Record<string, string> = {};
+      const values: Record<string, string> = {};
+      for (const c of it.column_values || []) {
+        texts[c.id] = c.text || "";
+        values[c.id] = c.value || "";
+      }
+      items.push({ id: String(it.id), name: it.name || "", createdAt: it.created_at || "", texts, values });
+    }
+    cursor = pageData?.cursor || null;
+    if (!cursor) break;
+  }
+  return items;
+}
+
+// Read a few columns of any item, plus the id of the board it lives on. Null on error.
+export async function getItemColumns(
+  itemId: string,
+  columnIds: string[],
+): Promise<{ boardId: string; texts: Record<string, string> } | null> {
+  if (!TOKEN || !itemId) return null;
+  try {
+    const res = await fetch(MONDAY_API, {
+      method: "POST",
+      headers: { Authorization: TOKEN, "Content-Type": "application/json", "API-Version": "2024-10" },
+      body: JSON.stringify({
+        query: `query ($ids: [ID!], $cols: [String!]) { items(ids: $ids) { board { id } column_values(ids: $cols) { id text } } }`,
+        variables: { ids: [itemId], cols: columnIds },
+      }),
+    });
+    const data = await res.json();
+    const item = data?.data?.items?.[0];
+    if (!item) return null;
+    const texts: Record<string, string> = {};
+    for (const c of item.column_values || []) texts[c.id] = c.text || "";
+    return { boardId: String(item.board?.id || ""), texts };
+  } catch {
+    return null;
+  }
 }

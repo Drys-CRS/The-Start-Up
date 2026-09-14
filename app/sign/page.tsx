@@ -1,4 +1,5 @@
 "use client";
+import { track } from "@vercel/analytics";
 import { useEffect, useRef, useState } from "react";
 import { CheckCircle, AlertCircle, Loader2, CreditCard, ShieldCheck, RefreshCw } from "lucide-react";
 
@@ -77,7 +78,7 @@ export default function SignPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ ref, item, name, sigDataUrl, tier, cur, email }),
       });
-      if (res.ok) { setStage("signed"); }
+      if (res.ok) { track("Agreement Signed"); setStage("signed"); }
       else {
         const d = await res.json().catch(() => ({}));
         setErrMsg(d.error || "Submission failed — please try again.");
@@ -91,6 +92,7 @@ export default function SignPage() {
 
   async function startPayment() {
     setStage("paying");
+    track("Checkout Started", { type: "deposit" });
     const res = await fetch("/api/checkout", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -100,13 +102,15 @@ export default function SignPage() {
       const { url } = await res.json();
       window.location.href = url;
     } else {
-      setErrMsg("Could not start payment — please contact us directly.");
+      const d = await res.json().catch(() => ({}));
+      setErrMsg(d.error || "Could not start payment — please contact us directly.");
       setStage("error");
     }
   }
 
   async function startMonthlyPlan() {
     setStage("paying");
+    track("Checkout Started", { type: "monthly" });
     const res = await fetch("/api/checkout/subscription", {
       method: "POST",
       headers: { "Content-Type": "application/json" },

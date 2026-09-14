@@ -1,5 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { rateLimit } from "@/lib/rate-limit";
+import { waitUntil } from "@vercel/functions";
+import { sendTeamAlert } from "@/lib/email";
+import { mondayBoardUrl } from "@/lib/links";
 import { createItem, LEADS, LEADS_BOARD_ID, today } from "@/lib/monday";
 
 export async function POST(req: NextRequest) {
@@ -25,6 +28,24 @@ export async function POST(req: NextRequest) {
   };
   try {
     const id = await createItem(LEADS_BOARD_ID, b.company || b.email, columnValues);
+    waitUntil(
+      sendTeamAlert({
+        subject: `New calculator lead: ${b.company || b.email}`,
+        heading: "A new lead ran the Lead Leakage Calculator",
+        rows: [
+          ["Company", b.company],
+          ["Email", b.email],
+          ["Industry", b.industry],
+          ["Monthly leads", b.leads],
+          ["Avg deal value", b.deal],
+          ["Close rate %", b.closeRate],
+          ["Response time", b.responseTime],
+          ["Est. annual leak", Math.round(b.annualLeak ?? 0).toLocaleString("en-US")],
+          ["Currency", b.currency],
+        ],
+        link: { label: "Open Inbound Leads board", url: mondayBoardUrl(LEADS_BOARD_ID) },
+      }),
+    );
     return NextResponse.json({ ok: true, itemId: id });
   } catch (e: any) {
     return NextResponse.json({ error: "Could not save lead", detail: String(e?.message || e) }, { status: 502 });

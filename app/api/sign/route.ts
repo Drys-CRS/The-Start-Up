@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { PDFDocument, StandardFonts, PageSizes, rgb } from "pdf-lib";
-import { addFileToItem, addUpdateToItem, changeItemStage, resolveScopeLock } from "@/lib/monday";
+import { SCOPE_BOARD_ID, addFileToItem, addUpdateToItem, changeItemStage, resolveScopeLock } from "@/lib/monday";
 import { rateLimit } from "@/lib/rate-limit";
-import { sendStatusEmail } from "@/lib/email";
+import { sendStatusEmail, sendTeamAlert } from "@/lib/email";
+import { mondayBoardUrl } from "@/lib/links";
 
 export const runtime = "nodejs";
 
@@ -204,8 +205,21 @@ export async function POST(req: NextRequest) {
     changeItemStage(record.itemId, "Signed"),
   ]);
 
-  // Status email to the address on file — never fails the sign response.
-  await sendStatusEmail({ to: record.email, stageLabel: "Signed", ref: refNo });
+  // Status email to the signer and a team alert — neither fails the sign response.
+  await Promise.allSettled([
+    sendStatusEmail({ to: record.email, stageLabel: "Signed", ref: refNo }),
+    sendTeamAlert({
+      subject: `Agreement signed${refNo ? `: ${refNo}` : ""}`,
+      heading: "An agreement was just signed",
+      rows: [
+        ["Signatory", name],
+        ["Email", record.email],
+        ["Reference", refNo],
+        ["Scope Lock item", record.itemId],
+      ],
+      link: { label: "Open Scope Locks board", url: mondayBoardUrl(SCOPE_BOARD_ID) },
+    }),
+  ]);
 
   return NextResponse.json({ ok: true, signedAt });
 }

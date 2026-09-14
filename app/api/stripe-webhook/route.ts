@@ -1,7 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import Stripe from "stripe";
 import { SCOPE_BOARD_ID, SCOPE, setSimpleColumn, addUpdateToItem, getScopeById } from "@/lib/monday";
-import { sendStatusEmail } from "@/lib/email";
+import { track } from "@vercel/analytics/server";
+import { sendStatusEmail, sendTeamAlert } from "@/lib/email";
+import { mondayBoardUrl } from "@/lib/links";
 
 export const runtime = "nodejs";
 
@@ -38,6 +40,19 @@ export async function POST(req: NextRequest) {
           `<strong>Monthly plan started</strong><br>Stripe session: ${session.id}`,
         );
       }
+      await Promise.allSettled([
+        sendTeamAlert({
+          subject: "Monthly plan started",
+          heading: "A customer started the monthly plan",
+          rows: [
+            ["Email", session.customer_details?.email || session.customer_email],
+            ["Scope Lock item", scopeLockId],
+            ["Stripe session", session.id],
+          ],
+          link: { label: "Open Scope Locks board", url: mondayBoardUrl(SCOPE_BOARD_ID) },
+        }),
+        track("Monthly Plan Started"),
+      ]);
       return NextResponse.json({ received: true });
     }
 
@@ -75,6 +90,22 @@ export async function POST(req: NextRequest) {
           `<strong>Payment received</strong><br>Stage: ${stageLabel}<br>Amount: ${amount}<br>Stripe session: ${session.id}`,
         );
         await sendStatusEmail({ to: customerEmail, stageLabel, ref });
+        await Promise.allSettled([
+          sendTeamAlert({
+            subject: `Payment received: ${stageLabel} (${amount})`,
+            heading: `Payment received — ${amount}`,
+            rows: [
+              ["Stage", stageLabel],
+              ["Amount", amount],
+              ["Email", customerEmail],
+              ["Reference", ref],
+              ["Scope Lock item", scopeLockId],
+              ["Stripe session", session.id],
+            ],
+            link: { label: "Open Scope Locks board", url: mondayBoardUrl(SCOPE_BOARD_ID) },
+          }),
+          track("Payment Completed", { type: paymentType }),
+        ]);
       } catch (e) {
         console.error("post-payment side-effect failed", e);
       }

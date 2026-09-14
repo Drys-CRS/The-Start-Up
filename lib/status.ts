@@ -24,7 +24,7 @@ export const STAGE_META: Record<string, StageMeta> = {
     title: "Build Plan received",
     description:
       "We have your Build Plan and it's in our pipeline. Our team is reviewing the scope, pricing, and a start date.",
-    next: "You'll receive your agreement to review and sign. Nothing more is needed from you right now.",
+    next: "Review and sign your agreement using the link in your confirmation email, then pay the 10% deposit to lock in your start date.",
     step: 1,
   },
   Signed: {
