@@ -36,6 +36,7 @@ export const SCOPE = {
   startDate:    "date_mm4m76f7",
   stage:        "color_mm4m4qbe",
   submitted:    "date_mm4mqmp0",
+  ref:          process.env.MONDAY_SCOPE_REF_COL || "text_mm5b6hh4",
 };
 
 // Delivery & Support board column IDs (board 18419179069)
@@ -183,4 +184,129 @@ export async function addFileToItem(
     headers: { Authorization: TOKEN, "API-Version": "2024-10" },
     body: form,
   }).catch(() => null);
+}
+
+export type ScopeStatus = {
+  itemId: string;
+  name: string;
+  stageLabel: string;
+  email: string;
+  ref: string;
+  tierLabel: string;
+};
+
+// Look up a Scope Lock by its customer-facing ref number.
+// Returns the item's stage + stored email so the caller can verify identity.
+// Returns null if not found, on any error, or if the token is missing.
+export async function getScopeStatus(ref: string): Promise<ScopeStatus | null> {
+  if (!TOKEN || !ref) return null;
+
+  const query = `query ($boardId: ID!, $colId: String!, $ref: String!) {
+    items_page_by_column_values(
+      board_id: $boardId, limit: 1,
+      columns: [{ column_id: $colId, column_values: [$ref] }]
+    ) {
+      items {
+        id
+        name
+        column_values(ids: ["${SCOPE.stage}", "${SCOPE.email}", "${SCOPE.ref}", "${SCOPE.tier}"]) {
+          id
+          text
+        }
+      }
+    }
+  }`;
+
+  let res: Response;
+  try {
+    res = await fetch(MONDAY_API, {
+      method: "POST",
+      headers: { Authorization: TOKEN, "Content-Type": "application/json", "API-Version": "2024-10" },
+      body: JSON.stringify({
+        query,
+        variables: { boardId: SCOPE_BOARD_ID, colId: SCOPE.ref, ref },
+      }),
+    });
+  } catch {
+    return null;
+  }
+
+  const data = await res.json().catch(() => null);
+  const item = data?.data?.items_page_by_column_values?.items?.[0];
+  if (!item) return null;
+
+  const cols: Array<{ id: string; text: string | null }> = item.column_values || [];
+  const byId = (id: string) => cols.find(c => c.id === id)?.text || "";
+
+  return {
+    itemId: String(item.id),
+    name: item.name || "",
+    stageLabel: byId(SCOPE.stage),
+    email: byId(SCOPE.email),
+    ref: byId(SCOPE.ref),
+    tierLabel: byId(SCOPE.tier),
+  };
+}
+
+// Read the stored ref, email, and tier for a Scope Lock by its Monday item id.
+// Used by the Stripe webhook (which only knows the item id) and resolveScopeLock. Best-effort — null on error.
+export async function getScopeById(
+  itemId: string,
+): Promise<{ ref: string; email: string; tierLabel: string } | null> {
+  if (!TOKEN || !itemId) return null;
+  const query = `query ($ids: [ID!]) {
+    items(ids: $ids) {
+      column_values(ids: ["${SCOPE.ref}", "${SCOPE.email}", "${SCOPE.tier}"]) { id text }
+    }
+  }`;
+  let res: Response;
+  try {
+    res = await fetch(MONDAY_API, {
+      method: "POST",
+      headers: { Authorization: TOKEN, "Content-Type": "application/json", "API-Version": "2024-10" },
+      body: JSON.stringify({ query, variables: { ids: [itemId] } }),
+    });
+  } catch {
+    return null;
+  }
+  const data = await res.json().catch(() => null);
+  const cols: Array<{ id: string; text: string | null }> = data?.data?.items?.[0]?.column_values || [];
+  if (!cols.length) return null;
+  const byId = (id: string) => cols.find(c => c.id === id)?.text || "";
+  return { ref: byId(SCOPE.ref), email: byId(SCOPE.email), tierLabel: byId(SCOPE.tier) };
+}
+
+export type VerifiedScopeLock = {
+  itemId: string;
+  ref: string;
+  email: string;
+  tierLabel: string;
+};
+
+// Resolve a Scope Lock from identifiers a customer supplied (sign link, checkout)
+// and confirm they own it. Looks up by Monday item id when given, since items created
+// before the Ref No column existed have a blank ref, otherwise by ref. Either way the
+// stored email must match. Returns null on any mismatch or lookup failure; callers
+// should answer with a generic "not found".
+export async function resolveScopeLock(opts: {
+  ref?: unknown;
+  item?: unknown;
+  email?: unknown;
+}): Promise<VerifiedScopeLock | null> {
+  const ref = typeof opts.ref === "string" ? opts.ref.trim() : "";
+  const item = typeof opts.item === "string" || typeof opts.item === "number" ? String(opts.item).trim() : "";
+  const email = typeof opts.email === "string" ? opts.email.trim().toLowerCase() : "";
+  if (!email) return null;
+
+  let record: VerifiedScopeLock | null = null;
+  if (/^\d+$/.test(item)) {
+    const r = await getScopeById(item);
+    if (r) record = { itemId: item, ...r };
+  } else if (ref) {
+    const r = await getScopeStatus(ref);
+    if (r) record = { itemId: r.itemId, ref: r.ref, email: r.email, tierLabel: r.tierLabel };
+  }
+
+  if (!record || record.email.trim().toLowerCase() !== email) return null;
+  return record;
 }

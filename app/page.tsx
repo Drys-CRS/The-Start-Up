@@ -1,8 +1,7 @@
 import type { Metadata } from "next";
 import OfferPage from "@/components/OfferPage";
 import { FAQS } from "@/lib/faqs";
-
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://thestartup.app";
+import { SITE_URL as siteUrl } from "@/lib/site";
 
 export const metadata: Metadata = {
   title: "Business Systems & AI for Any Sector — Built in 30 Days",

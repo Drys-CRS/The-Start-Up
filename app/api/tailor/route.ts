@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { rateLimit } from "@/lib/rate-limit";
 import { waitUntil } from "@vercel/functions";
 import { createItem, addUpdateToItem, LEADS, LEADS_BOARD_ID, today } from "@/lib/monday";
 
@@ -175,6 +176,9 @@ function normalise(raw: any): any | null {
 }
 
 export async function POST(req: NextRequest) {
+  const limited = rateLimit(req, "tailor", 8, 60_000);
+  if (limited) return limited;
+
   const { description } = await req.json().catch(() => ({}));
   const desc = String(description || "").trim();
   if (desc.length < 8) {

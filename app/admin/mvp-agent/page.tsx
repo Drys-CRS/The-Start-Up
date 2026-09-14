@@ -4,7 +4,7 @@ import { Loader2, Sparkles, CheckCircle, AlertCircle, ExternalLink, CreditCard, 
 
 const TEAL = "#14b8a6";
 
-type RunResult = { boardId?: string; tasksCreated: number; log: string[]; error?: string } | null;
+type RunResult = { boardId?: string; tasksCreated: number; log: string[]; error?: string; claudeCodePromptPosted?: boolean } | null;
 
 export default function MvpAgentPage() {
   const [itemId,  setItemId]  = useState("");
@@ -176,6 +176,11 @@ export default function MvpAgentPage() {
                     Open board in Monday.com <ExternalLink size={13} />
                   </a>
                 )}
+                <div style={{ marginTop: 8, fontSize: 12, fontWeight: 600, color: result.claudeCodePromptPosted ? "#15803d" : "#b91c1c" }}>
+                  {result.claudeCodePromptPosted
+                    ? "✓ Claude Code prompt posted to the scope lock update"
+                    : "✗ Claude Code prompt was NOT posted — check the log"}
+                </div>
               </div>
             ) : (
               <div style={{ background: "#fef2f2", border: "1.5px solid #fca5a5", borderRadius: 10, padding: "1rem 1.25rem", display: "flex", alignItems: "center", gap: 8 }}>

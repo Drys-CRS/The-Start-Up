@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { rateLimit } from "@/lib/rate-limit";
 
 export const runtime = "nodejs";
 
@@ -14,8 +15,25 @@ function stripHtml(html: string): string {
     .slice(0, 6000);
 }
 
+// Only fetch public web hosts: rejects IP literals, localhost, and internal
+// hostnames so this endpoint can't be used to probe internal networks.
+function isPublicUrl(raw: string): boolean {
+  let u: URL;
+  try {
+    u = new URL(raw);
+  } catch {
+    return false;
+  }
+  if (u.protocol !== "https:" && u.protocol !== "http:") return false;
+  const h = u.hostname.toLowerCase();
+  if (h === "localhost" || /\.(localhost|local|internal)$/.test(h)) return false;
+  if (/^\d{1,3}(\.\d{1,3}){3}$/.test(h) || h.startsWith("[")) return false; // IPv4 / IPv6 literals
+  return h.includes(".");
+}
+
 async function fetchSiteText(domain: string): Promise<string> {
   const url = domain.startsWith("http") ? domain : `https://${domain}`;
+  if (!isPublicUrl(url)) return "";
   try {
     const res = await fetch(url, {
       headers: { "User-Agent": "Mozilla/5.0 (compatible; ScopeLockBot/1.0)" },
@@ -28,6 +46,9 @@ async function fetchSiteText(domain: string): Promise<string> {
 }
 
 export async function POST(req: NextRequest) {
+  const limited = rateLimit(req, "analyze-domain", 5, 60_000);
+  if (limited) return limited;
+
   const { domain } = await req.json().catch(() => ({}));
   if (!domain) return NextResponse.json({ error: "domain is required" }, { status: 400 });
   if (!GEMINI_KEY()) return NextResponse.json({ error: "GOOGLE_AI_API_KEY not configured" }, { status: 500 });

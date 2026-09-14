@@ -1,4 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
+import { resolveScopeLock } from "@/lib/monday";
+import { rateLimit } from "@/lib/rate-limit";
 
 export const runtime = "nodejs";
 
@@ -16,20 +18,42 @@ const LINKS: Record<string, string> = {
   "premium|USD|balance": "https://buy.stripe.com/3cI14ncNO9RBeSt4mP57W0k",
 };
 
+// Map the tier label stored on the Scope Lock to its payment-link family.
+function tierKey(label: string): "promo" | "premium" | null {
+  if (/promo/i.test(label)) return "promo";
+  if (/premium/i.test(label)) return "premium";
+  return null;
+}
+
 export async function POST(req: NextRequest) {
-  const { tier, cur, item, email, paymentType = "deposit" } = await req.json().catch(() => ({}));
+  const limited = rateLimit(req, "checkout", 10, 60_000);
+  if (limited) return limited;
 
-  // All tiers now follow the same key pattern
-  const key = `${tier}|${cur}|${paymentType}`;
+  const { ref, item, email, paymentType = "deposit" } = await req.json().catch(() => ({}));
 
-  const base = LINKS[key];
-  if (!base) {
-    return NextResponse.json({ error: `No payment link for "${key}"` }, { status: 400 });
+  // Identity and price both come from the Monday record, never the request, so a
+  // customer can't pay against someone else's item or edit ?t= down to a cheaper tier.
+  const record = await resolveScopeLock({ ref, item, email });
+  if (!record) {
+    return NextResponse.json(
+      { error: "We couldn't find an agreement matching that reference and email." },
+      { status: 404 },
+    );
   }
 
-  const params = new URLSearchParams();
-  if (item)  params.set("client_reference_id", item);
-  if (email) params.set("prefilled_email",     email);
+  const tier = tierKey(record.tierLabel);
+  const base = tier ? LINKS[`${tier}|USD|${paymentType}`] : undefined;
+  if (!base) {
+    return NextResponse.json(
+      { error: "No payment option is set up for this agreement — please contact us." },
+      { status: 400 },
+    );
+  }
+
+  const params = new URLSearchParams({
+    client_reference_id: record.itemId,
+    prefilled_email: record.email,
+  });
 
   return NextResponse.json({ url: `${base}?${params.toString()}` });
 }

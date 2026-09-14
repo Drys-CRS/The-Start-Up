@@ -75,7 +75,7 @@ export default function SignPage() {
       const res = await fetch("/api/sign", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ref, item, name, sigDataUrl, tier, cur }),
+        body: JSON.stringify({ ref, item, name, sigDataUrl, tier, cur, email }),
       });
       if (res.ok) { setStage("signed"); }
       else {

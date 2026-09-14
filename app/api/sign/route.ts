@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { PDFDocument, StandardFonts, PageSizes, rgb } from "pdf-lib";
-import { addFileToItem, addUpdateToItem, changeItemStage } from "@/lib/monday";
+import { addFileToItem, addUpdateToItem, changeItemStage, resolveScopeLock } from "@/lib/monday";
+import { rateLimit } from "@/lib/rate-limit";
+import { sendStatusEmail } from "@/lib/email";
 
 export const runtime = "nodejs";
 
@@ -142,41 +144,68 @@ async function buildCertPDF(opts: {
 }
 
 // ── Route ─────────────────────────────────────────────────────────────────────
-export async function POST(req: NextRequest) {
-  const { ref, item, name, sigDataUrl, tier, cur } = await req.json().catch(() => ({}));
+// The sign page's typed-name canvas (500×110 PNG) encodes to a few KB.
+const MAX_SIG_DATA_URL = 300_000;
 
-  if (!name || !sigDataUrl) {
-    return NextResponse.json({ error: "name and sigDataUrl are required" }, { status: 400 });
+const escapeHtml = (s: string) =>
+  s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+
+export async function POST(req: NextRequest) {
+  const limited = rateLimit(req, "sign", 10, 60_000);
+  if (limited) return limited;
+
+  const { ref, item, name: rawName, sigDataUrl, tier, cur, email } = await req.json().catch(() => ({}));
+  const name = typeof rawName === "string" ? rawName.trim().slice(0, 120) : "";
+
+  if (
+    !name ||
+    typeof sigDataUrl !== "string" ||
+    !sigDataUrl.startsWith("data:image/png;base64,") ||
+    sigDataUrl.length > MAX_SIG_DATA_URL
+  ) {
+    return NextResponse.json({ error: "A name and signature are required" }, { status: 400 });
   }
 
+  // Only the owner of a Scope Lock can sign it: the ref/item from their link must
+  // resolve to a real item whose stored email matches.
+  const record = await resolveScopeLock({ ref, item, email });
+  if (!record) {
+    return NextResponse.json(
+      { error: "We couldn't find an agreement matching this link. Please reopen the signing link from your Build Plan." },
+      { status: 404 },
+    );
+  }
+
+  const refNo = (record.ref || (typeof ref === "string" ? ref : "")).replace(/[^\w-]/g, "").slice(0, 40);
+  const safeName = escapeHtml(name);
   const signedAt = new Date().toISOString();
 
   // Generate signature certificate PDF (optional — swallow errors)
   let certBytes: Uint8Array | null = null;
   try {
-    certBytes = await buildCertPDF({ ref, name, signedAt, sigDataUrl, tier, cur });
+    certBytes = await buildCertPDF({ ref: refNo, name, signedAt, sigDataUrl, tier, cur });
   } catch {
     // cert generation failed — proceed without it
   }
 
-  // If we have a Monday.com item ID, attach cert and update the item
-  if (item) {
-    await Promise.allSettled([
-      certBytes
-        ? addFileToItem(
-            item,
-            Buffer.from(certBytes),
-            `signature-cert-${ref || Date.now()}.pdf`,
-            `Digital agreement signed by ${name} on ${new Date(signedAt).toLocaleString("en-ZA")}. Ref: ${ref}`,
-          )
-        : Promise.resolve(),
-      addUpdateToItem(
-        item,
-        `<strong>Agreement signed digitally</strong><br>Signatory: ${name}<br>Reference: ${ref}<br>Timestamp: ${new Date(signedAt).toUTCString()}`,
-      ),
-      changeItemStage(item, "Signed"),
-    ]);
-  }
+  await Promise.allSettled([
+    certBytes
+      ? addFileToItem(
+          record.itemId,
+          Buffer.from(certBytes),
+          `signature-cert-${refNo || Date.now()}.pdf`,
+          `Digital agreement signed by ${safeName} on ${new Date(signedAt).toLocaleString("en-ZA")}. Ref: ${refNo}`,
+        )
+      : Promise.resolve(),
+    addUpdateToItem(
+      record.itemId,
+      `<strong>Agreement signed digitally</strong><br>Signatory: ${safeName}<br>Reference: ${refNo}<br>Timestamp: ${new Date(signedAt).toUTCString()}`,
+    ),
+    changeItemStage(record.itemId, "Signed"),
+  ]);
+
+  // Status email to the address on file — never fails the sign response.
+  await sendStatusEmail({ to: record.email, stageLabel: "Signed", ref: refNo });
 
   return NextResponse.json({ ok: true, signedAt });
 }

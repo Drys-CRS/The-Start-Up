@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import CRMSimulator from "@/components/CRMSimulator";
-
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://thestartup.app";
+import { SITE_URL as siteUrl } from "@/lib/site";
 
 export const metadata: Metadata = {
   title: "Live System Demo — See What We Build for Your Industry",

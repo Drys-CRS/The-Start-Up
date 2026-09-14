@@ -1,9 +1,17 @@
 "use client";
-import { CheckCircle } from "lucide-react";
+import { useEffect, useState } from "react";
+import { CheckCircle, ArrowRight } from "lucide-react";
 
 const TEAL = "#14b8a6";
 
 export default function PaidPage() {
+  const [ref, setRef] = useState("");
+  useEffect(() => {
+    const p = new URLSearchParams(window.location.search);
+    setRef(p.get("ref") || "");
+  }, []);
+  const statusHref = `/status${ref ? `?ref=${encodeURIComponent(ref)}` : ""}`;
+
   return (
     <main style={{
       minHeight: "100vh", background: "var(--c-page)",
@@ -31,8 +39,8 @@ export default function PaidPage() {
             WHAT HAPPENS NEXT
           </p>
           {[
-            "You'll receive an invoice and payment confirmation by email.",
-            "We'll schedule your kick-off call within 24 hours.",
+            "You'll get a payment receipt from Stripe, plus a confirmation email from us.",
+            "We'll reach out within one business day to schedule your kick-off call.",
             "Your 30-day build clock starts on the agreed start date.",
           ].map((step, i) => (
             <div key={i} style={{ display: "flex", gap: 10, marginBottom: 8 }}>
@@ -41,6 +49,14 @@ export default function PaidPage() {
             </div>
           ))}
         </div>
+
+        <a href={statusHref} style={{
+          marginTop: "1.5rem", display: "inline-flex", alignItems: "center", gap: 8,
+          background: TEAL, color: "#fff", textDecoration: "none", fontWeight: 700,
+          fontSize: 14, padding: "0.75rem 1.5rem", borderRadius: 10,
+        }}>
+          Track your build status <ArrowRight size={16} />
+        </a>
       </div>
     </main>
   );

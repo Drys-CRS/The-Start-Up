@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import LeadLeakageCalculator from "@/components/LeadLeakageCalculator";
-
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://thestartup.app";
+import { SITE_URL as siteUrl } from "@/lib/site";
 
 export const metadata: Metadata = {
   title: "Free Lead Leakage Calculator + Build Plan — Find Your Revenue Leak in 2 Minutes",

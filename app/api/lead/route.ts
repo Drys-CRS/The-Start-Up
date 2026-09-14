@@ -1,7 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
+import { rateLimit } from "@/lib/rate-limit";
 import { createItem, LEADS, LEADS_BOARD_ID, today } from "@/lib/monday";
 
 export async function POST(req: NextRequest) {
+  const limited = rateLimit(req, "lead", 10, 60_000);
+  if (limited) return limited;
+
   const b = await req.json().catch(() => null);
   if (!b || !/.+@.+\..+/.test(b.email || "")) {
     return NextResponse.json({ error: "A valid email is required" }, { status: 400 });

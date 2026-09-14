@@ -31,6 +31,50 @@ const BUILD_TRACKER_BOARD_ID =
   process.env.MONDAY_DELIVERY_BOARD_ID ||
   "18419179069";
 
+// ── Shared Claude Code prompt spec ───────────────────────────────────────────
+// Used both by the primary post_claude_code_prompt tool (model-invoked, has full
+// conversation context) and by the guaranteed-delivery fallback generator below,
+// so the two paths never drift apart in what they require.
+
+const CLAUDE_CODE_PROMPT_SPEC = `A complete Claude Code prompt covering:
+1. Project name and one-paragraph description
+2. Tech stack (framework, language, DB, hosting, auth)
+3. Exact directory/file structure to scaffold
+4. Environment variables required (name + purpose) — include AI API keys
+5. Data models / schema (tables, fields, types)
+6. API routes (method, path, what it does)
+7. UI pages/components (route, purpose, key interactions)
+8. Third-party integrations (how to connect each)
+9. AI agents architecture — for each agent from the AI strategy:
+   - File path where it lives (e.g. lib/agents/lead-enrichment.ts)
+   - Trigger: what event fires it (webhook, cron, Monday.com automation, user action)
+   - Step-by-step logic with real function names and API calls
+   - Which AI model is called, with the exact system prompt template and expected output schema
+   - How results are written back to Monday.com or the database (exact column IDs / API calls)
+   - Error handling and retry strategy
+   - Rate limiting and cost controls (max tokens, daily spend cap)
+10. AI workflow logic — for each intelligent workflow, the exact conditional decision tree as pseudo-code
+11. Ordered build steps — what to build first through last (core system before AI layer)
+12. Definition of done for the MVP (core system) and AI layer separately
+13. Progress tracking — Monday.com sync back. This is REQUIRED, not optional:
+    - State the exact Monday.com board_id, status_col_id, and completed_group_id for the build-plan
+      board created for this project (pull these from earlier tool calls in this conversation if you
+      have them; otherwise use the values given to you directly).
+    - Include the full task manifest (item_id → task name) so each build step maps to a concrete
+      Monday.com item.
+    - Give the exact Monday.com GraphQL mutation (using the MONDAY_API_TOKEN env var as the
+      Authorization header) to mark a task item's status "Done" AND move it to the Completed Tasks
+      group — in that order.
+    - Instruct explicitly: "After you finish each build step above, immediately call the Monday.com
+      API to mark the matching item Done and move it to Completed Tasks — do not batch this until the
+      end of the build." This is how the team tracks real build progress without manually checking off
+      the board.
+
+Write it in second-person imperative ("Build...", "Create...", "Set up...").
+Be specific — include real field names, column types, endpoint paths, model IDs (claude-sonnet-4-6 for Claude), and example prompt templates.
+No vague placeholders. Before the final line, include the "## 📡 Progress Tracking — Sync Back to Monday.com" section described in point 13.
+End with: "Start by scaffolding the project and environment, build the core system first, then layer in the AI agents and workflows in order, marking each task Done on Monday.com as you go."`;
+
 // ── Tool declarations (Gemini format) ────────────────────────────────────────
 
 const TOOL_DECLARATIONS = [
@@ -199,37 +243,14 @@ const TOOL_DECLARATIONS = [
   },
   {
     name: "post_claude_code_prompt",
-    description: "Generate and post a ready-to-use Claude Code prompt as a Monday.com update on the scope lock item. This is the LAST step before advance_scope_stage. The prompt must be detailed enough that a developer can paste it into Claude Code and immediately start building the full application.",
+    description: "Generate and post a ready-to-use Claude Code prompt as a Monday.com update on the scope lock item. Call this as soon as you have the AI strategy and the build-plan board's board_id, status_col_id, and completed_group_id (from initialize_board_columns) and the task item_ids (from your create_task calls) — do not wait until the very end of the run. The prompt must be detailed enough that a developer can paste it into Claude Code and immediately start building the full application, AND it must let Claude Code report progress back to the exact Monday.com board it was built from.",
     parameters: {
       type: "OBJECT",
       properties: {
         scope_lock_item_id: { type: "STRING" },
         prompt: {
           type: "STRING",
-          description: `A complete Claude Code prompt covering:
-1. Project name and one-paragraph description
-2. Tech stack (framework, language, DB, hosting, auth)
-3. Exact directory/file structure to scaffold
-4. Environment variables required (name + purpose) — include AI API keys
-5. Data models / schema (tables, fields, types)
-6. API routes (method, path, what it does)
-7. UI pages/components (route, purpose, key interactions)
-8. Third-party integrations (how to connect each)
-9. AI agents architecture — for each agent from the AI strategy:
-   - File path where it lives (e.g. lib/agents/lead-enrichment.ts)
-   - Trigger: what event fires it (webhook, cron, Monday.com automation, user action)
-   - Step-by-step logic with real function names and API calls
-   - Which AI model is called, with the exact system prompt template and expected output schema
-   - How results are written back to Monday.com or the database (exact column IDs / API calls)
-   - Error handling and retry strategy
-   - Rate limiting and cost controls (max tokens, daily spend cap)
-10. AI workflow logic — for each intelligent workflow, the exact conditional decision tree as pseudo-code
-11. Ordered build steps — what to build first through last (core system before AI layer)
-12. Definition of done for the MVP (core system) and AI layer separately
-
-Write it in second-person imperative ("Build...", "Create...", "Set up...").
-Be specific — include real field names, column types, endpoint paths, model IDs (claude-sonnet-4-6 for Claude), and example prompt templates.
-No vague placeholders. End with: "Start by scaffolding the project and environment, build the core system first, then layer in the AI agents and workflows in order."`,
+          description: CLAUDE_CODE_PROMPT_SPEC,
         },
       },
       required: ["scope_lock_item_id", "prompt"],
@@ -237,7 +258,7 @@ No vague placeholders. End with: "Start by scaffolding the project and environme
   },
   {
     name: "post_ai_strategy",
-    description: "Generate and post an AI growth strategy document as an update on the scope lock item. Call this BEFORE post_plan_summary (step 12 in the sequence). Analyse the client's business, goals, and bottleneck from the scope lock to produce a specific, actionable AI roadmap — not generic advice.",
+    description: "Generate and post an AI growth strategy document as an update on the scope lock item. Call this BEFORE post_claude_code_prompt, since the Claude Code prompt's AI agent architecture section builds on this strategy. Analyse the client's business, goals, and bottleneck from the scope lock to produce a specific, actionable AI roadmap — not generic advice.",
     parameters: {
       type: "OBJECT",
       properties: {
@@ -561,6 +582,82 @@ async function callGemini(contents: GeminiContent[], systemText: string): Promis
   throw new Error("Gemini API unavailable after 8 attempts");
 }
 
+// ── Guaranteed-delivery Claude Code prompt fallback ──────────────────────────
+// The main agent loop calls post_claude_code_prompt as step 12 of 15 — a long
+// tool-calling sequence that can exhaust the turn budget before getting there.
+// This fallback runs unconditionally after the loop ends and only acts if the
+// tool was never actually invoked, so the scope lock item ALWAYS gets a
+// Claude Code prompt update regardless of how the main run went.
+
+type TaskManifestEntry = {
+  item_id: string;
+  task_name: string;
+  group_id: string;
+  category?: string;
+  priority?: string;
+};
+
+type InitColumns = {
+  status_col_id?: string;
+  date_col_id?: string;
+  notes_col_id?: string;
+  completed_group_id?: string;
+};
+
+async function generateFallbackClaudeCodePrompt(params: {
+  scopeLockItemId: string;
+  scopeLockSnapshot?: { name: string; columns: Record<string, string> };
+  boardId?: string;
+  initColumns?: InitColumns;
+  taskManifest: TaskManifestEntry[];
+}): Promise<void> {
+  const { scopeLockItemId, scopeLockSnapshot, boardId, initColumns, taskManifest } = params;
+
+  const manifestTable = taskManifest.length
+    ? "| Item ID | Task | Category | Priority |\n|---|---|---|---|\n" +
+      taskManifest.map(t => `| ${t.item_id} | ${t.task_name} | ${t.category || ""} | ${t.priority || ""} |`).join("\n")
+    : "(no task items were recorded this run — look up items on the board by name instead)";
+
+  const contextBlock = `SCOPE LOCK DATA (client: ${scopeLockSnapshot?.name || "Unknown"}):
+${JSON.stringify(scopeLockSnapshot?.columns || {}, null, 2)}
+
+MONDAY.COM BUILD PLAN BOARD:
+board_id: ${boardId || "unknown — board creation may not have completed, flag this in the prompt"}
+status_col_id: ${initColumns?.status_col_id || "unknown"}
+completed_group_id: ${initColumns?.completed_group_id || "unknown"}
+
+TASK MANIFEST (item_id → task):
+${manifestTable}`;
+
+  const system = `You generate a single, complete, developer-ready Claude Code prompt for The Startup's client builds, from the scope lock and board data given to you.
+
+${CLAUDE_CODE_PROMPT_SPEC}
+
+For point 13 (Progress Tracking), use the board_id, status_col_id, completed_group_id, and task manifest given to you verbatim in the user message — do not invent IDs.
+
+Output ONLY the prompt text itself, in second-person imperative, with no preamble, no meta-commentary, and no markdown fence wrapping the whole thing.`;
+
+  const body = JSON.stringify({
+    systemInstruction: { parts: [{ text: system }] },
+    contents: [{ role: "user", parts: [{ text: contextBlock }] }],
+    generationConfig: { temperature: 0.3 },
+  });
+
+  const res = await fetch(GEMINI_URL(), {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body,
+  });
+  if (!res.ok) throw new Error(`Gemini API error ${res.status}: ${await res.text()}`);
+
+  const data = await res.json();
+  const parts: GeminiPart[] = data.candidates?.[0]?.content?.parts || [];
+  const promptText = parts.map(p => ("text" in p ? p.text : "")).join("").trim();
+  if (!promptText) throw new Error("Fallback Gemini call returned no prompt text");
+
+  await postUpdate(scopeLockItemId, `## 🤖 Claude Code Prompt — Copy & Paste to Start Building\n\n${promptText}`);
+}
+
 // ── Date helpers ──────────────────────────────────────────────────────────────
 
 function addDays(base: Date, days: number): string {
@@ -576,6 +673,7 @@ export type AgentResult = {
   tasksCreated: number;
   summary: string;
   log: string[];
+  claudeCodePromptPosted: boolean;
 };
 
 export async function runMvpAgent(scopeLockItemId: string): Promise<AgentResult> {
@@ -646,10 +744,10 @@ REQUIRED SEQUENCE — follow this EXACTLY:
    - Add any SaaS tools mentioned in the scope
    - The client is responsible for ALL of these costs — they are NOT included in The Startup's fee
 10. Call post_monthly_estimate — sum ALL monthly costs from the budget items you added and post to the scope lock. This generates the sign-link snippet the admin needs so the client sees their monthly commitment before paying the deposit.
-11. Call mark_tracker_item_done for any matched Build Tracker items.
-12. Call post_ai_strategy — analyse the scope lock and generate a specific AI growth strategy for THIS business. Cover: which AI agents to build and exactly what they do, intelligent workflow designs with decision trees, predictive intelligence opportunities, recommended AI stack (specific models and APIs), Monday.com AI configuration, phase 2 AI backlog, and quantified expected business impact. Be specific to this client's goals and bottleneck — no generic advice.
+11. Call post_ai_strategy — analyse the scope lock and generate a specific AI growth strategy for THIS business. Cover: which AI agents to build and exactly what they do, intelligent workflow designs with decision trees, predictive intelligence opportunities, recommended AI stack (specific models and APIs), Monday.com AI configuration, phase 2 AI backlog, and quantified expected business impact. Be specific to this client's goals and bottleneck — no generic advice.
+12. Call post_claude_code_prompt IMMEDIATELY after post_ai_strategy — do not defer this. Generate a complete, developer-ready Claude Code prompt the client can copy and paste to start building. It must include: project description, exact tech stack, directory structure, environment variables, data models, API routes, UI pages, integrations, ordered build steps, MVP definition of done, AI agent architecture (for each AI agent identified in the AI strategy: what triggers it, what it does step by step, which AI model/API it calls with example request/response, how it writes back to Monday.com or the app, error handling), AI workflow decision trees in plain text, AI cost controls (rate limiting, token budgets, fallback behaviour), AND a "Progress Tracking — Sync Back to Monday.com" section that gives the build-plan board's board_id, status_col_id, completed_group_id (from step 5), the task item_ids you created in step 6, and the exact Monday.com GraphQL mutation to mark a task Done and move it to Completed Tasks using the MONDAY_API_TOKEN env var — so Claude Code can check tasks off the actual board as it builds them, not just build blind. Write it so a developer can paste it into Claude Code with zero extra context and start immediately.
 13. Call post_plan_summary with a markdown summary: client goal, requirements, MVP scope, post-MVP backlog, AI & growth agent roadmap, timeline overview, and a subscription cost summary from the budget board.
-14. Call post_claude_code_prompt — generate a complete, developer-ready Claude Code prompt the client can copy and paste to start building. It must include: project description, exact tech stack, directory structure, environment variables, data models, API routes, UI pages, integrations, ordered build steps, MVP definition of done, AND (11) AI agent architecture — for each AI agent identified in the AI strategy, describe what triggers it, what it does step by step, which AI model/API it calls (with example request/response), how it writes back to Monday.com or the app, and error handling; (12) AI workflow decision trees in plain text showing the conditional logic; (13) AI cost controls (rate limiting, token budgets, fallback behaviour). Write it so a developer can paste it into Claude Code with zero extra context and start immediately.
+14. Call mark_tracker_item_done for any matched Build Tracker items.
 15. Call advance_scope_stage to move the scope lock to "Planning".
 
 Cover all layers: auth, data model, API routes, UI pages, integrations, deployment, testing, documentation.`;
@@ -657,6 +755,10 @@ Cover all layers: auth, data model, API routes, UI pages, integrations, deployme
   const log: string[] = [];
   let tasksCreated = 0;
   let boardId: string | undefined;
+  let claudeCodePromptPosted = false;
+  let scopeLockSnapshot: { name: string; columns: Record<string, string> } | undefined;
+  let initColumns: InitColumns | undefined;
+  const taskManifest: TaskManifestEntry[] = [];
 
   const contents: GeminiContent[] = [
     {
@@ -665,7 +767,7 @@ Cover all layers: auth, data model, API routes, UI pages, integrations, deployme
     },
   ];
 
-  for (let turn = 0; turn < 60; turn++) {
+  for (let turn = 0; turn < 80; turn++) {
     const modelContent = await callGemini(contents, SYSTEM);
     contents.push(modelContent);
 
@@ -687,6 +789,21 @@ Cover all layers: auth, data model, API routes, UI pages, integrations, deployme
         if (functionCall.name === "create_project_board" && result && typeof result === "object")
           boardId = (result as { board_id: string }).board_id;
         if (functionCall.name === "create_task") tasksCreated++;
+        if (functionCall.name === "read_scope_lock" && result && typeof result === "object")
+          scopeLockSnapshot = result as { name: string; columns: Record<string, string> };
+        if (functionCall.name === "initialize_board_columns" && result && typeof result === "object")
+          initColumns = result as InitColumns;
+        if (functionCall.name === "create_task" && result && typeof result === "object") {
+          const r = result as { item_id: string; task: string; priority?: string; category?: string };
+          taskManifest.push({
+            item_id: r.item_id,
+            task_name: r.task,
+            group_id: functionCall.args.group_id,
+            category: r.category,
+            priority: r.priority,
+          });
+        }
+        if (functionCall.name === "post_claude_code_prompt") claudeCodePromptPosted = true;
         log.push(`  ✓ ${JSON.stringify(result).slice(0, 200)}`);
         const safeResult = Array.isArray(result) ? { items: result } : (result ?? {});
         responseParts.push({ functionResponse: { name: functionCall.name, response: safeResult } });
@@ -699,6 +816,22 @@ Cover all layers: auth, data model, API routes, UI pages, integrations, deployme
     contents.push({ role: "user", parts: responseParts });
   }
 
+  if (!claudeCodePromptPosted) {
+    try {
+      await generateFallbackClaudeCodePrompt({
+        scopeLockItemId,
+        scopeLockSnapshot,
+        boardId,
+        initColumns,
+        taskManifest,
+      });
+      claudeCodePromptPosted = true;
+      log.push("→ fallback: post_claude_code_prompt (guaranteed delivery — main run ended before reaching this step)");
+    } catch (err) {
+      log.push(`✗ fallback post_claude_code_prompt failed: ${String(err)}`);
+    }
+  }
+
   const summary = log.filter(l => !l.startsWith("→") && !l.startsWith("  ")).join("\n") || "MVP plan created.";
-  return { boardId, tasksCreated, summary, log };
+  return { boardId, tasksCreated, summary, log, claudeCodePromptPosted };
 }

@@ -1,6 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
+import { rateLimit } from "@/lib/rate-limit";
+import { SITE_URL } from "@/lib/site";
 
 export async function POST(req: NextRequest) {
+  const limited = rateLimit(req, "report", 5, 60_000);
+  if (limited) return limited;
+
   const b = await req.json().catch(() => null);
   if (!b) return NextResponse.json({ error: "Invalid body" }, { status: 400 });
 
@@ -35,7 +40,7 @@ Be concrete, non-generic, no flattery.`;
       method: "POST",
       headers: {
         "Authorization": `Bearer ${process.env.OPENROUTER_API_KEY || ""}`,
-        "HTTP-Referer": "https://the-start-up.app",
+        "HTTP-Referer": SITE_URL,
         "X-Title": "CRS Lead Gen AI Cascade Stack",
         "Content-Type": "application/json",
       },

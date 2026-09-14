@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { rateLimit } from "@/lib/rate-limit";
 import { PDFDocument, StandardFonts, PageSizes, rgb, PDFName, PDFString, PDFArray } from "pdf-lib";
 import { addFileToItem } from "@/lib/monday";
 
@@ -81,6 +82,9 @@ function wrapText(
 // ── Route ─────────────────────────────────────────────────────────────────────
 
 export async function POST(req: NextRequest) {
+  const limited = rateLimit(req, "proposal", 5, 60_000);
+  if (limited) return limited;
+
   const b = await req.json().catch(() => ({}));
 
   const currency = "USD";
@@ -90,7 +94,8 @@ export async function POST(req: NextRequest) {
   const wasPrice = pkg.wasUsd;
   const mondayItemId: string | undefined = b.mondayItemId;
 
-  const refNo = `SL-${Date.now().toString().slice(-8)}`;
+  // Reuse the Build Plan's ref so the proposal, signature, and /status all agree.
+  const refNo = (typeof b.refNo === "string" && b.refNo) || `SL-${Date.now().toString().slice(-8)}`;
   const today  = fmt(new Date());
   const expiry = fmt(new Date(Date.now() + 14 * 864e5));
 
@@ -98,7 +103,7 @@ export async function POST(req: NextRequest) {
   const host    = req.headers.get("host") || "the-start-up-eight.vercel.app";
   const proto   = host.startsWith("localhost") ? "http" : "https";
   const tierKey = pkg.isPromo ? "promo" : "premium";
-  const signUrl = `${proto}://${host}/sign?ref=${refNo}&t=${tierKey}&c=${currency}${mondayItemId ? `&item=${mondayItemId}` : ""}`;
+  const signUrl = `${proto}://${host}/sign?ref=${refNo}&t=${tierKey}&c=${currency}${mondayItemId ? `&item=${mondayItemId}` : ""}${b.email ? `&e=${encodeURIComponent(b.email)}` : ""}`;
 
   // ── Create PDF document ────────────────────────────────────────────────────
   // pdf-lib embedStandardFont uses WinAnsi name references — no file I/O.

@@ -1,10 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
+import { rateLimit } from "@/lib/rate-limit";
 
 export const runtime = "nodejs";
 
 const GEMINI_KEY = () => process.env.GOOGLE_AI_API_KEY || "";
 
 export async function POST(req: NextRequest) {
+  const limited = rateLimit(req, "fill-from-description", 5, 60_000);
+  if (limited) return limited;
+
   const { description } = await req.json().catch(() => ({}));
   if (!description?.trim()) return NextResponse.json({ error: "description is required" }, { status: 400 });
   if (!GEMINI_KEY()) return NextResponse.json({ error: "GOOGLE_AI_API_KEY not configured" }, { status: 500 });

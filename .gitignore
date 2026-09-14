@@ -20,3 +20,10 @@ The-Start-Up/
 .DS_Store
 *.pem
 npm-debug.log*
+
+# Claude Code personal settings (contains local machine paths)
+.claude/settings.local.json
+
+# build artifacts
+tsconfig.tsbuildinfo
+next-env.d.ts
