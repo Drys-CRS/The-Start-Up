@@ -15,7 +15,6 @@ export const metadata: Metadata = {
     "30-day app build",
     "business growth AI",
     "pipeline management",
-    "custom software South Africa",
     "business process automation",
     "AI agents for business",
   ],

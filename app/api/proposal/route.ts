@@ -43,7 +43,7 @@ const TIERS: Record<string, { label: string; usd: string; wasUsd: string; period
 };
 
 function fmt(d: Date) {
-  return d.toLocaleDateString("en-ZA", { day: "2-digit", month: "long", year: "numeric" });
+  return d.toLocaleDateString("en-US", { day: "2-digit", month: "long", year: "numeric" });
 }
 
 // Strip characters outside Latin-1 (WinAnsi). Must be called before drawText.
@@ -319,7 +319,7 @@ export async function POST(req: NextRequest) {
   if (cy < MIN_Y + 200) newPage();
   sectionTitle("Terms & Conditions");
   const tcs: [string, string][] = [
-    ["1. Scope & Agreement", "This document constitutes a binding service proposal between The Startup (service provider) and the client named herein. Scope is limited to what is described; changes require written amendment and may affect timeline and price."],
+    ["1. Scope & Agreement", "This document constitutes a binding service proposal between The Startup, a service of Cyber Retaliator Solutions LLC (service provider), and the client named herein. Scope is limited to what is described; changes require written amendment and may affect timeline and price."],
     ["2. 30-Day Build Guarantee", "We commit to delivering a working system within 30 calendar days of the confirmed build start. If we miss this for reasons attributable solely to us, the client receives an additional 30 days of support at no cost."],
     ["3. Payment Terms", "All tiers follow a three-stage schedule: 10% deposit on signature (secures your start date); 80% on MVP plan approval (client must review and approve before build continues); 10% final balance on delivery at end of the 30-day build. Invoices are due within 5 business days. Overdue payments may pause the build."],
     ["4. Ownership of Deliverables", "All custom configurations, automations, dashboards, and documentation become the client's property upon final payment. The Startup retains rights to its reusable internal frameworks and methodologies."],
@@ -329,7 +329,7 @@ export async function POST(req: NextRequest) {
     ["8. Cancellation Policy", "Before build start: full refund minus 10% scoping and admin fee. After build start: deposit is non-refundable; remaining work invoiced at a pro-rata day rate."],
     ["9. Limitation of Liability", "The Startup's total liability is limited to the fees paid under this agreement. We are not liable for indirect, consequential, or incidental losses."],
     ["10. Force Majeure", "Neither party is liable for delays caused by circumstances beyond reasonable control, including natural disasters, government actions, or infrastructure failure."],
-    ["11. Governing Law", "This agreement is governed by the laws of the Republic of South Africa. Disputes are subject to the exclusive jurisdiction of the South African courts."],
+    ["11. Governing Law", "This agreement is governed by the laws of the United States and of the state in which Cyber Retaliator Solutions LLC is organized, without regard to conflict-of-law rules. Disputes are subject to the courts located in that state."],
   ];
   tcs.forEach(([title, body]) => {
     const bodyLines = wrapText(body, (s) => fontR.widthOfTextAtSize(s, 7.5), CW);
@@ -344,7 +344,7 @@ export async function POST(req: NextRequest) {
   sectionTitle("Payment Methods");
   ([
     ["EFT / Bank Transfer",  "Details on invoice (Capitec / Standard Bank). Reference your proposal number."],
-    ["Credit / Debit Card",  "Secure payment link sent with invoice (Stripe or PayFast for South African clients)."],
+    ["Credit / Debit Card",  "Secure Stripe payment link sent with invoice."],
     ["PayPal / Wise",        "Available for international clients. USD pricing applies."],
     ["Cryptocurrency",       "BTC, ETH, or USDC accepted on request. Wallet details provided on confirmation."],
   ] as [string, string][]).forEach(([method, detail]) => {

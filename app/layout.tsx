@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import { Analytics } from "@vercel/analytics/next";
 import ThemeProvider from "@/components/ThemeProvider";
 import ThemeToggle from "@/components/ThemeToggle";
+import SiteFooter from "@/components/SiteFooter";
 import { SITE_URL as siteUrl } from "@/lib/site";
 
 export const metadata: Metadata = {
@@ -23,7 +24,6 @@ export const metadata: Metadata = {
     "30-day build",
     "business process automation",
     "pipeline management system",
-    "CRM setup South Africa",
     "business growth systems",
     "AI workflow automation",
   ],
@@ -77,6 +77,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body className="antialiased">
         <ThemeProvider>
           {children}
+          <SiteFooter />
           <ThemeToggle />
         </ThemeProvider>
         <Analytics />

@@ -147,7 +147,7 @@ export default function SignPage() {
           <div style={{ background: "var(--c-subtle)", borderRadius: 10, padding: "1rem 1.25rem", marginBottom: "1.5rem" }}>
             <Row label="Reference" value={ref || "—"} />
             <Row label="Signed by" value={name} />
-            <Row label="Date"      value={new Date().toLocaleDateString("en-ZA", { day: "2-digit", month: "long", year: "numeric" })} />
+            <Row label="Date"      value={new Date().toLocaleDateString("en-US", { day: "2-digit", month: "long", year: "numeric" })} />
             <Row label="Package"   value={TIER_LABEL[tier] ?? tier} last />
           </div>
 

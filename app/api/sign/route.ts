@@ -89,7 +89,7 @@ async function buildCertPDF(opts: {
   detailRow("REFERENCE NUMBER", ref || "—");
   detailRow("SIGNATORY NAME",   name);
   detailRow("SIGNED ON",
-    new Date(signedAt).toLocaleString("en-ZA", {
+    new Date(signedAt).toLocaleString("en-US", {
       day: "2-digit", month: "long", year: "numeric",
       hour: "2-digit", minute: "2-digit", timeZoneName: "short",
     }),
@@ -131,7 +131,7 @@ async function buildCertPDF(opts: {
 
   // ── Legal notice ────────────────────────────────────────────────────────────
   const legalLines = wordWrap(
-    "This digital signature is legally binding under the Electronic Communications and Transactions Act 25 of 2002 (Republic of South Africa). The timestamp and signatory data are recorded and stored securely. Modification of this certificate after signing invalidates the agreement.",
+    "This electronic signature is legally binding under the U.S. Electronic Signatures in Global and National Commerce Act (E-SIGN Act) and the Uniform Electronic Transactions Act (UETA). The timestamp and signatory data are recorded and stored securely. Modification of this certificate after signing invalidates the agreement.",
     s => fontR.widthOfTextAtSize(s, 7.5),
     CW,
   );
@@ -195,7 +195,7 @@ export async function POST(req: NextRequest) {
           record.itemId,
           Buffer.from(certBytes),
           `signature-cert-${refNo || Date.now()}.pdf`,
-          `Digital agreement signed by ${safeName} on ${new Date(signedAt).toLocaleString("en-ZA")}. Ref: ${refNo}`,
+          `Digital agreement signed by ${safeName} on ${new Date(signedAt).toLocaleString("en-US")}. Ref: ${refNo}`,
         )
       : Promise.resolve(),
     addUpdateToItem(
