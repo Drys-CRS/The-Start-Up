@@ -4,6 +4,7 @@ import { waitUntil } from "@vercel/functions";
 import { sendBuildPlanConfirmation, sendTeamAlert } from "@/lib/email";
 import { mondayBoardUrl, signUrl } from "@/lib/links";
 import { createItem, SCOPE, SCOPE_BOARD_ID, today } from "@/lib/monday";
+import { logActivity, recordScopeLock } from "@/lib/db";
 
 export async function POST(req: NextRequest) {
   const limited = rateLimit(req, "scope-lock", 5, 60_000);
@@ -32,6 +33,25 @@ export async function POST(req: NextRequest) {
   try {
     const id = await createItem(SCOPE_BOARD_ID, b.company || b.email, columnValues);
 
+    // Recorded before the email so the email log can attach itself to this deal.
+    const dealId = await recordScopeLock({
+      refNo,
+      email: b.email,
+      company: b.company,
+      contact: b.contact,
+      tier: b.tier || "Premium",
+      currency: b.currency || "USD",
+      goal: b.goal,
+      bottleneck: b.bottleneck,
+      workflow: b.workflow,
+      musthaves: b.musthaves,
+      integrations: b.integrations,
+      startDate: b.startDate || null,
+      stage: "New",
+      mondayItemId: id,
+      raw: b,
+    });
+
     // Email the signing link right away, so the deal survives a closed tab.
     const emailed = await sendBuildPlanConfirmation({
       to: b.email,
@@ -39,6 +59,24 @@ export async function POST(req: NextRequest) {
       ref: refNo,
       signUrl: signUrl({ ref: refNo, itemId: id, email: b.email, tierLabel: b.tier || "Premium" }),
     });
+    waitUntil(
+      (async () => {
+        if (!dealId) return;
+        await logActivity({
+          kind: "submitted",
+          scopeLockId: dealId,
+          actor: "customer",
+          body: `Submitted a Build Plan (${b.company || b.email})`,
+          data: { ref: refNo, tier: b.tier, startDate: b.startDate },
+        });
+        await logActivity({
+          kind: "emailed",
+          scopeLockId: dealId,
+          body: emailed ? "Confirmation email with signing link sent" : "Confirmation email FAILED to send",
+          data: { emailed },
+        });
+      })(),
+    );
     waitUntil(
       sendTeamAlert({
         subject: `New Build Plan: ${b.company || b.email}`,

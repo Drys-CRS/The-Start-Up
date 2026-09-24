@@ -5,6 +5,7 @@ import {
 } from "@/lib/monday";
 import { STOP } from "@/lib/follow-ups";
 import { rateLimit } from "@/lib/rate-limit";
+import { findScopeLock, logActivity, updateScopeLock } from "@/lib/db";
 
 export const runtime = "nodejs";
 
@@ -42,6 +43,18 @@ export async function POST(req: NextRequest) {
   } catch (err) {
     console.error("unsubscribe write failed", itemId, err);
     return NextResponse.json({ error: "Something went wrong — please try again." }, { status: 502 });
+  }
+  if (b === "scope") {
+    const deal = await findScopeLock({ mondayItemId: itemId });
+    if (deal?.id) {
+      await updateScopeLock(deal.id, { unsubscribedAt: new Date().toISOString() });
+      await logActivity({
+        kind: "unsubscribed",
+        scopeLockId: deal.id,
+        actor: "customer",
+        body: "Unsubscribed from reminder emails",
+      });
+    }
   }
   return NextResponse.json({ ok: true });
 }

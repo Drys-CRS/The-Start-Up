@@ -3,6 +3,7 @@ import { PDFDocument, StandardFonts, PageSizes, rgb } from "pdf-lib";
 import { SCOPE_BOARD_ID, addFileToItem, addUpdateToItem, changeItemStage, resolveScopeLock } from "@/lib/monday";
 import { rateLimit } from "@/lib/rate-limit";
 import { sendStatusEmail, sendTeamAlert } from "@/lib/email";
+import { findScopeLock, logActivity, updateScopeLock } from "@/lib/db";
 import { mondayBoardUrl } from "@/lib/links";
 
 export const runtime = "nodejs";
@@ -204,6 +205,19 @@ export async function POST(req: NextRequest) {
     ),
     changeItemStage(record.itemId, "Signed"),
   ]);
+
+  // Mirror the signature into Postgres for the portal timeline.
+  const deal = await findScopeLock({ mondayItemId: record.itemId, refNo });
+  if (deal?.id) {
+    await updateScopeLock(deal.id, { stage: "Signed", signedAt, signatureName: name });
+    await logActivity({
+      kind: "signed",
+      scopeLockId: deal.id,
+      actor: "customer",
+      body: `Agreement signed by ${name}`,
+      data: { ref: refNo },
+    });
+  }
 
   // Status email to the signer and a team alert — neither fails the sign response.
   await Promise.allSettled([

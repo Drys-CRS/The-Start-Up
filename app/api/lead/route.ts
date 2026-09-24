@@ -4,6 +4,7 @@ import { waitUntil } from "@vercel/functions";
 import { sendTeamAlert } from "@/lib/email";
 import { mondayBoardUrl } from "@/lib/links";
 import { createItem, LEADS, LEADS_BOARD_ID, today } from "@/lib/monday";
+import { logActivity, recordLead } from "@/lib/db";
 
 export async function POST(req: NextRequest) {
   const limited = rateLimit(req, "lead", 10, 60_000);
@@ -28,6 +29,36 @@ export async function POST(req: NextRequest) {
   };
   try {
     const id = await createItem(LEADS_BOARD_ID, b.company || b.email, columnValues);
+
+    // Mirror into Postgres for the admin portal, off the response path.
+    waitUntil(
+      (async () => {
+        const leadId = await recordLead({
+          kind: "calculator",
+          email: b.email,
+          company: b.company,
+          industry: b.industry,
+          currency: b.currency,
+          monthlyLeads: b.leads,
+          avgDealValue: b.deal,
+          closeRate: b.closeRate,
+          responseTime: b.responseTime,
+          annualLeak: b.annualLeak,
+          source: "Lead Leakage Calculator",
+          mondayItemId: id,
+          raw: b,
+        });
+        if (leadId) {
+          await logActivity({
+            kind: "submitted",
+            leadId,
+            actor: "customer",
+            body: `Ran the Lead Leakage Calculator (${b.company || b.email})`,
+            data: { annualLeak: b.annualLeak, industry: b.industry },
+          });
+        }
+      })(),
+    );
     waitUntil(
       sendTeamAlert({
         subject: `New calculator lead: ${b.company || b.email}`,

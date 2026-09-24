@@ -4,6 +4,7 @@ import { SCOPE_BOARD_ID, SCOPE, setSimpleColumn, addUpdateToItem, getScopeById }
 import { track } from "@vercel/analytics/server";
 import { sendStatusEmail, sendTeamAlert } from "@/lib/email";
 import { mondayBoardUrl } from "@/lib/links";
+import { findScopeLock, logActivity, recordPayment, updateScopeLock } from "@/lib/db";
 
 export const runtime = "nodejs";
 
@@ -39,6 +40,25 @@ export async function POST(req: NextRequest) {
           scopeLockId,
           `<strong>Monthly plan started</strong><br>Stripe session: ${session.id}`,
         );
+      }
+      const monthlyDeal = scopeLockId ? await findScopeLock({ mondayItemId: scopeLockId }) : null;
+      await recordPayment({
+        stripeSessionId: session.id,
+        kind: "monthly",
+        scopeLockId: monthlyDeal?.id || null,
+        mondayItemId: scopeLockId,
+        amountCents: session.amount_total ?? null,
+        currency: session.currency || "usd",
+        customerEmail: session.customer_details?.email || session.customer_email || null,
+      });
+      if (monthlyDeal?.id) {
+        await logActivity({
+          kind: "payment",
+          scopeLockId: monthlyDeal.id,
+          actor: "customer",
+          body: "Started the monthly support plan",
+          data: { session: session.id },
+        });
       }
       await Promise.allSettled([
         sendTeamAlert({
@@ -90,6 +110,33 @@ export async function POST(req: NextRequest) {
           `<strong>Payment received</strong><br>Stage: ${stageLabel}<br>Amount: ${amount}<br>Stripe session: ${session.id}`,
         );
         await sendStatusEmail({ to: customerEmail, stageLabel, ref });
+
+        // Portal record of the payment and the stage it moved the deal to.
+        const deal = await findScopeLock({ mondayItemId: scopeLockId, refNo: ref });
+        await recordPayment({
+          stripeSessionId: session.id,
+          kind: paymentType,
+          scopeLockId: deal?.id || null,
+          mondayItemId: scopeLockId,
+          amountCents: session.amount_total ?? null,
+          currency: session.currency || "usd",
+          customerEmail,
+          raw: { stage: stageLabel },
+        });
+        if (deal?.id) {
+          await updateScopeLock(deal.id, {
+            stage: stageLabel,
+            ...(paymentType === "deposit" ? { depositPaidAt: new Date().toISOString() } : {}),
+            ...(paymentType === "balance" ? { deliveredAt: new Date().toISOString() } : {}),
+          });
+          await logActivity({
+            kind: "payment",
+            scopeLockId: deal.id,
+            actor: "customer",
+            body: `Payment received (${amount}) — stage moved to ${stageLabel}`,
+            data: { paymentType, session: session.id },
+          });
+        }
         await Promise.allSettled([
           sendTeamAlert({
             subject: `Payment received: ${stageLabel} (${amount})`,

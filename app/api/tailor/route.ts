@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { rateLimit } from "@/lib/rate-limit";
 import { waitUntil } from "@vercel/functions";
 import { createItem, addUpdateToItem, LEADS, LEADS_BOARD_ID, today } from "@/lib/monday";
+import { logActivity, recordLead } from "@/lib/db";
 
 export const runtime = "nodejs";
 
@@ -216,6 +217,23 @@ async function captureLead(desc: string, tailored: any): Promise<void> {
       [LEADS.stage]: { label: "New Lead" },
     });
     await addUpdateToItem(itemId, formatUpdate(desc, tailored));
+
+    const leadId = await recordLead({
+      kind: "tailor",
+      company: name,
+      industry: tailored?.sector || "Other",
+      source: "Homepage — Business Tailor",
+      mondayItemId: itemId,
+      raw: { description: desc, tailored },
+    });
+    if (leadId) {
+      await logActivity({
+        kind: "submitted",
+        leadId,
+        actor: "customer",
+        body: `Described their business on the homepage: ${desc.slice(0, 120)}`,
+      });
+    }
   } catch {
     // swallow — lead capture must never affect the visitor experience
   }

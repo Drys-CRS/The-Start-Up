@@ -1,6 +1,7 @@
 import { Resend } from "resend";
 import { stageMeta } from "./status";
 import { statusUrl } from "./links";
+import { findScopeLock, logEmail } from "./db";
 
 // Resend is optional: if RESEND_API_KEY is unset (local/dev), every send is a
 // silent no-op so email is never a hard dependency of the sign/payment path.
@@ -47,26 +48,80 @@ const paragraph = (text: string) =>
 const button = (label: string, url: string) =>
   `<a href="${escapeHtml(url)}" style="display:inline-block;background:${TEAL};color:#fff;text-decoration:none;font-weight:700;font-size:14px;padding:11px 22px;border-radius:8px;">${escapeHtml(label)} →</a>`;
 
-// Resend reports API failures in its result rather than throwing, so both paths are
-// checked. Never throws; returns true only when Resend accepted the email.
-async function send(payload: {
+// ── Send + log ───────────────────────────────────────────────────────────────
+
+type SendPayload = {
   to: string;
   subject: string;
   html: string;
   replyTo?: string;
   headers?: Record<string, string>;
-}): Promise<boolean> {
+  // Logged alongside the message so the admin portal can group and thread it.
+  template?: string;
+  ref?: string | null;
+  leadId?: string | null;
+};
+
+// Resend reports API failures in its result rather than throwing, so both paths are
+// checked. Never throws; returns true only when Resend accepted the email.
+//
+// Every attempt is written to the email log, successes and failures alike: a
+// confirmation email that never sent is exactly what the portal needs to surface.
+async function send(payload: SendPayload): Promise<boolean> {
+  const { template, ref, leadId, ...email } = payload;
   if (!resend || !payload.to) return false;
+
+  let providerId: string | null = null;
+  let errorText: string | null = null;
   try {
-    const { error } = await resend.emails.send({ from: FROM, ...payload });
+    const { data, error } = await resend.emails.send({ from: FROM, ...email });
     if (error) {
-      console.error("Resend rejected email", payload.subject, error);
-      return false;
+      console.error("Resend rejected email", email.subject, error);
+      errorText = JSON.stringify(error);
+    } else {
+      providerId = data?.id || null;
     }
-    return true;
   } catch (e) {
-    console.error("Email send failed", payload.subject, e);
-    return false;
+    console.error("Email send failed", email.subject, e);
+    errorText = String(e);
+  }
+
+  await logOutbound({ email, template, ref, leadId, providerId, errorText });
+  return !errorText;
+}
+
+async function logOutbound(o: {
+  email: { to: string; subject: string; html: string };
+  template?: string;
+  ref?: string | null;
+  leadId?: string | null;
+  providerId: string | null;
+  errorText: string | null;
+}): Promise<void> {
+  try {
+    // The ref is the identifier every customer-facing email already carries, so the
+    // log can attach itself to the right deal without callers passing ids around.
+    let scopeLockId: string | null = null;
+    if (o.ref) {
+      const deal = await findScopeLock({ refNo: o.ref });
+      scopeLockId = deal?.id || null;
+    }
+    await logEmail({
+      direction: "outbound",
+      provider: "resend",
+      providerId: o.providerId,
+      fromAddress: FROM,
+      to: [o.email.to],
+      subject: o.email.subject,
+      template: o.template || null,
+      bodyHtml: o.email.html,
+      status: o.errorText ? "failed" : "sent",
+      scopeLockId,
+      leadId: o.leadId || null,
+      raw: o.errorText ? { error: o.errorText } : null,
+    });
+  } catch {
+    // logging must never affect delivery
   }
 }
 
@@ -95,7 +150,13 @@ export async function sendStatusEmail(opts: {
     button("Track your build status", statusUrl(ref)) +
     (ref ? `<p style="margin:18px 0 0;font-size:12px;color:${LIGHT};">Reference: ${escapeHtml(ref)}</p>` : "");
 
-  return send({ to, subject: `Your build update: ${m.title}`, html: shell(body) });
+  return send({
+    to,
+    subject: `Your build update: ${m.title}`,
+    html: shell(body),
+    template: `status:${stageLabel}`,
+    ref,
+  });
 }
 
 // ── Customer: Build Plan confirmation ────────────────────────────────────────
@@ -122,6 +183,8 @@ export async function sendBuildPlanConfirmation(opts: {
     subject: "Your Build Plan is in — next step: sign",
     html: shell(body),
     replyTo: TEAM_TO || undefined,
+    template: "build_plan_confirmation",
+    ref: opts.ref,
   });
 }
 
@@ -135,6 +198,9 @@ export async function sendFollowUp(opts: {
   cta: string;
   ctaUrl: string;
   unsubscribeUrl: string;
+  template?: string;
+  ref?: string | null;
+  leadId?: string | null;
 }): Promise<boolean> {
   const body = heading(opts.heading) + opts.paragraphs.map(paragraph).join("") + button(opts.cta, opts.ctaUrl);
   const footer =
@@ -147,6 +213,9 @@ export async function sendFollowUp(opts: {
     html: shell(body, footer),
     replyTo: TEAM_TO || undefined,
     headers: { "List-Unsubscribe": `<${opts.unsubscribeUrl}>` },
+    template: opts.template || "follow_up",
+    ref: opts.ref || null,
+    leadId: opts.leadId || null,
   });
 }
 
@@ -161,6 +230,7 @@ export async function sendTeamAlert(opts: {
   heading: string;
   rows: [string, AlertValue][];
   link?: { label: string; url: string };
+  ref?: string | null;
 }): Promise<boolean> {
   if (!TEAM_TO) return false;
   const rows = opts.rows
@@ -177,7 +247,13 @@ export async function sendTeamAlert(opts: {
     `<table style="border-collapse:collapse;margin:0 0 20px;">${rows}</table>` +
     (opts.link ? button(opts.link.label, opts.link.url) : "");
 
-  return send({ to: TEAM_TO, subject: opts.subject, html: shell(body) });
+  return send({
+    to: TEAM_TO,
+    subject: opts.subject,
+    html: shell(body),
+    template: "team_alert",
+    ref: opts.ref || null,
+  });
 }
 
 // Notify the internal team that a customer requested an update. Best-effort.
@@ -189,6 +265,7 @@ export async function sendTeamUpdateRequest(opts: {
   return sendTeamAlert({
     subject: `Update requested — ${opts.ref}`,
     heading: "A customer requested an update",
+    ref: opts.ref,
     rows: [
       ["Reference", opts.ref],
       ["Email", opts.email],

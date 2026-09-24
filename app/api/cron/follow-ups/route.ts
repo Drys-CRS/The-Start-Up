@@ -6,6 +6,7 @@ import {
 import { sendFollowUp } from "@/lib/email";
 import { copyFor, dueStep, formatState, type Sequence } from "@/lib/follow-ups";
 import { buildPlanUrl, payUrl, signUrl, unsubscribeUrl, type FollowUpBoard } from "@/lib/links";
+import { findScopeLock, logActivity } from "@/lib/db";
 
 export const runtime = "nodejs";
 export const maxDuration = 300;
@@ -26,6 +27,7 @@ type Job = {
   sequence: Sequence;
   step: number;
   ctaUrl: string;
+  ref: string | null;
   ctx: { company?: string; leak?: string };
 };
 
@@ -85,7 +87,9 @@ export async function GET(req: NextRequest) {
     if (step === null) continue;
     jobs.push({
       board: "scope", boardId: SCOPE_BOARD_ID, stateCol: SCOPE.followups,
-      item, email, sequence, step, ctaUrl, ctx: { company: item.name },
+      item, email, sequence, step, ctaUrl,
+      ref: item.texts[SCOPE.ref] || null,
+      ctx: { company: item.name },
     });
   }
 
@@ -102,6 +106,7 @@ export async function GET(req: NextRequest) {
     jobs.push({
       board: "leads", boardId: LEADS_BOARD_ID, stateCol: LEADS.followups,
       item, email, sequence: "lead_no_plan", step, ctaUrl: buildPlanUrl(),
+      ref: null,
       ctx: { leak: money(item.texts[LEADS.leak] || "", item.texts[LEADS.currency] || "") },
     });
   }
@@ -116,6 +121,8 @@ export async function GET(req: NextRequest) {
       ...copy,
       ctaUrl: job.ctaUrl,
       unsubscribeUrl: unsubscribeUrl({ board: job.board, itemId: job.item.id, email: job.email }),
+      template: `follow_up:${job.sequence}:${job.step + 1}`,
+      ref: job.ref,
     });
     if (!ok) {
       failed.push(label);
@@ -131,6 +138,13 @@ export async function GET(req: NextRequest) {
       job.item.id,
       `<strong>Automated follow-up sent</strong><br>${job.sequence}, step ${job.step + 1}: ${copy.subject}`,
     );
+    const deal = job.ref ? await findScopeLock({ refNo: job.ref }) : null;
+    await logActivity({
+      kind: "follow_up",
+      scopeLockId: deal?.id || null,
+      body: `Follow-up sent: ${copy.subject}`,
+      data: { sequence: job.sequence, step: job.step + 1, to: job.email },
+    });
     sent.push(label);
   }
 

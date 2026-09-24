@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { rateLimit } from "@/lib/rate-limit";
 import { getScopeStatus, addUpdateToItem } from "@/lib/monday";
 import { sendTeamUpdateRequest } from "@/lib/email";
+import { findScopeLock, logActivity } from "@/lib/db";
 
 export const runtime = "nodejs";
 
@@ -42,6 +43,15 @@ export async function POST(req: NextRequest) {
     record.itemId,
     `<strong>Customer requested an update</strong><br>From: ${email}<br>Ref: ${record.ref || ref}<br><br>${safe}`,
   );
+  const deal = await findScopeLock({ refNo: record.ref || ref.trim() });
+  await logActivity({
+    kind: "update_request",
+    scopeLockId: deal?.id || null,
+    actor: "customer",
+    body: `Customer requested an update: ${msg.slice(0, 160)}`,
+    data: { email: email.trim() },
+  });
+
   // Best-effort team notification; never blocks the response on email.
   await sendTeamUpdateRequest({ ref: record.ref || ref.trim(), email: email.trim(), message: msg });
 
