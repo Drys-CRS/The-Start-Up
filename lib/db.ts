@@ -288,18 +288,28 @@ export async function logEmail(input: EmailInput): Promise<string | null> {
   }
 }
 
+export type UpdatedEmail = {
+  id: string;
+  scope_lock_id: string | null;
+  lead_id: string | null;
+  subject: string | null;
+  to_addresses: string[] | null;
+};
+
 // Delivery outcome from a Resend webhook (delivered, bounced, complained, opened…).
+// Returns the affected row so the caller can, for example, record a bounce on the
+// deal's timeline. Null when no matching message is stored.
 export async function updateEmailStatus(opts: {
   provider?: "resend" | "graph";
   providerId: string;
   status: string;
   statusAt?: string;
   raw?: unknown;
-}): Promise<boolean> {
+}): Promise<UpdatedEmail | null> {
   const client = db();
-  if (!client || !opts.providerId) return false;
+  if (!client || !opts.providerId) return null;
   try {
-    const { error } = await client
+    const { data, error } = await client
       .from("emails")
       .update({
         status: opts.status,
@@ -307,11 +317,13 @@ export async function updateEmailStatus(opts: {
         raw: opts.raw ?? undefined,
       })
       .eq("provider", opts.provider || "resend")
-      .eq("provider_id", opts.providerId);
-    if (error) return !fail("updateEmailStatus", error);
-    return true;
+      .eq("provider_id", opts.providerId)
+      .select("id, scope_lock_id, lead_id, subject, to_addresses")
+      .maybeSingle();
+    if (error) return fail("updateEmailStatus", error);
+    return (data as any) || null;
   } catch (e) {
-    return !fail("updateEmailStatus", e);
+    return fail("updateEmailStatus", e);
   }
 }
 
@@ -328,6 +340,97 @@ export type PaymentInput = {
   customerEmail?: string | null;
   raw?: unknown;
 };
+
+// ── Matching inbound mail to people ─────────────────────────────────────────
+
+// Most recent deal for an email address. Used to attach a mailbox conversation to
+// the right Scope Lock when the subject carries no reference number.
+export async function findScopeLockByEmail(email: string): Promise<{ id: string; ref_no: string } | null> {
+  const client = db();
+  const address = (email || "").trim().toLowerCase();
+  if (!client || !address) return null;
+  try {
+    const { data, error } = await client
+      .from("scope_locks")
+      .select("id, ref_no")
+      .ilike("email", address)
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+    if (error) return fail("findScopeLockByEmail", error);
+    return (data as any) || null;
+  } catch (e) {
+    return fail("findScopeLockByEmail", e);
+  }
+}
+
+// Same idea for someone who only ever ran the calculator.
+export async function findLeadByEmail(email: string): Promise<{ id: string } | null> {
+  const client = db();
+  const address = (email || "").trim().toLowerCase();
+  if (!client || !address) return null;
+  try {
+    const { data, error } = await client
+      .from("leads")
+      .select("id")
+      .ilike("email", address)
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+    if (error) return fail("findLeadByEmail", error);
+    return (data as any) || null;
+  } catch (e) {
+    return fail("findLeadByEmail", e);
+  }
+}
+
+// Already stored? Lets the mailbox sync skip messages it has seen, so re-running it
+// costs nothing and can't duplicate timeline entries.
+export async function emailExists(provider: string, providerId: string): Promise<boolean> {
+  const client = db();
+  if (!client || !providerId) return false;
+  try {
+    const { data } = await client
+      .from("emails")
+      .select("id")
+      .eq("provider", provider)
+      .eq("provider_id", providerId)
+      .limit(1)
+      .maybeSingle();
+    return !!(data as any)?.id;
+  } catch {
+    return false;
+  }
+}
+
+// ── Mailbox sync state (Microsoft Graph delta links) ────────────────────────
+
+export async function getMailSyncState(folder: string): Promise<{ delta_link: string | null } | null> {
+  const client = db();
+  if (!client) return null;
+  try {
+    const { data, error } = await client.from("mail_sync_state").select("delta_link").eq("id", folder).maybeSingle();
+    if (error) return fail("getMailSyncState", error);
+    return (data as any) || null;
+  } catch (e) {
+    return fail("getMailSyncState", e);
+  }
+}
+
+export async function setMailSyncState(folder: string, deltaLink: string | null): Promise<boolean> {
+  const client = db();
+  if (!client) return false;
+  try {
+    const { error } = await client.from("mail_sync_state").upsert(
+      { id: folder, delta_link: deltaLink, last_synced_at: new Date().toISOString(), updated_at: new Date().toISOString() },
+      { onConflict: "id" },
+    );
+    if (error) return !fail("setMailSyncState", error);
+    return true;
+  } catch (e) {
+    return !fail("setMailSyncState", e);
+  }
+}
 
 // ── Backfill (admin, one-off) ───────────────────────────────────────────────
 

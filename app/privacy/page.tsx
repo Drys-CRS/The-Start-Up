@@ -43,7 +43,9 @@ export default function PrivacyPage() {
             payment succeeded. We never receive or store your full card details.
           </li>
           <li>
-            <strong>Messages:</strong> anything you send us, including update requests from the status page.
+            <strong>Messages:</strong> anything you send us, including update requests from the status page and
+            email you send to our support address. We keep a copy of our email correspondence with you, so the
+            team can see the full history of your project in one place.
           </li>
         </ul>
       </LegalSection>
@@ -82,8 +84,10 @@ export default function PrivacyPage() {
         <ul>
           <li><strong>Vercel</strong> for hosting and analytics.</li>
           <li><strong>monday.com</strong> for storing leads and project records.</li>
+          <li><strong>Supabase</strong> for our own database of submissions, project history and correspondence.</li>
           <li><strong>Stripe</strong> for payments.</li>
           <li><strong>Resend</strong> for sending email.</li>
+          <li><strong>Microsoft 365</strong> for our support mailbox.</li>
           <li>
             <strong>AI model providers</strong> (currently OpenRouter, Google, and Anthropic through Vercel’s AI
             Gateway), which process the text you submit to generate reports, tailored content, and Build Plan
