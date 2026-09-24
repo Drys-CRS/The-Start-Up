@@ -162,15 +162,51 @@ export async function sendAsSupport(opts: {
   });
 }
 
+// Non-secret claims from the access token. The roles claim is the quickest way to
+// tell a permissions mistake (granted as Delegated, so no roles at all) apart from an
+// Exchange-side refusal (roles present, but the mailbox is out of policy scope).
+function tokenClaims(jwt: string): { appId?: string; tenant?: string; roles?: string[] } {
+  try {
+    const payload = JSON.parse(Buffer.from(jwt.split(".")[1], "base64").toString("utf8"));
+    return { appId: payload.appid || payload.azp, tenant: payload.tid, roles: payload.roles || [] };
+  } catch {
+    return {};
+  }
+}
+
 // Cheap credential check used by the portal and the sync route.
-export async function graphHealth(): Promise<{ ok: boolean; mailbox: string; error?: string }> {
-  if (!graphConfigured()) return { ok: false, mailbox: SUPPORT_MAILBOX, error: "MS_TENANT_ID / MS_CLIENT_ID / MS_CLIENT_SECRET not set" };
+export async function graphHealth(): Promise<{
+  ok: boolean;
+  mailbox: string;
+  token?: { appId?: string; tenant?: string; roles?: string[] };
+  diagnosis?: string;
+  error?: string;
+}> {
+  if (!graphConfigured()) {
+    return { ok: false, mailbox: SUPPORT_MAILBOX, error: "MS_TENANT_ID / MS_CLIENT_ID / MS_CLIENT_SECRET not set" };
+  }
+
+  let claims: { appId?: string; tenant?: string; roles?: string[] } = {};
+  try {
+    claims = tokenClaims(await accessToken());
+  } catch (e) {
+    return { ok: false, mailbox: SUPPORT_MAILBOX, error: `Could not get a token: ${String(e).slice(0, 300)}` };
+  }
+
   try {
     await graphFetch(
       `https://graph.microsoft.com/v1.0/users/${encodeURIComponent(SUPPORT_MAILBOX)}/mailFolders/inbox?$select=id,totalItemCount`,
     );
-    return { ok: true, mailbox: SUPPORT_MAILBOX };
+    return { ok: true, mailbox: SUPPORT_MAILBOX, token: claims };
   } catch (e) {
-    return { ok: false, mailbox: SUPPORT_MAILBOX, error: String(e).slice(0, 300) };
+    const error = String(e).slice(0, 300);
+    const roles = claims.roles || [];
+    const hasMailRead = roles.some(r => r === "Mail.Read" || r === "Mail.ReadWrite");
+    const diagnosis = !roles.length
+      ? "The token carries no application roles. The permissions were most likely added as Delegated rather than Application, or admin consent hasn't been granted."
+      : !hasMailRead
+        ? `The token has roles [${roles.join(", ")}] but not Mail.Read. Add Mail.Read as an Application permission and grant admin consent.`
+        : "Mail.Read is present, so this is an Exchange-side refusal: the Application Access Policy either doesn't include this mailbox, or hasn't propagated yet (it can take over an hour). Verify with Test-ApplicationAccessPolicy.";
+    return { ok: false, mailbox: SUPPORT_MAILBOX, token: claims, diagnosis, error };
   }
 }
