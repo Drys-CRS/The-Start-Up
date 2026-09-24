@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getDeal, portalConfigured } from "@/lib/portal";
+import DealActions from "./DealActions";
 import { mondayBoardUrl } from "@/lib/links";
 import { SCOPE_BOARD_ID } from "@/lib/monday";
 import {
@@ -61,6 +62,8 @@ export default async function AdminDeal({ params }: { params: { ref: string } })
         <Fact label="Paid to date" value={payments.length ? money(paidCents) : "—"} />
         <Fact label="Target start" value={deal.start_date ? day(deal.start_date) : "—"} />
       </div>
+
+      <DealActions refNo={deal.ref_no} stage={deal.stage} email={deal.email} />
 
       <Section title="Their answers">
         <div className="space-y-4 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-4">

@@ -403,6 +403,30 @@ export async function emailExists(provider: string, providerId: string): Promise
   }
 }
 
+// The most recent message we hold from the mailbox for a deal. Replying to its Graph
+// id keeps the portal's reply in the same Outlook conversation.
+export async function latestMailboxMessage(
+  scopeLockId: string,
+): Promise<{ provider_id: string | null; subject: string | null } | null> {
+  const client = db();
+  if (!client || !scopeLockId) return null;
+  try {
+    const { data, error } = await client
+      .from("emails")
+      .select("provider_id, subject")
+      .eq("scope_lock_id", scopeLockId)
+      .eq("provider", "graph")
+      .eq("direction", "inbound")
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+    if (error) return fail("latestMailboxMessage", error);
+    return (data as any) || null;
+  } catch (e) {
+    return fail("latestMailboxMessage", e);
+  }
+}
+
 // ── Mailbox sync state (Microsoft Graph delta links) ────────────────────────
 
 export async function getMailSyncState(folder: string): Promise<{ delta_link: string | null } | null> {
