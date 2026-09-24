@@ -81,7 +81,7 @@ const jsonLd = {
           priceCurrency: "USD",
           availability: "https://schema.org/LimitedAvailability",
           description:
-            "50% off special (was $3,000, ends 30 Sep 2026). One flat build fee — 30-day build with 60 days of free support. Keep it running afterward with an optional $150/month retainer, plus third-party tools and subscriptions billed at cost.",
+            "50% off special (was $3,000, ends 31 Oct 2026). One flat build fee — 30-day build with 60 days of free support. Keep it running afterward with an optional $150/month retainer, plus third-party tools and subscriptions billed at cost.",
         },
       ],
     },

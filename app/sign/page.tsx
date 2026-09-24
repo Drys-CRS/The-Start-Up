@@ -15,7 +15,7 @@ const TIER_LABEL: Record<string, string> = {
 };
 
 // Payment structure: 10% deposit now → 80% on MVP plan approval → 10% on delivery
-// 50% off special (ends 30 Sep 2026) — "was" reflects the full-price total.
+// 50% off special (ends 31 Oct 2026) — "was" reflects the full-price total.
 const AMOUNTS: Record<string, { total: string; was: string; deposit: string; mvp: string; balance: string }> = {
   promo:   { total: "$1,500", was: "$3,000", deposit: "$150", mvp: "$1,200", balance: "$150" },
   premium: { total: "$2,500", was: "$5,000", deposit: "$250", mvp: "$2,000", balance: "$250" },

@@ -24,7 +24,7 @@ const BORDER = c("#e2e8f0");
 const WHITE  = rgb(1, 1, 1);
 
 // ── Tier data ─────────────────────────────────────────────────────────────────
-// 50% off special (ends 30 Sep 2026) — wasUsd holds the full-price reference.
+// 50% off special (ends 31 Oct 2026) — wasUsd holds the full-price reference.
 const TIERS: Record<string, { label: string; usd: string; wasUsd: string; period: string; isPromo: boolean }> = {
   "PROMOTIONAL (Base + Free 2 Months)": {
     label: "Promotional - 50% Off Special",

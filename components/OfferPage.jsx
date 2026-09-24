@@ -27,7 +27,7 @@ const staggerItem = (i) => ({
   transition: { duration: 0.4, delay: i * 0.08, ease: "easeOut" },
 });
 
-const OFFER_DEADLINE = "30 Sep 2026";
+const OFFER_DEADLINE = "31 Oct 2026";
 
 const TIERS = {
   sym: "$",
@@ -575,7 +575,7 @@ export default function OfferPage() {
                   </p>
                 </div>
                 <p className="mt-3 text-xs text-slate-500 max-w-md">
-                  50% off for a small cohort of case-study partners. Once the September window closes, price returns to full rate.
+                  50% off for a small cohort of case-study partners. Once the October window closes, price returns to full rate.
                 </p>
               </div>
               <div className="flex-none w-full sm:w-auto">

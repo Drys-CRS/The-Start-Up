@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { ArrowRight, Check, Download, FileText, Globe, Loader2, PenLine, ShieldCheck, Sparkles, X } from "lucide-react";
 import WordMark from "./WordMark";
 
-const OFFER_DEADLINE = "30 Sep 2026";
+const OFFER_DEADLINE = "31 Oct 2026";
 
 const TIERS = [
   {

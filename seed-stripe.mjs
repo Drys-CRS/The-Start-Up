@@ -16,7 +16,7 @@ if (key.startsWith("sk_test_")) { console.error("Key is test mode — expected s
 const stripe = new Stripe(key, { apiVersion: "2026-05-27.dahlia" });
 
 // ── Totals ─────────────────────────────────────────────────────────────────────
-// 50% off special (ends 30 Sep 2026). Full-price reference: promo $3,000/R60,000, premium $5,000/R100,000.
+// 50% off special (ends 31 Oct 2026). Full-price reference: promo $3,000/R60,000, premium $5,000/R100,000.
 const TOTALS = {
   promo:   { usd: 150000,   zar: 3000000   },   // $1,500 / R30,000
   premium: { usd: 250000,   zar: 5000000  },   // $2,500 / R50,000
@@ -35,13 +35,13 @@ async function run() {
   const [promo, premium] = await Promise.all([
     stripe.products.create({
       name: "The Start Up — Promotional Build",
-      description: "30-day custom build + 60 days support. 50% off special — ends 30 Sep 2026 (was $3,000 / R60,000).",
+      description: "30-day custom build + 60 days support. 50% off special — ends 31 Oct 2026 (was $3,000 / R60,000).",
       type: "service",
-      metadata: { tier: "promo", build_days: "30", support_days: "60", promo_ends: "2026-09-30", discount_pct: "50", was_usd: "3000", was_zar: "60000" },
+      metadata: { tier: "promo", build_days: "30", support_days: "60", promo_ends: "2026-10-31", discount_pct: "50", was_usd: "3000", was_zar: "60000" },
     }),
     stripe.products.create({
       name: "The Start Up — Premium Build",
-      description: "30-day custom build + support through day 120. 50% off special — ends 30 Sep 2026 (was $5,000 / R100,000).",
+      description: "30-day custom build + support through day 120. 50% off special — ends 31 Oct 2026 (was $5,000 / R100,000).",
       type: "service",
       metadata: { tier: "premium", build_days: "30", total_days: "120", discount_pct: "50", was_usd: "5000", was_zar: "100000" },
     }),

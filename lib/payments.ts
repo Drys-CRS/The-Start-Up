@@ -1,7 +1,7 @@
 import { tierKey } from "./links";
 
 // Payment structure: 10% deposit → 80% MVP approval → 10% final balance.
-// 50% off special (ends 30 Sep 2026). Regenerated via seed-stripe.mjs equivalent
+// 50% off special (ends 31 Oct 2026). Regenerated via seed-stripe.mjs equivalent
 // against Stripe account acct_1Tlz1sDdDUCT3Na5 (Cyber Retaliator Solutions LLC).
 export const PAYMENT_LINKS: Record<string, string> = {
   // ── Promotional — 50% off ($1,500, was $3,000) ──────────────────────────
