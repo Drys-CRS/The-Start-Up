@@ -10,5 +10,7 @@ screenshot never shows a broken image.
   scorecard.png         The per-person scorecard panel
   tender-fit.png        A tender assessment with its source documents
 
-Crop out real staff names, customer names and email addresses before saving.
+The case study is anonymous, so crop or blur anything identifying before
+saving: the client's name and logo, the product name, staff names, customer
+names and email addresses.
 Roughly 1600px wide is plenty.

@@ -6,7 +6,7 @@ import SiteFooter from "@/components/SiteFooter";
 import Screenshot from "@/components/Screenshot";
 
 export const metadata: Metadata = {
-  title: "Case study: the account manager portal behind Retaliator Nation",
+  title: "Case study: a sales portal for a cyber security reseller",
   description:
     "A sales portal built for a cyber security reseller: account managers work their book in one place, managers see the whole team on one page, and nobody edits anyone else's numbers.",
   alternates: { canonical: "/case-study/am-portal" },
@@ -15,11 +15,16 @@ export const metadata: Metadata = {
 // The one real system we can show in full. Written for prospects deciding
 // whether a 30-day build produces something their team would actually use, so
 // it stays concrete: module names, access rules, and the trade-offs, not
-// adjectives. Staff names from the source repo are deliberately left out.
+// adjectives.
+//
+// The client is anonymous here: no company name, no product name, no staff
+// names. What makes the page convincing is the detail of the build, not whose
+// logo is on it, and naming a client is theirs to agree to, not ours to assume.
+// Screenshots have to be cropped to match before they go in.
 
 const FACTS = [
-  ["Client", "Cyber Retaliator Solutions"],
-  ["What it is", "An internal sales portal, called the AM portal, for a cyber security reseller"],
+  ["Client", "A cyber security reseller and managed service provider, named on request"],
+  ["What it is", "An internal sales portal for their account managers"],
   ["Who uses it", "Account managers, their managers, and leadership"],
   ["Built on", "Next.js, Postgres, Microsoft 365, Monday.com, vendor APIs"],
 ];
@@ -121,7 +126,7 @@ export default function AmPortalCaseStudy() {
             Case study
           </p>
           <h1 className="mt-3 text-3xl font-semibold leading-tight tracking-tight text-slate-900 dark:text-white sm:text-4xl">
-            The account manager portal behind Retaliator Nation
+            The sales portal we built for a cyber security reseller
           </h1>
           <p className="mt-5 text-lg leading-relaxed text-slate-600 dark:text-slate-400">
             A cyber security reseller with a sales team, a CRM, and a pipeline nobody trusted. We built the layer
