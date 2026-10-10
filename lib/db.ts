@@ -427,6 +427,71 @@ export async function latestMailboxMessage(
   }
 }
 
+// ── Customer portal ─────────────────────────────────────────────────────────
+
+export type CustomerBundle = {
+  deal: {
+    id: string;
+    ref_no: string;
+    company: string | null;
+    contact: string | null;
+    tier: string | null;
+    created_at: string;
+    signed_at: string | null;
+    signature_name: string | null;
+    deposit_paid_at: string | null;
+    delivered_at: string | null;
+    amount_usd: number | null;
+    monthly_tools_usd: number | null;
+  } | null;
+  payments: { kind: string; amount_cents: number | null; currency: string | null; created_at: string }[];
+  requests: { created_at: string; body: string }[];
+};
+
+// Everything the customer portal is allowed to show for one deal. Deliberately
+// narrow: no admin notes, no internal timeline, no email log — only the customer's
+// own milestones, their payments, and the requests they sent us.
+export async function getCustomerBundle(refNo: string): Promise<CustomerBundle> {
+  const empty: CustomerBundle = { deal: null, payments: [], requests: [] };
+  const client = db();
+  if (!client || !refNo) return empty;
+  try {
+    const { data: deal, error } = await client
+      .from("scope_locks")
+      .select(
+        "id, ref_no, company, contact, tier, created_at, signed_at, signature_name, deposit_paid_at, delivered_at, amount_usd, monthly_tools_usd",
+      )
+      .eq("ref_no", refNo)
+      .maybeSingle();
+    if (error || !deal) return empty;
+
+    const dealId = (deal as any).id as string;
+    const [payments, requests] = await Promise.all([
+      client
+        .from("payments")
+        .select("kind, amount_cents, currency, created_at")
+        .eq("scope_lock_id", dealId)
+        .order("created_at", { ascending: false }),
+      client
+        .from("activity_log")
+        .select("created_at, body")
+        .eq("scope_lock_id", dealId)
+        .eq("kind", "update_request")
+        .order("created_at", { ascending: false })
+        .limit(20),
+    ]);
+
+    return {
+      deal: deal as any,
+      payments: (payments.data || []) as any,
+      requests: (requests.data || []) as any,
+    };
+  } catch (e) {
+    fail("getCustomerBundle", e);
+    return empty;
+  }
+}
+
 // ── Mailbox sync state (Microsoft Graph delta links) ────────────────────────
 
 export async function getMailSyncState(folder: string): Promise<{ delta_link: string | null } | null> {
