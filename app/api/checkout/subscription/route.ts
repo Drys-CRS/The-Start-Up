@@ -43,10 +43,21 @@ export async function POST(req: NextRequest) {
   // STRIPE_SECRET_KEY isn't present at build time (fresh clone / preview env).
   const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, { apiVersion: "2026-05-27.dahlia" });
 
+  // The sign page promises nothing is charged until the included support period
+  // ends, so the subscription opens with a trial that covers it: 90 days for the
+  // promotional package (30-day build + 60 days support), 120 for premium. Without
+  // this Stripe bills the first $150 immediately, contradicting the page.
+  const isPremium = /premium/i.test(record.tierLabel);
+  const trialDays = isPremium ? 120 : 90;
+
   const session = await stripe.checkout.sessions.create({
     mode: "subscription",
     customer_email: record.email,
     client_reference_id: record.itemId,
+    subscription_data: {
+      trial_period_days: trialDays,
+      metadata: { ref: record.ref || "", tier: isPremium ? "premium" : "promo" },
+    },
     line_items: [
       {
         price_data: {

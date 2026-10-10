@@ -4,6 +4,7 @@ import React, { useState, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ArrowRight, Check, Download, FileText, Globe, Loader2, PenLine, ShieldCheck, Sparkles, X } from "lucide-react";
 import WordMark from "./WordMark";
+import GoalPicker, { OTHER_LABEL } from "./GoalPicker";
 
 const OFFER_DEADLINE = "31 Oct 2026";
 
@@ -19,11 +20,31 @@ const TIERS = [
   },
 ];
 
+// Deliberately short and ASCII-only: the proposal PDF strips anything outside
+// Latin-1 and re-wraps on whitespace, so bullets, arrows and em dashes get mangled.
+const GOAL_OPTIONS = [
+  "Stop leads going cold",
+  "Cut manual admin and double entry",
+  "See a real pipeline and forecast",
+  "Respond to enquiries faster",
+  "Automate follow-up and reminders",
+];
+
+// One flat line that reads correctly in Monday, the proposal PDF, the team alert
+// and the admin deal page.
+function composeGoals(goals = [], other = "") {
+  const picked = goals.filter(g => g !== OTHER_LABEL);
+  const extra = (other || "").trim().replace(/\s+/g, " ");
+  if (goals.includes(OTHER_LABEL) && extra) picked.push(extra);
+  return picked.length ? `Goals: ${picked.join("; ")}.` : "";
+}
+
 export default function ScopeLockForm({ embedded = false, initialValues = {}, prefilledKeys = [] }) {
   const [f, setF] = useState({
     company: "", contact: "", email: "", tier: "PROMOTIONAL (Base + Free 2 Months)",
     goal: "", bottleneck: "", workflow: "", musthaves: "",
     integrations: "", startDate: "",
+    goals: [], goalOther: "",
     ...initialValues,
   });
   const [status, setStatus] = useState("idle"); // idle | sending | done | error
@@ -43,6 +64,40 @@ export default function ScopeLockForm({ embedded = false, initialValues = {}, pr
     setF({ ...f, [k]: e.target.value });
     // Clear prefill highlight once user edits
     if (prefilled.has(k)) setPrefilled(prev => { const n = new Set(prev); n.delete(k); return n; });
+  };
+
+  // Ticking goals writes the outcome box for them, until they type in it themselves.
+  const [goalTouched, setGoalTouched] = useState(!!initialValues.goal);
+
+  const markGoalPrefilled = () => {
+    if (!goalTouched) setPrefilled(prev => (prev.has("goal") ? prev : new Set(prev).add("goal")));
+  };
+
+  const toggleGoal = (choice) => {
+    setF(prev => {
+      const goals = prev.goals.includes(choice)
+        ? prev.goals.filter(g => g !== choice)
+        : [...prev.goals, choice];
+      return { ...prev, goals, ...(goalTouched ? {} : { goal: composeGoals(goals, prev.goalOther) }) };
+    });
+    markGoalPrefilled();
+  };
+
+  const setGoalOther = (text) => {
+    setF(prev => ({
+      ...prev,
+      goalOther: text,
+      ...(goalTouched ? {} : { goal: composeGoals(prev.goals, text) }),
+    }));
+    markGoalPrefilled();
+  };
+
+  // Their first keystroke in the outcome box ends the auto-writing for good.
+  const onGoalTyped = (e) => {
+    const value = e.target.value;
+    setGoalTouched(true);
+    setF(prev => ({ ...prev, goal: value }));
+    if (prefilled.has("goal")) setPrefilled(prev => { const n = new Set(prev); n.delete("goal"); return n; });
   };
 
   async function applyFillResult(res) {
@@ -95,12 +150,13 @@ export default function ScopeLockForm({ embedded = false, initialValues = {}, pr
     }
   }
 
-  const valid = f.company && /.+@.+\..+/.test(f.email) && f.goal && f.bottleneck;
+  const hasGoal = !!(f.goal.trim() || (f.goals && f.goals.length));
+  const valid = f.company && /.+@.+\..+/.test(f.email) && hasGoal && f.bottleneck;
 
   async function submit() {
     if (!valid) return;
     setStatus("sending");
-    const payload = { ...f, currency: "USD" };
+    const payload = { ...f, goal: f.goal.trim() || composeGoals(f.goals, f.goalOther), currency: "USD" };
     try {
       const res = await fetch("/api/scope-lock", {
         method: "POST",
@@ -226,8 +282,9 @@ export default function ScopeLockForm({ embedded = false, initialValues = {}, pr
                 <Row label="Contact" value={s.contact} />
               </div>
               <Row label="Email" value={s.email} />
-              {(s.goal || s.bottleneck || s.workflow || s.musthaves || s.integrations || s.startDate) && (
+              {(s.goal || (s.goals && s.goals.length) || s.bottleneck || s.workflow || s.musthaves || s.integrations || s.startDate) && (
                 <div className="border-t border-slate-100 dark:border-slate-800 pt-4 space-y-4">
+                  <Row label="Goals chosen" value={(s.goals || []).join(", ")} />
                   <Row label="Business objective" value={s.goal} />
                   <Row label="Current bottleneck" value={s.bottleneck} />
                   <Row label="Core workflow" value={s.workflow} />
@@ -420,7 +477,20 @@ export default function ScopeLockForm({ embedded = false, initialValues = {}, pr
         </div>
 
         <div className="mt-4 rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-5 sm:p-7 shadow-sm space-y-5">
-          <span className={label + " mb-0"}>Your engagement</span>
+          <GoalPicker
+            number={1}
+            question="What are your most important goals?"
+            options={GOAL_OPTIONS}
+            value={f.goals}
+            onToggle={toggleGoal}
+            other={f.goalOther}
+            onOther={setGoalOther}
+            onConfirm={() => document.getElementById("goal-free")?.focus()}
+          />
+
+          <div className="border-t border-slate-100 dark:border-slate-800 pt-5">
+            <span className={label + " mb-0"}>Your engagement</span>
+          </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
@@ -497,8 +567,11 @@ export default function ScopeLockForm({ embedded = false, initialValues = {}, pr
 
           <div>
             <label className={label}>What outcome are you buying? *</label>
-            <textarea className={inp("goal")} rows={2} value={f.goal} onChange={set("goal")}
+            <textarea id="goal-free" className={inp("goal")} rows={2} value={f.goal} onChange={onGoalTyped}
               placeholder="e.g. Stop losing inbound leads to slow follow-up; give leadership real pipeline visibility." />
+            <p className="mt-1.5 text-xs text-slate-400 dark:text-slate-500">
+              Filled in from the goals you picked above — edit it or add anything else.
+            </p>
           </div>
           <div>
             <label className={label}>Your single biggest bottleneck right now *</label>

@@ -243,6 +243,78 @@ export async function getDeal(refNo: string): Promise<DealDetail | null> {
   };
 }
 
+// ── Inbox ───────────────────────────────────────────────────────────────────
+
+export type InboxRow = {
+  id: string;
+  at: string;
+  from: string | null;
+  subject: string | null;
+  preview: string;
+  conversationId: string | null;
+  dealRef: string | null;
+  dealCompany: string | null;
+  matched: boolean;
+  replied: boolean;
+};
+
+// Inbound mail, newest first, each marked as answered or waiting. "Answered" means
+// something went out in the same Outlook conversation after it arrived — which covers
+// replies sent from the portal and from Outlook, since both land in Sent Items.
+//
+// `matched` is false for mail that belongs to no lead or deal: vendor notifications,
+// newsletters, spam. Those are kept (a bounce notice can matter) but can be hidden.
+export async function listInbox(
+  opts: { unansweredOnly?: boolean; hideUnmatched?: boolean; limit?: number } = {},
+): Promise<InboxRow[]> {
+  const limit = opts.limit || 100;
+
+  const [inbound, outbound] = await Promise.all([
+    client()
+      .from("emails")
+      .select("id, sent_at, created_at, from_address, subject, body_text, conversation_id, scope_lock_id, lead_id, scope_locks(ref_no, company)")
+      .eq("direction", "inbound")
+      .order("sent_at", { ascending: false, nullsFirst: false })
+      .limit(limit),
+    client()
+      .from("emails")
+      .select("conversation_id, sent_at")
+      .eq("direction", "outbound")
+      .not("conversation_id", "is", null)
+      .order("sent_at", { ascending: false, nullsFirst: false })
+      .limit(500),
+  ]);
+  if (inbound.error) throw inbound.error;
+  if (outbound.error) throw outbound.error;
+
+  // Latest outbound message per conversation, so "replied" means replied *after* this one.
+  const lastReply = new Map<string, number>();
+  for (const o of (outbound.data || []) as any[]) {
+    const key = o.conversation_id as string;
+    const at = Date.parse(o.sent_at || "") || 0;
+    if (!lastReply.has(key) || at > (lastReply.get(key) || 0)) lastReply.set(key, at);
+  }
+
+  const rows: InboxRow[] = ((inbound.data || []) as any[]).map(e => {
+    const at = e.sent_at || e.created_at;
+    const deal = e.scope_locks || null;
+    return {
+      id: e.id,
+      at,
+      from: e.from_address,
+      subject: e.subject,
+      preview: (e.body_text || "").replace(/\s+/g, " ").trim().slice(0, 160),
+      conversationId: e.conversation_id,
+      dealRef: deal?.ref_no || null,
+      dealCompany: deal?.company || null,
+      matched: !!(e.scope_lock_id || e.lead_id),
+      replied: e.conversation_id ? (lastReply.get(e.conversation_id) || 0) > (Date.parse(at || "") || 0) : false,
+    };
+  });
+
+  return rows.filter(r => (opts.unansweredOnly ? !r.replied : true)).filter(r => (opts.hideUnmatched ? r.matched : true));
+}
+
 // ── Email log ───────────────────────────────────────────────────────────────
 
 export async function listEmails(opts: { limit?: number; problemsOnly?: boolean } = {}): Promise<EmailRow[]> {

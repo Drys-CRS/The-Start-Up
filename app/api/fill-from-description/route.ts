@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { rateLimit } from "@/lib/rate-limit";
+import { geminiJson } from "@/lib/gemini";
 
 export const runtime = "nodejs";
 
@@ -33,22 +34,9 @@ Based only on what they wrote, return a JSON object with EXACTLY these string ke
 
 Be specific and faithful to their description. Infer missing detail from context — do not add features they didn't imply. Return ONLY valid JSON, no markdown fences.`;
 
-  try {
-    const res = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_KEY()}`,
-      {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          contents: [{ role: "user", parts: [{ text: prompt }] }],
-          generationConfig: { responseMimeType: "application/json", temperature: 0.4 },
-        }),
-      },
-    );
-    const data = await res.json();
-    const raw = data.candidates?.[0]?.content?.parts?.[0]?.text ?? "{}";
-    return NextResponse.json(JSON.parse(raw));
-  } catch {
-    return NextResponse.json({ error: "Could not parse AI response" }, { status: 500 });
+  const result = await geminiJson(prompt);
+  if (!result.ok || !result.json) {
+    return NextResponse.json({ error: `Couldn't read that — ${result.message}` }, { status: 502 });
   }
+  return NextResponse.json(result.json);
 }
