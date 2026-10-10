@@ -126,7 +126,7 @@ export default function ScopeLockForm({ embedded = false, initialValues = {}, pr
       });
       await applyFillResult(res);
     } catch {
-      setAnalyzeError("Could not analyse that domain — fill in the form manually below.");
+      setAnalyzeError("Could not analyse that domain. Fill in the form manually below.");
     } finally {
       setAnalyzing(false);
     }
@@ -144,7 +144,7 @@ export default function ScopeLockForm({ embedded = false, initialValues = {}, pr
       });
       await applyFillResult(res);
     } catch {
-      setAnalyzeError("Could not expand that description — fill in the form manually below.");
+      setAnalyzeError("Could not expand that description. Fill in the form manually below.");
     } finally {
       setAnalyzing(false);
     }
@@ -305,7 +305,7 @@ export default function ScopeLockForm({ embedded = false, initialValues = {}, pr
                 </div>
               </a>
               <p className="text-xs text-slate-500 text-center">
-                Sign your agreement digitally and complete payment — no printing required.
+                Sign your agreement digitally and complete payment. No printing required.
               </p>
 
               {/* SECONDARY: PDF download */}
@@ -331,7 +331,7 @@ export default function ScopeLockForm({ embedded = false, initialValues = {}, pr
                 </button>
                 {dlError && (
                   <p className="mt-2 text-xs text-rose-500 text-center">
-                    PDF generation failed — please try again.
+                    PDF generation failed. Please try again.
                   </p>
                 )}
               </div>
@@ -361,8 +361,8 @@ export default function ScopeLockForm({ embedded = false, initialValues = {}, pr
         <h1 className="text-3xl sm:text-4xl font-semibold tracking-tight">Your Build Plan</h1>
         <p className="mt-3 text-slate-600 dark:text-slate-400 max-w-xl">
           {embedded
-            ? "We've carried your numbers over. A few more questions turn this into a fixed build — exactly what we'll fix, the price, and the date we ship it. No call."
-            : "A few questions turn this into a fixed build — exactly what we will fix, the price, and the date we ship it. No call, no vague scope. You approve it, the build begins."}
+            ? "We've carried your numbers over. A few more questions turn this into a fixed build: exactly what we'll fix, the price, and the date we ship it. No call."
+            : "A few questions turn this into a fixed build: exactly what we will fix, the price, and the date we ship it. No call, no vague scope. You approve it, the build begins."}
         </p>
 
         {/* Auto-fill — tabbed: Website URL | Quick Description */}
@@ -428,12 +428,12 @@ export default function ScopeLockForm({ embedded = false, initialValues = {}, pr
                 onKeyDown={e => e.key === "Enter" && e.metaKey && analyzeDescription()}
                 rows={3}
                 maxLength={600}
-                placeholder="Describe your app in 1–3 sentences. e.g. &quot;A booking platform for mobile dog groomers — customers book online, groomers manage their schedule and get paid on completion.&quot;"
+                placeholder="Describe your app in 1–3 sentences. e.g. &quot;A booking platform for mobile dog groomers: customers book online, groomers manage their schedule and get paid on completion.&quot;"
                 className="w-full rounded-lg border border-teal-300 dark:border-teal-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 text-sm placeholder-slate-400 px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-teal-400 transition-colors resize-none"
               />
               <div className="flex items-center justify-between gap-2">
                 <span className="text-[11px] text-teal-600 dark:text-teal-500">
-                  {description.length}/600 · Keep it short — 1–3 sentences is enough
+                  {description.length}/600 · Keep it short, 1–3 sentences is enough
                 </span>
                 <button
                   onClick={analyzeDescription}
@@ -464,7 +464,7 @@ export default function ScopeLockForm({ embedded = false, initialValues = {}, pr
               className="mt-3 flex items-center justify-between"
             >
               <p className="text-xs text-teal-700 dark:text-teal-400">
-                <span className="font-semibold">Detected:</span> {vertical} — {prefilled.size} fields pre-filled below. Review and edit before submitting.
+                <span className="font-semibold">Detected:</span> {vertical}, {prefilled.size} fields pre-filled below. Review and edit before submitting.
               </p>
               <button
                 onClick={() => { setPrefilled(new Set()); setVertical(""); setDomain(""); setDescription(""); }}
@@ -570,7 +570,7 @@ export default function ScopeLockForm({ embedded = false, initialValues = {}, pr
             <textarea id="goal-free" className={inp("goal")} rows={2} value={f.goal} onChange={onGoalTyped}
               placeholder="e.g. Stop losing inbound leads to slow follow-up; give leadership real pipeline visibility." />
             <p className="mt-1.5 text-xs text-slate-400 dark:text-slate-500">
-              Filled in from the goals you picked above — edit it or add anything else.
+              Filled in from the goals you picked above. Edit it or add anything else.
             </p>
           </div>
           <div>

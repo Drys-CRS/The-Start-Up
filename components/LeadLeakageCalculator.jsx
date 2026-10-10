@@ -160,14 +160,14 @@ Respond with ONLY valid JSON, no markdown fences, no preamble:
 Be concrete and non-generic. No flattery, no filler.`;
 
     const fallback = {
-      diagnosis: `For a ${industry.toLowerCase()} team fielding ${parseFloat(leads) || 0} leads a month with a ${r.toLowerCase()} response time, the leak isn't lead volume — it's the gap between a lead raising its hand and anyone reaching it. Interest decays fast, and a ${r.toLowerCase()} reply lets warm leads cool into the pipeline graveyard.`,
+      diagnosis: `For a ${industry.toLowerCase()} team fielding ${parseFloat(leads) || 0} leads a month with a ${r.toLowerCase()} response time, the leak isn't lead volume. It's the gap between a lead raising its hand and anyone reaching it. Interest decays fast, and a ${r.toLowerCase()} reply lets warm leads cool into the pipeline graveyard.`,
       recommendations: [
-        "Set a sub-hour response SLA on inbound leads and make it visible — what gets measured on a board gets followed up.",
+        "Set a sub-hour response SLA on inbound leads and make it visible. What gets measured on a board gets followed up.",
         "Auto-route every new lead to an owner the instant it lands, so nothing waits in a shared inbox for someone to notice it.",
         "Add automated scoring and a follow-up sequence so high-intent leads surface first and no one slips through after the first touch.",
       ],
-      roi: `Closing even part of this gap puts an estimated ${fmt(calc.annualLeak, currency)} a year back in reach — without spending a cent more on lead generation.`,
-      closingLine: "A custom CRM lead system can capture, route, and score every one of these automatically — live in 30 days.",
+      roi: `Closing even part of this gap puts an estimated ${fmt(calc.annualLeak, currency)} a year back in reach, without spending a cent more on lead generation.`,
+      closingLine: "A custom CRM lead system can capture, route, and score every one of these automatically, live in 30 days.",
     };
 
     try {
@@ -232,7 +232,7 @@ Be concrete and non-generic. No flattery, no filler.`;
     ...(calc.valid
       ? {
           goal: `Recover the ~${fmt(calc.annualLeak, currency)}/year we're losing to a slow sales cycle.`,
-          bottleneck: `${industry} leads get a ${RESPONSE[response].label.toLowerCase()} response — deals cool before anyone follows up.`,
+          bottleneck: `${industry} leads get a ${RESPONSE[response].label.toLowerCase()} response, so deals cool before anyone follows up.`,
         }
       : {}),
   };
@@ -253,11 +253,11 @@ Be concrete and non-generic. No flattery, no filler.`;
         {step === "input" && (
           <motion.div key="input" initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -12 }} transition={{ duration: 0.25, ease: "easeOut" }}>
             <h1 className="text-3xl sm:text-4xl font-semibold tracking-tight leading-tight">
-              Your CRM isn't catching this —
-              <span className="text-teal-400"> find out how much your sales cycle is leaking.</span>
+              Your CRM isn't catching this.
+              <span className="text-teal-400"> Find out how much your sales cycle is leaking.</span>
             </h1>
             <p className="mt-3 text-slate-600 dark:text-slate-400 text-base max-w-xl">
-              Most B2B teams don't lose deals to competitors — they lose them to a broken sales cycle: slow
+              Most B2B teams don't lose deals to competitors. They lose them to a broken sales cycle: slow
               follow-up, no routing, nobody owning the next step. Answer four questions for an instant estimate. No call.
             </p>
 
@@ -351,8 +351,8 @@ Be concrete and non-generic. No flattery, no filler.`;
                     {fmt(0, currency)}
                   </div>
                   <p className="mt-3 text-slate-600 dark:text-slate-400 max-w-lg">
-                    Your follow-up speed is already tight, so response-time leakage is minimal —
-                    {company ? ` nice work, ${company}.` : " nice work."} The next gains are in
+                    Your follow-up speed is already tight, so response-time leakage is minimal.
+                    {company ? ` Nice work, ${company}.` : " Nice work."} The next gains are in
                     routing, scoring, and reporting. The report below maps them.
                   </p>
                 </div>
@@ -363,7 +363,7 @@ Be concrete and non-generic. No flattery, no filler.`;
                   </div>
                   <p className="mt-3 text-slate-600 dark:text-slate-400 max-w-lg">
                     That's roughly <span className="font-semibold text-slate-900 dark:text-white">{Math.round(calc.dealsMid)} deals a month</span> slipping
-                    away to slow follow-up{company ? `, ${company}` : ""} — about {fmt(calc.monthlyLeak, currency)} monthly.
+                    away to slow follow-up{company ? `, ${company}` : ""}, about {fmt(calc.monthlyLeak, currency)} monthly.
                     Likely range {fmt(calc.annualLeakLow, currency)}–{fmt(calc.annualLeakHigh, currency)} a year.
                   </p>
                 </div>
@@ -414,7 +414,7 @@ Be concrete and non-generic. No flattery, no filler.`;
                     <span className="text-xs font-medium uppercase tracking-wider">Your Bottleneck Report</span>
                   </div>
                   <h2 className="mt-2 text-2xl font-semibold tracking-tight">
-                    Get the full diagnosis — instant, no call.
+                    Get the full diagnosis. Instant, no call.
                   </h2>
                   <p className="mt-2 text-sm text-slate-400 max-w-lg">
                     A personalized breakdown of where your pipeline leaks and exactly how we'd plug it.

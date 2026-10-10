@@ -48,7 +48,7 @@ const INDUSTRIES = [
         count: 4,
         leads: [
           { company: "Mosaic Labs", contact: "Priya Sharma", value: "$96k /yr", days: 2, heat: "hot", note: "Asked about enterprise add-ons" },
-          { company: "Strata HQ", contact: "Will Ford", value: "$48k /yr", days: 8, heat: "cold", note: "No reply — follow up today" },
+          { company: "Strata HQ", contact: "Will Ford", value: "$48k /yr", days: 8, heat: "cold", note: "No reply: follow up today" },
         ],
       },
       {
@@ -68,7 +68,7 @@ const INDUSTRIES = [
     insights: [
       { icon: Clock, title: "Speed-to-demo wins the deal", body: "Studies show 50% of B2B SaaS deals go to the first vendor that schedules a demo. Auto-assigning inbound trials to the nearest available rep cuts response time from hours to minutes." },
       { icon: TrendingUp, title: "Usage signals predict closings", body: "Leads who invite teammates, configure integrations, or hit key features in the first 48 hours are 3× more likely to convert. Score them automatically and escalate to your best closer." },
-      { icon: Bell, title: "Drip at the right moment, not on a schedule", body: "Trigger follow-up based on activity — a rep gets notified the moment a trial user returns after 5 days of silence, not because a calendar reminder fired." },
+      { icon: Bell, title: "Drip at the right moment, not on a schedule", body: "Trigger follow-up based on activity. A rep gets notified the moment a trial user returns after 5 days of silence, not because a calendar reminder fired." },
     ],
     automations: [
       "Trial signup → rep assigned by territory within 2 minutes",
@@ -90,7 +90,7 @@ const INDUSTRIES = [
         name: "New Inquiry",
         count: 11,
         leads: [
-          { company: "Summit Brands", contact: "Alex Thompson", value: "$84k /yr", days: 1, heat: "hot", note: "Inbound — came from Google Ads case study" },
+          { company: "Summit Brands", contact: "Alex Thompson", value: "$84k /yr", days: 1, heat: "hot", note: "Inbound: came from Google Ads case study" },
           { company: "Coastal Media", contact: "Nina Reyes", value: "$36k project", days: 3, heat: "warm", note: "Referral from Bloom client" },
         ],
       },
@@ -98,7 +98,7 @@ const INDUSTRIES = [
         name: "Discovery",
         count: 6,
         leads: [
-          { company: "Urban Digital", contact: "David Lee", value: "$156k /yr", days: 2, heat: "hot", note: "Discovery call done — big brief" },
+          { company: "Urban Digital", contact: "David Lee", value: "$156k /yr", days: 2, heat: "hot", note: "Discovery call done: big brief" },
           { company: "Pinnacle Foods", contact: "Rachel Kim", value: "$42k project", days: 6, heat: "warm", note: "Awaiting brief document from client" },
         ],
       },
@@ -107,7 +107,7 @@ const INDUSTRIES = [
         count: 5,
         leads: [
           { company: "Bloom Co.", contact: "Marcus Webb", value: "$96k /yr", days: 3, heat: "warm", note: "Proposal delivered, reviewing internally" },
-          { company: "Tandem Labs", contact: "Sofia Diaz", value: "$28k project", days: 10, heat: "cold", note: "Went quiet — competitor risk" },
+          { company: "Tandem Labs", contact: "Sofia Diaz", value: "$28k project", days: 10, heat: "cold", note: "Went quiet: competitor risk" },
         ],
       },
       {
@@ -150,7 +150,7 @@ const INDUSTRIES = [
         count: 9,
         leads: [
           { company: "Highfield Group", contact: "Tom Bradley", value: "$45k", days: 1, heat: "hot", note: "Referred by Meridian partner" },
-          { company: "Venture Advisory", contact: "Lisa Park", value: "$120k", days: 2, heat: "hot", note: "M&A mandate — time sensitive" },
+          { company: "Venture Advisory", contact: "Lisa Park", value: "$120k", days: 2, heat: "hot", note: "M&A mandate: time sensitive" },
         ],
       },
       {
@@ -158,7 +158,7 @@ const INDUSTRIES = [
         count: 5,
         leads: [
           { company: "Crestview Mgmt", contact: "Chris West", value: "$28k", days: 4, heat: "warm", note: "Meeting done, awaiting their go-ahead" },
-          { company: "Paragon Legal", contact: "Diana Shore", value: "$65k", days: 7, heat: "warm", note: "Conflict check passed — proposal next" },
+          { company: "Paragon Legal", contact: "Diana Shore", value: "$65k", days: 7, heat: "warm", note: "Conflict check passed: proposal next" },
         ],
       },
       {
@@ -166,7 +166,7 @@ const INDUSTRIES = [
         count: 4,
         leads: [
           { company: "Silverstone Co", contact: "Paul Ngo", value: "$90k", days: 3, heat: "warm", note: "Senior partner reviewing" },
-          { company: "Argent Capital", contact: "Helen Marsh", value: "$150k", days: 9, heat: "cold", note: "Stalled — champion on leave" },
+          { company: "Argent Capital", contact: "Helen Marsh", value: "$150k", days: 9, heat: "cold", note: "Stalled: champion on leave" },
         ],
       },
       {
@@ -184,9 +184,9 @@ const INDUSTRIES = [
       { label: "Avg. time to proposal", value: "5.8 days", gain: "−3.2 days with templates" },
     ],
     insights: [
-      { icon: ShieldCheck, title: "Conflict checks shouldn't live in spreadsheets", body: "A centralised system flags potential conflicts of interest automatically before a partner commits time to a pitch — protecting the firm and the client relationship." },
+      { icon: ShieldCheck, title: "Conflict checks shouldn't live in spreadsheets", body: "A centralised system flags potential conflicts of interest automatically before a partner commits time to a pitch, protecting the firm and the client relationship." },
       { icon: Users, title: "Referral relationships are your growth engine", body: "Professional services firms that track referral sources and systematically reciprocate generate 2× more introductions year-over-year than those managing it by memory." },
-      { icon: BarChart2, title: "Billable capacity drives pipeline decisions", body: "Linking live pipeline to team availability means partners can see — before accepting a mandate — whether the firm can deliver it in the timeframe promised." },
+      { icon: BarChart2, title: "Billable capacity drives pipeline decisions", body: "Linking live pipeline to team availability means partners can see, before accepting a mandate, whether the firm can deliver it in the timeframe promised." },
     ],
     automations: [
       "Enquiry → conflict-check checklist assigned to managing partner",
@@ -208,7 +208,7 @@ const INDUSTRIES = [
         name: "Job Brief",
         count: 16,
         leads: [
-          { company: "BlueSky Tech", contact: "CTO Role", value: "$45k fee", days: 2, heat: "hot", note: "Exclusive brief — 6-week SLA" },
+          { company: "BlueSky Tech", contact: "CTO Role", value: "$45k fee", days: 2, heat: "hot", note: "Exclusive brief: 6-week SLA" },
           { company: "Falcon Media", contact: "Head of Mktg", value: "$32k fee", days: 1, heat: "hot", note: "3 competitors on this role" },
         ],
       },
@@ -217,14 +217,14 @@ const INDUSTRIES = [
         count: 12,
         leads: [
           { company: "Granite Corp", contact: "CFO Role", value: "$78k fee", days: 5, heat: "warm", note: "8 candidates in pipeline" },
-          { company: "Novus Health", contact: "Clinical Dir.", value: "$55k fee", days: 8, heat: "warm", note: "Market tight — expanding search" },
+          { company: "Novus Health", contact: "Clinical Dir.", value: "$55k fee", days: 8, heat: "warm", note: "Market tight: expanding search" },
         ],
       },
       {
         name: "Interview Stage",
         count: 8,
         leads: [
-          { company: "Redwood Capital", contact: "Portfolio Mgr", value: "$62k fee", days: 3, heat: "hot", note: "Final 2 candidates — decision Fri" },
+          { company: "Redwood Capital", contact: "Portfolio Mgr", value: "$62k fee", days: 3, heat: "hot", note: "Final 2 candidates: decision Fri" },
           { company: "Zephyr FMCG", contact: "Sales Director", value: "$48k fee", days: 6, heat: "warm", note: "Second interviews next week" },
         ],
       },
@@ -232,8 +232,8 @@ const INDUSTRIES = [
         name: "Offer / Placed",
         count: 4,
         leads: [
-          { company: "Aura Retail", contact: "COO Role", value: "$90k fee", days: 1, heat: "hot", note: "Offer accepted — start date confirmed" },
-          { company: "Kinetic Auto", contact: "Ops Manager", value: "$34k fee", days: 2, heat: "hot", note: "Counter-offer risk — monitor" },
+          { company: "Aura Retail", contact: "COO Role", value: "$90k fee", days: 1, heat: "hot", note: "Offer accepted: start date confirmed" },
+          { company: "Kinetic Auto", contact: "Ops Manager", value: "$34k fee", days: 2, heat: "hot", note: "Counter-offer risk: monitor" },
         ],
       },
     ],
@@ -267,7 +267,7 @@ const INDUSTRIES = [
         name: "New Prospect",
         count: 22,
         leads: [
-          { company: "Metro Supplies", contact: "Jake Russo", value: "$180k /yr", days: 2, heat: "hot", note: "Attended trade show — hot lead" },
+          { company: "Metro Supplies", contact: "Jake Russo", value: "$180k /yr", days: 2, heat: "hot", note: "Attended trade show: hot lead" },
           { company: "Clearfield Dist.", contact: "Monica Lee", value: "$95k /yr", days: 4, heat: "warm", note: "Currently with competitor" },
         ],
       },
@@ -275,15 +275,15 @@ const INDUSTRIES = [
         name: "Quote Sent",
         count: 14,
         leads: [
-          { company: "Pacific Foods", contact: "Brian Chow", value: "$420k /yr", days: 1, heat: "hot", note: "Volume quote — decision this week" },
-          { company: "Harvest Retail", contact: "Donna Pierce", value: "$72k /yr", days: 9, heat: "cold", note: "Quote not opened — resend?" },
+          { company: "Pacific Foods", contact: "Brian Chow", value: "$420k /yr", days: 1, heat: "hot", note: "Volume quote: decision this week" },
+          { company: "Harvest Retail", contact: "Donna Pierce", value: "$72k /yr", days: 9, heat: "cold", note: "Quote not opened: resend?" },
         ],
       },
       {
         name: "Trial Order",
         count: 7,
         leads: [
-          { company: "Northgate Foods", contact: "Ian Walsh", value: "$240k /yr", days: 5, heat: "warm", note: "Trial order fulfilled — feedback pending" },
+          { company: "Northgate Foods", contact: "Ian Walsh", value: "$240k /yr", days: 5, heat: "warm", note: "Trial order fulfilled: feedback pending" },
           { company: "Eastern Dist.", contact: "Fiona Marsh", value: "$110k /yr", days: 3, heat: "warm", note: "Second sample order placed" },
         ],
       },
@@ -291,8 +291,8 @@ const INDUSTRIES = [
         name: "Active Account",
         count: 38,
         leads: [
-          { company: "Summit Whole.", contact: "George Tan", value: "$560k /yr", days: 0, heat: "hot", note: "Reorder every 3 weeks — on track" },
-          { company: "Blue Ridge Co.", contact: "Amy Foster", value: "$195k /yr", days: 14, heat: "cold", note: "Overdue reorder — rep to call" },
+          { company: "Summit Whole.", contact: "George Tan", value: "$560k /yr", days: 0, heat: "hot", note: "Reorder every 3 weeks: on track" },
+          { company: "Blue Ridge Co.", contact: "Amy Foster", value: "$195k /yr", days: 14, heat: "cold", note: "Overdue reorder: rep to call" },
         ],
       },
     ],
@@ -302,7 +302,7 @@ const INDUSTRIES = [
       { label: "Key account retention", value: "91%", gain: "with proactive check-ins" },
     ],
     insights: [
-      { icon: RefreshCw, title: "Reorder tracking is your real revenue lever", body: "A wholesale business with 38 active accounts and no reorder tracking is flying blind. Flagging accounts whose reorder window has passed — before they go elsewhere — is worth more than any new prospect campaign." },
+      { icon: RefreshCw, title: "Reorder tracking is your real revenue lever", body: "A wholesale business with 38 active accounts and no reorder tracking is flying blind. Flagging accounts whose reorder window has passed, before they go elsewhere, is worth more than any new prospect campaign." },
       { icon: Users, title: "Territory management at scale", body: "As your account base grows, manually knowing which rep owns which region and account tier becomes impossible. Automated routing ensures every new inquiry lands with the right person in under an hour." },
       { icon: TrendingUp, title: "Trial orders predict lifetime value", body: "Distributors who follow up within 48 hours of a trial order fulfillment convert to ongoing accounts at 2.4× the rate of those who wait for the client to re-initiate. Automate this touchpoint." },
     ],
@@ -387,7 +387,7 @@ const INDUSTRIES = [
         name: "Referral Received",
         count: 18,
         leads: [
-          { company: "Dr. Patel Clinic", contact: "Ref: James Wu", value: "$320 /visit", days: 1, heat: "hot", note: "GP referral — urgent physio assessment" },
+          { company: "Dr. Patel Clinic", contact: "Ref: James Wu", value: "$320 /visit", days: 1, heat: "hot", note: "GP referral: urgent physio assessment" },
           { company: "Metro Hospital", contact: "Ref: Sarah Young", value: "$280 /visit", days: 3, heat: "warm", note: "Post-surgery rehabilitation programme" },
         ],
       },
@@ -403,7 +403,7 @@ const INDUSTRIES = [
         name: "Treatment Plan Active",
         count: 9,
         leads: [
-          { company: "Riverdale Corp", contact: "Occupational — 4 staff", value: "$1,200 /mo", days: 8, heat: "warm", note: "Corporate health plan — monthly review" },
+          { company: "Riverdale Corp", contact: "Occupational, 4 staff", value: "$1,200 /mo", days: 8, heat: "warm", note: "Corporate health plan: monthly review" },
           { company: "Self-pay", contact: "Mark Simons", value: "$195 /session", days: 3, heat: "hot", note: "6-session plan, 4 remaining" },
         ],
       },
@@ -411,8 +411,8 @@ const INDUSTRIES = [
         name: "Ongoing Care",
         count: 24,
         leads: [
-          { company: "Blue Shield Corp", contact: "Corporate — 12 staff", value: "$3,600 /mo", days: 0, heat: "hot", note: "Annual contract renewing next month" },
-          { company: "Long-term patient", contact: "Helen Brant", value: "$195 /session", days: 21, heat: "cold", note: "Missed last 2 appointments — re-engage" },
+          { company: "Blue Shield Corp", contact: "Corporate, 12 staff", value: "$3,600 /mo", days: 0, heat: "hot", note: "Annual contract renewing next month" },
+          { company: "Long-term patient", contact: "Helen Brant", value: "$195 /session", days: 21, heat: "cold", note: "Missed last 2 appointments: re-engage" },
         ],
       },
     ],
@@ -424,7 +424,7 @@ const INDUSTRIES = [
     insights: [
       { icon: Clock, title: "No-shows cost more than acquisition", body: "The average appointment no-show costs a practice $200 in lost revenue and blocked capacity. Automated SMS and email reminders 48 hours and 2 hours before reduce no-shows by up to 40%." },
       { icon: RefreshCw, title: "Referral pipelines prevent capacity gaps", body: "A structured referral tracking system lets you see which referring GPs and specialists are sending work, follow up on open referrals, and maintain the relationships that fill your calendar predictably." },
-      { icon: ShieldCheck, title: "Compliant records protect your practice", body: "Centralised, timestamped patient interaction records protect against disputes and ensure compliance with health data regulations — without the manual filing burden." },
+      { icon: ShieldCheck, title: "Compliant records protect your practice", body: "Centralised, timestamped patient interaction records protect against disputes and ensure compliance with health data regulations, without the manual filing burden." },
     ],
     automations: [
       "Referral received → intake form sent to patient within 1 hour",
@@ -446,15 +446,15 @@ const INDUSTRIES = [
         name: "New Enquiry",
         count: 34,
         leads: [
-          { company: "Buyer — Johnson Family", contact: "Michael Johnson", value: "$680k budget", days: 1, heat: "hot", note: "Pre-approved, needs 4-bed in Northdale" },
-          { company: "Landlord — investment", contact: "Priya Naidoo", value: "$2,200 /mo rental", days: 2, heat: "warm", note: "2 units to let — portfolio landlord" },
+          { company: "Buyer: Johnson Family", contact: "Michael Johnson", value: "$680k budget", days: 1, heat: "hot", note: "Pre-approved, needs 4-bed in Northdale" },
+          { company: "Landlord: investment", contact: "Priya Naidoo", value: "$2,200 /mo rental", days: 2, heat: "warm", note: "2 units to let: portfolio landlord" },
         ],
       },
       {
         name: "Viewing Arranged",
         count: 18,
         leads: [
-          { company: "Buyer — Chen Family", contact: "David Chen", value: "$540k budget", days: 4, heat: "warm", note: "Saturday 10am — 3 properties shortlisted" },
+          { company: "Buyer: Chen Family", contact: "David Chen", value: "$540k budget", days: 4, heat: "warm", note: "Saturday 10am: 3 properties shortlisted" },
           { company: "Corporate tenant", contact: "Apex Tech (HR)", value: "$3,800 /mo lease", days: 2, heat: "hot", note: "Office lease decision by end of month" },
         ],
       },
@@ -462,7 +462,7 @@ const INDUSTRIES = [
         name: "Offer Stage",
         count: 8,
         leads: [
-          { company: "Buyer — Williams", contact: "Sarah Williams", value: "$612k offer", days: 3, heat: "hot", note: "5% under asking — counter submitted" },
+          { company: "Buyer: Williams", contact: "Sarah Williams", value: "$612k offer", days: 3, heat: "hot", note: "5% under asking: counter submitted" },
           { company: "Relocating tenant", contact: "Horizon Group", value: "$4,200 /mo", days: 7, heat: "warm", note: "Awaiting head-office sign-off" },
         ],
       },
@@ -470,8 +470,8 @@ const INDUSTRIES = [
         name: "Sale / Lease Agreed",
         count: 5,
         leads: [
-          { company: "Buyer — completed", contact: "The Nguyen Family", value: "$725k", days: 1, heat: "hot", note: "Exchange this Friday" },
-          { company: "Tenant — signed", contact: "Pulse Fitness", value: "$5,400 /mo", days: 2, heat: "hot", note: "Lease signed — keys handover booked" },
+          { company: "Buyer: completed", contact: "The Nguyen Family", value: "$725k", days: 1, heat: "hot", note: "Exchange this Friday" },
+          { company: "Tenant: signed", contact: "Pulse Fitness", value: "$5,400 /mo", days: 2, heat: "hot", note: "Lease signed: keys handover booked" },
         ],
       },
     ],
@@ -482,8 +482,8 @@ const INDUSTRIES = [
     ],
     insights: [
       { icon: Clock, title: "The first agent to respond usually wins the listing", body: "Research shows 78% of buyers and tenants choose the agent who responds first. Automated instant acknowledgements and immediate rep assignment mean you're always first, even outside office hours." },
-      { icon: Users, title: "Buyer profiles save lost matches", body: "When a new property is listed, your system can automatically match it against every active buyer profile and alert the right people — before the property even hits the public portals." },
-      { icon: TrendingUp, title: "Post-sale relationships generate repeat revenue", body: "Landlords, investors, and upgrading homeowners come back — if you stay top of mind. Automated annual market valuations and check-ins keep your brand present without manual effort." },
+      { icon: Users, title: "Buyer profiles save lost matches", body: "When a new property is listed, your system can automatically match it against every active buyer profile and alert the right people, before the property even hits the public portals." },
+      { icon: TrendingUp, title: "Post-sale relationships generate repeat revenue", body: "Landlords, investors, and upgrading homeowners come back if you stay top of mind. Automated annual market valuations and check-ins keep your brand present without manual effort." },
     ],
     automations: [
       "Enquiry received → auto-acknowledgement + agent assigned within 5 mins",
@@ -505,32 +505,32 @@ const INDUSTRIES = [
         name: "New Brand Lead",
         count: 28,
         leads: [
-          { company: "Sunrise Organics", contact: "Kate Walsh — Buyer", value: "$48k /yr", days: 1, heat: "hot", note: "Inbound from trade show — 3 SKUs" },
-          { company: "Urban Outpost", contact: "Ben Zhao — CEO", value: "$22k /yr", days: 3, heat: "warm", note: "Looking to switch current supplier" },
+          { company: "Sunrise Organics", contact: "Kate Walsh, Buyer", value: "$48k /yr", days: 1, heat: "hot", note: "Inbound from trade show: 3 SKUs" },
+          { company: "Urban Outpost", contact: "Ben Zhao, CEO", value: "$22k /yr", days: 3, heat: "warm", note: "Looking to switch current supplier" },
         ],
       },
       {
         name: "Sample Sent",
         count: 14,
         leads: [
-          { company: "Nature's Best Retail", contact: "Amanda Price", value: "$96k /yr", days: 5, heat: "warm", note: "Samples out — feedback call in 2 days" },
-          { company: "Peak Performance", contact: "Ross Turner — Buyer", value: "$34k /yr", days: 9, heat: "cold", note: "No feedback — follow up this week" },
+          { company: "Nature's Best Retail", contact: "Amanda Price", value: "$96k /yr", days: 5, heat: "warm", note: "Samples out: feedback call in 2 days" },
+          { company: "Peak Performance", contact: "Ross Turner, Buyer", value: "$34k /yr", days: 9, heat: "cold", note: "No feedback: follow up this week" },
         ],
       },
       {
         name: "Trial Order",
         count: 7,
         leads: [
-          { company: "FreshBox Retail", contact: "Lisa Ng", value: "$61k /yr", days: 4, heat: "warm", note: "Trial order fulfilled — reorder in 3 weeks" },
-          { company: "Vitality Stores", contact: "Cam Davis", value: "$180k /yr", days: 2, heat: "hot", note: "Trial exceeded targets — contract talks started" },
+          { company: "FreshBox Retail", contact: "Lisa Ng", value: "$61k /yr", days: 4, heat: "warm", note: "Trial order fulfilled: reorder in 3 weeks" },
+          { company: "Vitality Stores", contact: "Cam Davis", value: "$180k /yr", days: 2, heat: "hot", note: "Trial exceeded targets: contract talks started" },
         ],
       },
       {
         name: "Active Stockist",
         count: 42,
         leads: [
-          { company: "Wellbeing Direct", contact: "National account", value: "$420k /yr", days: 0, heat: "hot", note: "Top account — quarterly review next week" },
-          { company: "Corner Health (19 stores)", contact: "Head of Buying", value: "$78k /yr", days: 18, heat: "cold", note: "Reorder overdue — competitor risk" },
+          { company: "Wellbeing Direct", contact: "National account", value: "$420k /yr", days: 0, heat: "hot", note: "Top account: quarterly review next week" },
+          { company: "Corner Health (19 stores)", contact: "Head of Buying", value: "$78k /yr", days: 18, heat: "cold", note: "Reorder overdue: competitor risk" },
         ],
       },
     ],
@@ -540,7 +540,7 @@ const INDUSTRIES = [
       { label: "Stockist retention rate", value: "88%", gain: "+31 pts vs. unmanaged accounts" },
     ],
     insights: [
-      { icon: RefreshCw, title: "Reorder timing is your biggest revenue lever", body: "Wholesale revenue is won or lost in the days around each reorder cycle. A system that flags accounts approaching their reorder window — before they go to a competitor — pays for itself in a single retained account." },
+      { icon: RefreshCw, title: "Reorder timing is your biggest revenue lever", body: "Wholesale revenue is won or lost in the days around each reorder cycle. A system that flags accounts approaching their reorder window, before they go to a competitor, pays for itself in a single retained account." },
       { icon: BarChart2, title: "Buyer behaviour predicts churn before it happens", body: "When a stockist who previously reordered every 4 weeks goes 6 weeks silent, something has changed. Automated flags give your team time to intervene before the account is lost." },
       { icon: TrendingUp, title: "Trial orders are your most important data point", body: "How a stockist behaves with their first order tells you everything about their lifetime value. Tracking sell-through rate and reorder speed creates a scoring system that lets your team prioritise the right accounts." },
     ],
@@ -564,7 +564,7 @@ const INDUSTRIES = [
         name: "Tender Enquiry",
         count: 21,
         leads: [
-          { company: "Meridian Developments", contact: "Mark Forsyth — COO", value: "$1.2M contract", days: 2, heat: "hot", note: "Mixed-use development — tender due Friday" },
+          { company: "Meridian Developments", contact: "Mark Forsyth, COO", value: "$1.2M contract", days: 2, heat: "hot", note: "Mixed-use development: tender due Friday" },
           { company: "City Infrastructure", contact: "Procurement Dept", value: "$340k contract", days: 4, heat: "warm", note: "3 contractors shortlisted" },
         ],
       },
@@ -572,24 +572,24 @@ const INDUSTRIES = [
         name: "Site Survey",
         count: 9,
         leads: [
-          { company: "Harrington Group", contact: "Project Director", value: "$780k contract", days: 3, heat: "warm", note: "Site survey done — pricing in progress" },
-          { company: "Nova Retail Parks", contact: "Development Manager", value: "$2.4M contract", days: 7, heat: "hot", note: "Preliminary design approved — quote next" },
+          { company: "Harrington Group", contact: "Project Director", value: "$780k contract", days: 3, heat: "warm", note: "Site survey done: pricing in progress" },
+          { company: "Nova Retail Parks", contact: "Development Manager", value: "$2.4M contract", days: 7, heat: "hot", note: "Preliminary design approved: quote next" },
         ],
       },
       {
         name: "Quote Submitted",
         count: 6,
         leads: [
-          { company: "Peak Property Ltd", contact: "Steve Lau — MD", value: "$510k contract", days: 4, heat: "warm", note: "Quote submitted — decision in 2 weeks" },
-          { company: "Riverside Consortium", contact: "Project Lead", value: "$1.8M contract", days: 10, heat: "cold", note: "Stalled — decision delayed by planning" },
+          { company: "Peak Property Ltd", contact: "Steve Lau, MD", value: "$510k contract", days: 4, heat: "warm", note: "Quote submitted: decision in 2 weeks" },
+          { company: "Riverside Consortium", contact: "Project Lead", value: "$1.8M contract", days: 10, heat: "cold", note: "Stalled: decision delayed by planning" },
         ],
       },
       {
         name: "Awarded",
         count: 4,
         leads: [
-          { company: "Summit Build Ltd", contact: "Contract Manager", value: "$960k contract", days: 1, heat: "hot", note: "Contract signed — mobilisation next week" },
-          { company: "Greenfield Holdings", contact: "J. Blackwood — Owner", value: "$3.1M contract", days: 3, heat: "hot", note: "Largest active contract — phase 1 underway" },
+          { company: "Summit Build Ltd", contact: "Contract Manager", value: "$960k contract", days: 1, heat: "hot", note: "Contract signed: mobilisation next week" },
+          { company: "Greenfield Holdings", contact: "J. Blackwood, Owner", value: "$3.1M contract", days: 3, heat: "hot", note: "Largest active contract: phase 1 underway" },
         ],
       },
     ],
@@ -599,7 +599,7 @@ const INDUSTRIES = [
       { label: "Variation order tracking", value: "100%", gain: "vs. 0% on spreadsheets" },
     ],
     insights: [
-      { icon: Clock, title: "Tender deadlines wait for no one", body: "A missed tender submission is 100% loss. A system that tracks every open tender, deadline, and required document — with automated reminders — eliminates the risk of losing work to admin failure rather than competition." },
+      { icon: Clock, title: "Tender deadlines wait for no one", body: "A missed tender submission is 100% loss. A system that tracks every open tender, deadline, and required document, with automated reminders, eliminates the risk of losing work to admin failure rather than competition." },
       { icon: Layers, title: "Site and project capacity limits what you can bid", body: "Before committing to a new project, you need visibility into what your teams are currently delivering. Linking your pipeline to active site capacity prevents over-bidding on work you can't resource." },
       { icon: BarChart2, title: "Variation orders destroy margins when untracked", body: "Construction projects almost always scope-change. A system that captures, prices, and tracks every variation order in real time protects your margin and makes billing disputes nearly impossible." },
     ],
@@ -623,32 +623,32 @@ const INDUSTRIES = [
         name: "Enquiry",
         count: 46,
         leads: [
-          { company: "Deloitte SA", contact: "L&D Manager — Thabo N.", value: "$28k cohort", days: 1, heat: "hot", note: "60 staff — leadership development programme" },
-          { company: "Private enquiry", contact: "Mrs Daniels (parent)", value: "$12k /yr", days: 3, heat: "warm", note: "Year 10 entry — requested prospectus" },
+          { company: "Deloitte SA", contact: "L&D Manager, Thabo N.", value: "$28k cohort", days: 1, heat: "hot", note: "60 staff: leadership development programme" },
+          { company: "Private enquiry", contact: "Mrs Daniels (parent)", value: "$12k /yr", days: 3, heat: "warm", note: "Year 10 entry: requested prospectus" },
         ],
       },
       {
         name: "Open Day / Consult",
         count: 22,
         leads: [
-          { company: "KPMG Africa", contact: "HR Director", value: "$54k contract", days: 2, heat: "hot", note: "Attended open session — follow-up call Thurs" },
-          { company: "Private — family", contact: "The Peterson Family", value: "$12k /yr", days: 5, heat: "warm", note: "Visited campus — comparing 2 institutions" },
+          { company: "KPMG Africa", contact: "HR Director", value: "$54k contract", days: 2, heat: "hot", note: "Attended open session: follow-up call Thurs" },
+          { company: "Private: family", contact: "The Peterson Family", value: "$12k /yr", days: 5, heat: "warm", note: "Visited campus: comparing 2 institutions" },
         ],
       },
       {
         name: "Application Submitted",
         count: 14,
         leads: [
-          { company: "Standard Bank", contact: "People Lead — K. Adams", value: "$72k contract", days: 3, heat: "hot", note: "Application in — assessment pending" },
-          { company: "Student — bursary", contact: "Amara Osei", value: "$18k /yr", days: 6, heat: "warm", note: "Academic assessment complete" },
+          { company: "Standard Bank", contact: "People Lead, K. Adams", value: "$72k contract", days: 3, heat: "hot", note: "Application in: assessment pending" },
+          { company: "Student: bursary", contact: "Amara Osei", value: "$18k /yr", days: 6, heat: "warm", note: "Academic assessment complete" },
         ],
       },
       {
         name: "Enrolled",
         count: 9,
         leads: [
-          { company: "MTN Group", contact: "L&D — 24 staff enrolled", value: "$96k /yr", days: 0, heat: "hot", note: "Enterprise deal — cohort 2 already requested" },
-          { company: "Full-fee student", contact: "Jordan Baptiste", value: "$12k /yr", days: 2, heat: "warm", note: "Enrolled — orientation in 3 weeks" },
+          { company: "MTN Group", contact: "L&D, 24 staff enrolled", value: "$96k /yr", days: 0, heat: "hot", note: "Enterprise deal: cohort 2 already requested" },
+          { company: "Full-fee student", contact: "Jordan Baptiste", value: "$12k /yr", days: 2, heat: "warm", note: "Enrolled: orientation in 3 weeks" },
         ],
       },
     ],
@@ -659,8 +659,8 @@ const INDUSTRIES = [
     ],
     insights: [
       { icon: Clock, title: "Speed of response determines enrolment", body: "Prospective students who receive a personalised response within 1 hour of enquiring are 6× more likely to enrol than those who wait 24 hours. Automated acknowledgements and assigned counsellors fix this instantly." },
-      { icon: TrendingUp, title: "Corporate training is your highest-margin channel", body: "A single corporate training contract can be worth 20× an individual enrolment. A dedicated B2B pipeline — separate from your student pipeline — ensures these opportunities get the attention and responsiveness they require." },
-      { icon: BarChart2, title: "Intake season demand is predictable — and plannable", body: "Enrolment enquiries follow clear seasonal patterns. A system with historical pipeline data lets you forecast intake numbers weeks in advance and resource your admissions team before the peak hits." },
+      { icon: TrendingUp, title: "Corporate training is your highest-margin channel", body: "A single corporate training contract can be worth 20× an individual enrolment. A dedicated B2B pipeline, separate from your student pipeline, ensures these opportunities get the attention and responsiveness they require." },
+      { icon: BarChart2, title: "Intake season demand is predictable", body: "Enrolment enquiries follow clear seasonal patterns. A system with historical pipeline data lets you forecast intake numbers weeks in advance and resource your admissions team before the peak hits." },
     ],
     automations: [
       "Enquiry received → personalised info pack sent within 15 minutes",
@@ -677,7 +677,7 @@ const INDUSTRIES = [
     id: "custom",
     label: "Custom App",
     icon: "⚙️",
-    tagline: "Beyond CRM — purpose-built tools for any workflow you can describe",
+    tagline: "Beyond CRM: purpose-built tools for any workflow you can describe",
     isCustomApp: true,
     metrics: [
       { label: "Avg. build time", value: "30 days", gain: "vs. 6–18 months traditional dev" },
@@ -686,8 +686,8 @@ const INDUSTRIES = [
     ],
     insights: [
       { icon: Code2, title: "Off-the-shelf tools are a compromise, not a solution", body: "Software built for everyone is optimised for no one. A custom app built around your exact workflow eliminates the workarounds, unused features, and frustration of bending your process to fit a product someone else designed." },
-      { icon: Zap, title: "30 days to live — not 6 months", body: "Traditional software development cycles kill momentum. We scope tightly, build to the exact requirements, and ship a working system in 30 days. You see real output in the first week, not after a quarterly review." },
-      { icon: ShieldCheck, title: "You own it completely — no licensing lock-in", body: "There are no ongoing licensing fees for the app itself. You own the code, configuration, and documentation. If you want to extend it, move platforms, or hand it to an internal team, nothing stops you." },
+      { icon: Zap, title: "30 days to live, not 6 months", body: "Traditional software development cycles kill momentum. We scope tightly, build to the exact requirements, and ship a working system in 30 days. You see real output in the first week, not after a quarterly review." },
+      { icon: ShieldCheck, title: "You own it completely, no licensing lock-in", body: "There are no ongoing licensing fees for the app itself. You own the code, configuration, and documentation. If you want to extend it, move platforms, or hand it to an internal team, nothing stops you." },
     ],
     automations: [
       "New requirement → scoped and estimated within 24 hours",
@@ -706,7 +706,7 @@ const CUSTOM_APPS = [
   {
     icon: Monitor,
     name: "Client Portal",
-    desc: "Give clients real-time visibility into project status, approvals, invoices, and communication — all branded to your business.",
+    desc: "Give clients real-time visibility into project status, approvals, invoices, and communication, all branded to your business.",
     examples: [
       "Live project progress & milestone board",
       "Document review and approval workflows",
@@ -728,7 +728,7 @@ const CUSTOM_APPS = [
   {
     icon: Users,
     name: "Employee Onboarding Hub",
-    desc: "Standardise how new hires get up to speed — tasks, documents, introductions, and sign-offs all tracked in one place.",
+    desc: "Standardise how new hires get up to speed: tasks, documents, introductions, and sign-offs all tracked in one place.",
     examples: [
       "Day-1 to Week-4 task checklists",
       "Document signing and compliance tracking",
@@ -739,7 +739,7 @@ const CUSTOM_APPS = [
   {
     icon: BarChart2,
     name: "Executive Reporting Dashboard",
-    desc: "Give leadership the numbers they actually need — live, not updated every Friday in a spreadsheet one version behind.",
+    desc: "Give leadership the numbers they actually need. Live, not updated every Friday in a spreadsheet one version behind.",
     examples: [
       "Live KPI and revenue board",
       "Team performance and output metrics",
@@ -761,12 +761,12 @@ const CUSTOM_APPS = [
   {
     icon: Code2,
     name: "Fully Custom Internal Tool",
-    desc: "If none of the above fits, we scope a tool to your exact workflow — built in 30 days, documented, and fully yours.",
+    desc: "If none of the above fits, we scope a tool to your exact workflow, built in 30 days, documented, and fully yours.",
     examples: [
       "Any workflow digitised and automated",
       "Connects to your existing stack via API",
       "Reporting built around your specific KPIs",
-      "Full documentation — yours to own and extend",
+      "Full documentation, yours to own and extend",
     ],
   },
 ];
@@ -790,7 +790,7 @@ const SERVICE_CARDS = [
     icon: Zap,
     accent: "bg-teal-50 dark:bg-teal-950/40 text-teal-600 dark:text-teal-400",
     title: "Workflow Automation",
-    desc: "Replace the manual tasks your team repeats every day with automated flows that trigger on the right event at the right time — without anyone managing them.",
+    desc: "Replace the manual tasks your team repeats every day with automated flows that trigger on the right event at the right time, without anyone managing them.",
     points: [
       "Trigger-based sequences and task creation",
       "Cross-system integrations via API",
@@ -802,11 +802,11 @@ const SERVICE_CARDS = [
     icon: Code2,
     accent: "bg-violet-50 dark:bg-violet-950/40 text-violet-600 dark:text-violet-400",
     title: "Custom App Development",
-    desc: "When off-the-shelf tools don't fit your workflow, we build purpose-built apps — portals, booking systems, dashboards, and more — in 30 days.",
+    desc: "When off-the-shelf tools don't fit your workflow, we build purpose-built apps in 30 days: portals, booking systems, dashboards, and more.",
     points: [
       "Scoped precisely to your requirements",
       "Built and live in 30 days",
-      "Full documentation — you own it entirely",
+      "Full documentation, you own it entirely",
       "Connects to your existing tools via API",
     ],
   },
@@ -818,7 +818,7 @@ const BENEFITS = [
   {
     icon: Zap,
     title: "Capture every lead",
-    body: "Web forms, email, phone, referrals, trade shows — every channel feeds one place. Nothing falls into an inbox and dies.",
+    body: "Web forms, email, phone, referrals, trade shows. Every channel feeds one place. Nothing falls into an inbox and dies.",
     points: ["Unified inbox for all inbound sources", "Duplicate detection and smart merging", "Auto-assign based on territory, service, or tier"],
   },
   {
@@ -830,7 +830,7 @@ const BENEFITS = [
   {
     icon: BarChart2,
     title: "Report what leadership actually needs",
-    body: "Pipeline value by stage, win rates by source, average deal duration, team performance — live, not in a spreadsheet updated every Friday.",
+    body: "Pipeline value by stage, win rates by source, average deal duration, team performance. Live, not in a spreadsheet updated every Friday.",
     points: ["Live pipeline and revenue forecasting", "Win/loss analysis by source and rep", "Conversion rates at every stage"],
   },
 ];
@@ -848,7 +848,7 @@ const HEAT = {
 const AI_DATA = {
   saas: {
     agents: [
-      { icon: "⚡", name: "Trial Scoring Agent", desc: "Monitors feature usage, seat invitations, and company signals — automatically routes high-intent trials to sales within 2 minutes." },
+      { icon: "⚡", name: "Trial Scoring Agent", desc: "Monitors feature usage, seat invitations, and company signals, then routes high-intent trials to sales within 2 minutes." },
       { icon: "✍️", name: "Follow-up Writer", desc: "Generates personalised outreach based on trial activity and company profile. 3× better reply rates than static templates." },
       { icon: "🔔", name: "Churn Early Warning", desc: "Detects usage drops before cancellation intent becomes visible. Triggers re-engagement sequences while accounts are still recoverable." },
     ],
@@ -858,13 +858,13 @@ const AI_DATA = {
       "Proposal viewed → activity signal detected → personalised follow-up triggered",
       "30-day no activity → churn risk flagged → retention offer sent",
     ],
-    win: "SaaS businesses using AI lead scoring close 35% more trials without adding headcount — the agent handles the triage, your team handles the conversations.",
+    win: "SaaS businesses using AI lead scoring close 35% more trials without adding headcount. The agent handles the triage, your team handles the conversations.",
   },
   agency: {
     agents: [
-      { icon: "🎯", name: "Brief Qualifier", desc: "Analyses new enquiries for budget, timeline, and brief quality — scores fit and auto-assigns to the right account manager." },
+      { icon: "🎯", name: "Brief Qualifier", desc: "Analyses new enquiries for budget, timeline, and brief quality, then scores fit and auto-assigns to the right account manager." },
       { icon: "📝", name: "Proposal Writer Agent", desc: "Generates proposal first drafts from brief inputs, past wins, and pricing rules. Account managers review and personalise, not write from scratch." },
-      { icon: "📊", name: "Retainer Health Monitor", desc: "Tracks retainer utilisation, delivery pace, and client communication — flags at-risk accounts before they churn." },
+      { icon: "📊", name: "Retainer Health Monitor", desc: "Tracks retainer utilisation, delivery pace, and client communication, and flags at-risk accounts before they churn." },
     ],
     workflows: [
       "New enquiry received → AI scores fit + budget → assigned within 10 min",
@@ -872,11 +872,11 @@ const AI_DATA = {
       "Retainer 80% utilised → project manager alerted + scope conversation initiated",
       "Project completed → AI generates case study draft from delivery notes",
     ],
-    win: "Agencies with AI-assisted triage respond to new enquiries 4× faster and win 22% more proposals — speed signals capability before the first call.",
+    win: "Agencies with AI-assisted triage respond to new enquiries 4× faster and win 22% more proposals. Speed signals capability before the first call.",
   },
   professional: {
     agents: [
-      { icon: "🔎", name: "Enquiry Triage Agent", desc: "Qualifies inbound enquiries by matter type, urgency, and referral source — routes to the right partner or team within minutes." },
+      { icon: "🔎", name: "Enquiry Triage Agent", desc: "Qualifies inbound enquiries by matter type, urgency, and referral source, then routes to the right partner or team within minutes." },
       { icon: "🤝", name: "Referral Intelligence Agent", desc: "Tracks every referral source, conversion outcome, and relationship health. Surfaces who to thank, who to nurture, and when." },
       { icon: "📋", name: "Proposal Personaliser", desc: "Pulls relevant case precedents and prior matter data to generate tailored engagement letters faster than any template." },
     ],
@@ -886,12 +886,12 @@ const AI_DATA = {
       "Matter stalled 14 days → AI flags → internal review triggered",
       "Matter closed → AI prompts referral thank-you + review request",
     ],
-    win: "Professional services firms using AI referral tracking convert 31% more referrals — knowing who to prioritise and when to follow up is everything.",
+    win: "Professional services firms using AI referral tracking convert 31% more referrals. Knowing who to prioritise and when to follow up is everything.",
   },
   recruitment: {
     agents: [
       { icon: "📄", name: "CV Screening Agent", desc: "Matches candidate profiles against role criteria, score-ranks shortlists, and flags red/green signals before a recruiter reads a word." },
-      { icon: "💬", name: "Candidate Prep Agent", desc: "Sends personalised interview prep emails based on job spec, company background, and stage — candidates arrive better prepared, offers convert higher." },
+      { icon: "💬", name: "Candidate Prep Agent", desc: "Sends personalised interview prep emails based on job spec, company background, and stage. Candidates arrive better prepared and offers convert higher." },
       { icon: "🎯", name: "Brief Matcher", desc: "When a new client brief arrives, instantly matches it against your active and passive candidate pool. First shortlist in minutes, not hours." },
     ],
     workflows: [
@@ -900,11 +900,11 @@ const AI_DATA = {
       "Offer stage → AI drafts offer summary + FAQ for candidate objections",
       "Placement made → AI schedules 30/60/90-day check-ins automatically",
     ],
-    win: "Recruitment firms with AI CV screening process 4× more candidates per consultant without quality loss — volume becomes a competitive advantage, not a bottleneck.",
+    win: "Recruitment firms with AI CV screening process 4× more candidates per consultant without quality loss. Volume becomes a competitive advantage, not a bottleneck.",
   },
   distribution: {
     agents: [
-      { icon: "📦", name: "Reorder Predictor", desc: "Analyses purchase cycles, seasonal patterns, and account behaviour to predict when each stockist will need to reorder — before they contact you." },
+      { icon: "📦", name: "Reorder Predictor", desc: "Analyses purchase cycles, seasonal patterns, and account behaviour to predict when each stockist will need to reorder, before they contact you." },
       { icon: "📈", name: "Account Health Monitor", desc: "Tracks order frequency, value trends, and communication gaps. Flags accounts going quiet before they're lost." },
       { icon: "🛒", name: "New SKU Recommender", desc: "When you launch a new product line, AI identifies which accounts are most likely to adopt it based on past purchase patterns." },
     ],
@@ -914,13 +914,13 @@ const AI_DATA = {
       "New product launched → AI generates targeted pitch list + personalised emails",
       "Large order placed → AI schedules post-delivery check-in automatically",
     ],
-    win: "Distributors using predictive reorder nudges see 29% higher reorder rates and 91% account retention — the AI knows the pattern before the customer does.",
+    win: "Distributors using predictive reorder nudges see 29% higher reorder rates and 91% account retention. The AI knows the pattern before the customer does.",
   },
   financial: {
     agents: [
-      { icon: "📋", name: "KYC Chaser Agent", desc: "Monitors document submission status and sends smart, personalised chasers at the right intervals — compliance rates go from 61% to 94%." },
+      { icon: "📋", name: "KYC Chaser Agent", desc: "Monitors document submission status and sends smart, personalised chasers at the right intervals. Compliance rates go from 61% to 94%." },
       { icon: "🔒", name: "Risk Scoring Agent", desc: "Analyses client portfolio, communication history, and behaviour signals to flag at-risk relationships before they escalate." },
-      { icon: "📅", name: "Review Prep Agent", desc: "Generates client meeting briefs with portfolio summary, regulatory flags, and personalised talking points — advisors walk in prepared." },
+      { icon: "📅", name: "Review Prep Agent", desc: "Generates client meeting briefs with portfolio summary, regulatory flags, and personalised talking points, so advisors walk in prepared." },
     ],
     workflows: [
       "New client onboarded → AI launches KYC document collection sequence",
@@ -932,7 +932,7 @@ const AI_DATA = {
   },
   healthcare: {
     agents: [
-      { icon: "📅", name: "Appointment Rebooker", desc: "When a cancellation occurs, AI instantly contacts patients on the waitlist and fills the slot — no admin time required." },
+      { icon: "📅", name: "Appointment Rebooker", desc: "When a cancellation occurs, AI instantly contacts patients on the waitlist and fills the slot, with no admin time required." },
       { icon: "🔁", name: "Referral Tracker Agent", desc: "Acknowledges incoming referrals within minutes, routes to the right clinician, and tracks response time against targets." },
       { icon: "💙", name: "Patient Engagement Agent", desc: "Sends recall reminders, post-appointment check-ins, and satisfaction prompts at the right intervals without manual scheduling." },
     ],
@@ -942,13 +942,13 @@ const AI_DATA = {
       "Post-appointment → AI check-in at 48 hours → satisfaction captured automatically",
       "Patient due for recall → AI reminder sequence → rebooking confirmed",
     ],
-    win: "Healthcare practices with AI appointment management achieve 91% fill rates and recover thousands per week in lost appointment revenue — with zero extra admin.",
+    win: "Healthcare practices with AI appointment management achieve 91% fill rates and recover thousands per week in lost appointment revenue, with zero extra admin.",
   },
   realestate: {
     agents: [
-      { icon: "🏠", name: "Enquiry Qualifier", desc: "Scores incoming property enquiries by intent, budget signals, and urgency — your agents call serious buyers first, not everyone." },
-      { icon: "📸", name: "Viewing Prep Agent", desc: "Before each viewing, generates a buyer profile brief for the agent — relevant questions, comparable properties, and buyer history." },
-      { icon: "📬", name: "Follow-up Sequence Agent", desc: "After every viewing, automatically sends tailored follow-up at optimal intervals — buyers stay warm without agents manually chasing." },
+      { icon: "🏠", name: "Enquiry Qualifier", desc: "Scores incoming property enquiries by intent, budget signals, and urgency, so your agents call serious buyers first, not everyone." },
+      { icon: "📸", name: "Viewing Prep Agent", desc: "Before each viewing, generates a buyer profile brief for the agent: relevant questions, comparable properties, and buyer history." },
+      { icon: "📬", name: "Follow-up Sequence Agent", desc: "After every viewing, automatically sends tailored follow-up at optimal intervals, so buyers stay warm without agents manually chasing." },
     ],
     workflows: [
       "Enquiry submitted → AI scores intent → priority call list for agents by 9am",
@@ -956,12 +956,12 @@ const AI_DATA = {
       "Post-viewing → AI follow-up at 4 hours, 24 hours, and 72 hours automatically",
       "Offer made → pipeline updated + vendor notification triggered instantly",
     ],
-    win: "Estate agencies using AI enquiry scoring respond to top-intent buyers in under 9 minutes — vs. a 4.3-hour industry average. Speed is the differentiator.",
+    win: "Estate agencies using AI enquiry scoring respond to top-intent buyers in under 9 minutes, against a 4.3-hour industry average. Speed is the differentiator.",
   },
   ecommerce: {
     agents: [
-      { icon: "📦", name: "Sample Converter Agent", desc: "Tracks every sample sent and launches a structured 48-hour follow-up sequence — converts 54% of samples into first orders." },
-      { icon: "💰", name: "LTV Predictor", desc: "Analyses order history, frequency, and margin per account to predict future value — your team focuses energy where it returns most." },
+      { icon: "📦", name: "Sample Converter Agent", desc: "Tracks every sample sent and launches a structured 48-hour follow-up sequence, which converts 54% of samples into first orders." },
+      { icon: "💰", name: "LTV Predictor", desc: "Analyses order history, frequency, and margin per account to predict future value, so your team focuses energy where it returns most." },
       { icon: "🔄", name: "Stockist Reactivator", desc: "Identifies accounts that have gone quiet and launches a targeted win-back campaign using their previous purchase patterns." },
     ],
     workflows: [
@@ -970,12 +970,12 @@ const AI_DATA = {
       "New product range → AI generates targeted stockist pitch based on past orders",
       "Bulk order placed → post-delivery check-in + upsell triggered at 14 days",
     ],
-    win: "E-commerce brands with AI-driven sample follow-up convert 22% more samples into orders — the follow-up is faster, more personal, and never forgotten.",
+    win: "E-commerce brands with AI-driven sample follow-up convert 22% more samples into orders. The follow-up is faster, more personal, and never forgotten.",
   },
   construction: {
     agents: [
-      { icon: "📐", name: "Tender Qualifier", desc: "Analyses tender documents for fit, margin potential, and win probability — ranks opportunities so your estimators bid the right jobs." },
-      { icon: "⚡", name: "Quote Accelerator", desc: "Pulls past project data, supplier rates, and scope templates to generate quote first drafts — estimators refine, not rebuild from zero." },
+      { icon: "📐", name: "Tender Qualifier", desc: "Analyses tender documents for fit, margin potential, and win probability, and ranks opportunities so your estimators bid the right jobs." },
+      { icon: "⚡", name: "Quote Accelerator", desc: "Pulls past project data, supplier rates, and scope templates to generate quote first drafts, so estimators refine instead of rebuilding from zero." },
       { icon: "📋", name: "Project Milestone Agent", desc: "Monitors project stages and triggers client notifications, invoice requests, and variation tracking automatically." },
     ],
     workflows: [
@@ -984,13 +984,13 @@ const AI_DATA = {
       "Variation submitted → approval tracked → invoice triggered on sign-off",
       "Project milestone hit → client update generated + sent automatically",
     ],
-    win: "Construction businesses using AI tender scoring bid 38% more accurately and win 16% more contracts — qualified leads only, no wasted estimator time.",
+    win: "Construction businesses using AI tender scoring bid 38% more accurately and win 16% more contracts. Qualified leads only, no wasted estimator time.",
   },
   education: {
     agents: [
-      { icon: "🎓", name: "Enquiry Nurture Agent", desc: "Responds to prospectus requests and enquiries with personalised follow-up sequences — no enquiry goes cold waiting for a callback." },
+      { icon: "🎓", name: "Enquiry Nurture Agent", desc: "Responds to prospectus requests and enquiries with personalised follow-up sequences, so no enquiry goes cold waiting for a callback." },
       { icon: "📝", name: "Enrolment Converter", desc: "Identifies incomplete applications and launches personalised completion nudges at the right intervals." },
-      { icon: "🏢", name: "Corporate Training Manager", desc: "Tracks corporate training renewal cycles, usage rates, and contract expiry — proactive outreach before renewals lapse." },
+      { icon: "🏢", name: "Corporate Training Manager", desc: "Tracks corporate training renewal cycles, usage rates, and contract expiry, for proactive outreach before renewals lapse." },
     ],
     workflows: [
       "Enquiry submitted → AI personalised response in < 5 min → nurture sequence launched",
@@ -998,13 +998,13 @@ const AI_DATA = {
       "Open day confirmed → reminder sequence + pre-event info sent at right intervals",
       "Corporate contract expiring in 60 days → renewal conversation triggered",
     ],
-    win: "Education providers with AI-driven enquiry nurture convert 11% more enquiries into enrolments — the AI keeps every prospect warm until they're ready to commit.",
+    win: "Education providers with AI-driven enquiry nurture convert 11% more enquiries into enrolments. The AI keeps every prospect warm until they're ready to commit.",
   },
   custom: {
     agents: [
-      { icon: "⚙️", name: "Workflow Automation Agent", desc: "Handles repetitive routing, status updates, and notifications — your team focuses on decisions, not data entry." },
-      { icon: "🔄", name: "Data Sync Agent", desc: "Keeps data consistent across all connected platforms automatically — no manual reconciliation, no duplicate records." },
-      { icon: "📊", name: "Adoption Monitor", desc: "Tracks feature usage across your team and surfaces the workflows being missed — drives the ROI of every tool you've invested in." },
+      { icon: "⚙️", name: "Workflow Automation Agent", desc: "Handles repetitive routing, status updates, and notifications, so your team focuses on decisions, not data entry." },
+      { icon: "🔄", name: "Data Sync Agent", desc: "Keeps data consistent across all connected platforms automatically, with no manual reconciliation and no duplicate records." },
+      { icon: "📊", name: "Adoption Monitor", desc: "Tracks feature usage across your team and surfaces the workflows being missed, which drives the ROI of every tool you've invested in." },
     ],
     workflows: [
       "Form submitted → AI classifies + routes to right team → SLA clock starts",
@@ -1012,7 +1012,7 @@ const AI_DATA = {
       "Team member not using a feature → targeted nudge + micro-training sent",
       "Milestone reached → stakeholder update generated + sent automatically",
     ],
-    win: "Custom apps built with AI agents from day one process routine decisions 10× faster — your team makes fewer low-value decisions and more high-impact ones.",
+    win: "Custom apps built with AI agents from day one process routine decisions 10× faster. Your team makes fewer low-value decisions and more high-impact ones.",
   },
 };
 
@@ -1030,7 +1030,7 @@ function AIView({ industry }) {
         <div>
           <div className="text-xs font-semibold uppercase tracking-widest text-teal-600 dark:text-teal-400 mb-1">AI Layer</div>
           <p className="text-sm leading-relaxed text-teal-900 dark:text-teal-300">
-            Every system we build includes an AI layer — agents, intelligent workflows, and automation that help your <strong>{industry.label}</strong> business operate faster and grow without adding headcount.
+            Every system we build includes an AI layer: agents, intelligent workflows, and automation that help your <strong>{industry.label}</strong> business operate faster and grow without adding headcount.
           </p>
         </div>
       </div>
@@ -1184,7 +1184,7 @@ function TimelineView({ industry }) {
   return (
     <div className="rounded-2xl border border-slate-200 dark:border-slate-700 overflow-hidden shadow-sm">
       <div className="flex items-center justify-between gap-3 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-700 px-4 py-3">
-        <span className="text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wide">Deal Timeline — days in current stage</span>
+        <span className="text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wide">Deal Timeline: days in current stage</span>
         <div className="flex items-center gap-3">
           {Object.entries(HEAT).map(([k, v]) => (
             <span key={k} className="flex items-center gap-1.5 text-xs text-slate-500 dark:text-slate-400">
@@ -1480,14 +1480,14 @@ export default function CRMSimulator() {
           transition={{ duration: 0.5, ease: "easeOut" }}
         >
           <div className="inline-flex items-center gap-1.5 rounded-full border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-1 text-xs font-medium text-slate-500 dark:text-slate-400 mb-5">
-            <span className="h-1.5 w-1.5 rounded-full bg-teal-500" /> Interactive example — pick your industry
+            <span className="h-1.5 w-1.5 rounded-full bg-teal-500" /> Interactive example: pick your industry
           </div>
           <h1 className="text-4xl sm:text-5xl font-semibold tracking-tight leading-tight">
             See your pipeline.<br className="hidden sm:block" />
             <span className="text-slate-400 dark:text-slate-500">Before you build it.</span>
           </h1>
           <p className="mt-4 text-lg text-slate-600 dark:text-slate-400 max-w-xl">
-            Select your industry to see how a custom system would organise your leads, automate your follow-up, and surface the numbers that matter — built specifically for your business in 30 days.
+            Select your industry to see how a custom system would organise your leads, automate your follow-up, and surface the numbers that matter, built specifically for your business in 30 days.
           </p>
         </motion.div>
 
@@ -1497,7 +1497,7 @@ export default function CRMSimulator() {
           <h2 className="text-2xl font-semibold tracking-tight mb-2">Three types of systems. One team. 30 days to live.</h2>
           <p className="text-slate-600 dark:text-slate-400 mb-7 max-w-2xl">
             Every system is custom-scoped to your business, built in 30 days, and handed over with full documentation.
-            No vendor lock-in, no subscriptions for the system itself — you own it on day one.
+            No vendor lock-in, no subscriptions for the system itself. You own it on day one.
           </p>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             {SERVICE_CARDS.map((card, i) => (
@@ -1697,7 +1697,7 @@ export default function CRMSimulator() {
             <p className="text-slate-400 leading-relaxed mb-6">
               Every system you see simulated here can be built on the platform that fits your team best.
               We pick whatever's fastest to build on, easiest for your team to adopt, and powerful enough
-              for the automations you need — no default, no vendor lock-in. The architecture, logic, and
+              for the automations you need, with no default and no vendor lock-in. The architecture, logic, and
               automations we design are transferable. You own the system. The platform is just where it lives.
             </p>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-8">
@@ -1707,7 +1707,7 @@ export default function CRMSimulator() {
                 "Works on mobile, tablet, and desktop",
                 "Dashboards your leadership can actually read",
                 "Built and live in 30 days, not 6 months",
-                "Full documentation — you fully own it on day one",
+                "Full documentation, you fully own it on day one",
               ].map((p) => (
                 <div key={p} className="flex items-start gap-2 text-sm text-slate-300">
                   <Check className="h-4 w-4 flex-none text-teal-400 mt-0.5" strokeWidth={2.5} />

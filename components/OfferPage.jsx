@@ -41,21 +41,21 @@ const TRUST_POINTS = [
 ];
 
 const STEPS = [
-  { n: "01", icon: Search, label: "Free Audit", sub: "Run the calculator — see exactly where your sales cycle is breaking down" },
+  { n: "01", icon: Search, label: "Free Audit", sub: "Run the calculator and see exactly where your sales cycle is breaking down" },
   { n: "02", icon: TrendingDown, label: "Bottleneck Report", sub: "AI pinpoints where revenue leaks and what fixes it, no call needed" },
-  { n: "03", icon: ClipboardCheck, label: "Your Build Plan", sub: "Same page, a few more questions — fixes scope, price, and ship date" },
-  { n: "04", icon: Hammer, label: "30-Day Build", sub: "Your sales cycle rebuilt and live in your CRM — fixed date, no delays" },
-  { n: "05", icon: LifeBuoy, label: "Support Period", sub: "60 days free — training, optimisation, documentation. Keep it running after with an optional monthly retainer." },
+  { n: "03", icon: ClipboardCheck, label: "Your Build Plan", sub: "Same page, a few more questions that fix scope, price, and ship date" },
+  { n: "04", icon: Hammer, label: "30-Day Build", sub: "Your sales cycle rebuilt and live in your CRM on a fixed date, no delays" },
+  { n: "05", icon: LifeBuoy, label: "Support Period", sub: "60 days free: training, optimisation, documentation. Keep it running after with an optional monthly retainer." },
 ];
 
 const INCLUDED = [
-  { icon: Zap, title: "Core workflow, end-to-end", body: "Capture → score → route → report, built and tested — not a demo.", big: true },
-  { icon: Puzzle, title: "Fits how you actually work", body: "No rigid templates — we shape the CRM around your workflow, not the other way around." },
+  { icon: Zap, title: "Core workflow, end-to-end", body: "Capture → score → route → report, built and tested, not a demo.", big: true },
+  { icon: Puzzle, title: "Fits how you actually work", body: "No rigid templates. We shape the CRM around your workflow, not the other way around." },
   { icon: ClipboardCheck, title: "CRM board your team knows", body: "Configured on the platform that fits your workflow." },
   { icon: TrendingDown, title: "One reporting dashboard", body: "The metrics leadership actually watches, nothing else." },
-  { icon: Check, title: "Integrations in scope", body: "Your CRM, enrichment tools, calendars — connected." },
+  { icon: Check, title: "Integrations in scope", body: "Your CRM, enrichment tools, calendars, connected." },
   { icon: FileText, title: "Recorded team training", body: "Yours to keep and reuse as your team grows." },
-  { icon: ShieldCheck, title: "Full handover documentation", body: "You fully own it — no dependency on us to run it." },
+  { icon: ShieldCheck, title: "Full handover documentation", body: "You fully own it, with no dependency on us to run it." },
 ];
 
 const DEFERRED = [
@@ -74,16 +74,16 @@ const AI_CAPABILITIES = [
   { icon: Bell,      title: "Deal-risk alerts",     body: "Flags deals going cold and nudges an owner before the revenue slips away." },
   { icon: Sparkles,  title: "Auto-enrichment",      body: "Fills in company, contact, and intent data so records are never half-empty." },
   { icon: FileText,  title: "Meeting summaries",    body: "Turns calls and email threads into clean CRM notes and clear next steps." },
-  { icon: BarChart3, title: "Pipeline forecasting", body: "Projects the month from live pipeline signal — not a rep's gut feel." },
+  { icon: BarChart3, title: "Pipeline forecasting", body: "Projects the month from live pipeline signal, not a rep's gut feel." },
   { icon: Gauge,     title: "Inbox triage",         body: "Reads inbound messages and files each one to the right record instantly." },
   { icon: Bot,       title: "24/7 first response",  body: "Answers and qualifies new enquiries the second they arrive, day or night." },
 ];
 
 const GUARANTEES = [
-  { icon: ShieldCheck, title: "30-day guarantee", body: "Miss the date for a reason that's on us, get 30 extra days of support free." },
-  { icon: Tag, title: "Fixed price, always", body: "The price you sign is the price you pay. No surprise invoices." },
-  { icon: Unlock, title: "You own what we build", body: "System, data, documentation — fully yours on final payment." },
-  { icon: Zap, title: "No call required", body: "Audit, scope, and price all happen async, on this page." },
+  { icon: ShieldCheck, title: "30 days or we keep working", body: "If we miss the date and it's on us, you get another 30 days of support at no charge." },
+  { icon: Tag, title: "Fixed price", body: "You pay what you signed. No bigger invoice at the end." },
+  { icon: Unlock, title: "You own it", body: "The system, the data and the documentation are yours once the final payment clears." },
+  { icon: Zap, title: "No call needed", body: "The audit, the scope and the price all happen on this page, in your own time." },
 ];
 
 export default function OfferPage() {
@@ -120,14 +120,14 @@ export default function OfferPage() {
               For businesses whose CRM isn't running the sales cycle
             </div>
             <h1 className="text-4xl sm:text-5xl font-semibold tracking-tight leading-tight">
-              Your CRM isn't broken.
-              <br /> Your sales cycle is.
+              The follow-up only happens
+              <br /> when someone remembers.
             </h1>
             <p className="mt-4 text-lg text-slate-600 dark:text-slate-400">
-              Leads stall, reps skip steps, follow-up happens whenever someone remembers — and your CRM isn't
-              as flexible as you need it to be. That's why we're here. We rebuild the process and automation
-              around your CRM so it actually runs your sales cycle. Shipped in 30 days, with 60 days of support
-              free. No endless discovery. No disappearing act.
+              A lead comes in Thursday. Someone means to call it Friday. By Monday it's three screens down and
+              nobody's sure whose it was. We rebuild the process around your CRM so that stops: stages that mean
+              something, follow-up that fires without being remembered, and a pipeline you can read without asking
+              five people. Live 30 days from the day you sign, then 60 days of support while your team settles in.
             </p>
             <div className="mt-7 flex flex-col sm:flex-row gap-3">
               <motion.a whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} href="/calculator?step=buildplan" className="inline-flex items-center justify-center gap-2 rounded-lg bg-teal-500 px-6 py-3 text-sm font-semibold text-slate-950 hover:bg-teal-400">
@@ -155,7 +155,7 @@ export default function OfferPage() {
               <div className="min-w-0">
                 <div className="text-sm font-semibold text-slate-900 dark:text-slate-100 group-hover:text-teal-700 dark:group-hover:text-teal-400">See a live system example</div>
                 <div className="text-xs text-slate-400 dark:text-slate-500 group-hover:text-teal-600 dark:group-hover:text-teal-400">
-                  Pick your industry — see exactly what we'd build for you
+                  Pick your industry and see what we'd build for you
                 </div>
               </div>
               <ArrowRight className="h-4 w-4 flex-none text-slate-300 dark:text-slate-600 group-hover:text-teal-500 ml-auto" />
@@ -245,7 +245,7 @@ export default function OfferPage() {
           <div className="text-center max-w-lg mx-auto mb-6">
             <h2 className="text-2xl font-semibold tracking-tight">From scattered to sorted.</h2>
             <p className="mt-2 text-slate-600 dark:text-slate-400 text-sm">
-              Every lead gets a stage, an owner, and a next step — automatically. No more guessing what happened to who.
+              Every lead gets a stage, an owner, and a next step, automatically. No more guessing what happened to who.
             </p>
           </div>
           <div className="max-w-xl mx-auto">
@@ -285,7 +285,7 @@ export default function OfferPage() {
                 Then AI takes over the busywork.
               </motion.h2>
               <p className="mt-3 text-slate-400">
-                Scoring, routing, and follow-up sequencing run themselves — so your team spends time closing,
+                Scoring, routing, and follow-up sequencing run themselves, so your team spends time closing,
                 not chasing. And it keeps working long after launch:
               </p>
             </div>
@@ -358,7 +358,7 @@ export default function OfferPage() {
           <div className="mb-7">
             <div className="text-xs font-medium uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-1">Pricing</div>
             <h2 className="text-2xl font-semibold tracking-tight">One package. Fixed scope. 50% off.</h2>
-            <p className="mt-1.5 text-sm text-slate-600 dark:text-slate-400">One flat build fee — 30-day build + 60 days FREE support. Keep it running after with an optional {tiers.sym}{tiers.retainer}/mo retainer, plus third-party tools &amp; subscriptions billed at cost. Both are opt-in at signing — nothing recurring during your build.</p>
+            <p className="mt-1.5 text-sm text-slate-600 dark:text-slate-400">One flat build fee: 30-day build plus 60 days FREE support. Keep it running after with an optional {tiers.sym}{tiers.retainer}/mo retainer, plus third-party tools &amp; subscriptions billed at cost. Both are opt-in at signing. Nothing recurring during your build.</p>
           </div>
 
           {/* Limited Time Offer — full-width feature block */}
@@ -367,7 +367,7 @@ export default function OfferPage() {
               <div className="flex-1">
                 <div className="flex items-center gap-2 mb-3">
                   <span className="rounded-full bg-teal-500 px-3 py-0.5 text-xs font-bold text-slate-950 tracking-wide uppercase">
-                    50% Off — Special
+                    50% Off Special
                   </span>
                   <span className="text-xs text-slate-400">Ends {OFFER_DEADLINE}</span>
                 </div>
@@ -385,14 +385,14 @@ export default function OfferPage() {
                     <Check className="h-4 w-4 text-teal-400" strokeWidth={3} /> 30-day build, fixed date
                   </span>
                   <span className="flex items-center gap-1.5 text-sm text-slate-300">
-                    <Check className="h-4 w-4 text-teal-400" strokeWidth={3} /> 60 days support — <span className="text-teal-400 font-semibold">FREE</span>
+                    <Check className="h-4 w-4 text-teal-400" strokeWidth={3} /> 60 days support: <span className="text-teal-400 font-semibold">FREE</span>
                   </span>
                   <span className="flex items-center gap-1.5 text-sm text-slate-300">
                     <Check className="h-4 w-4 text-teal-400" strokeWidth={3} /> Full handover docs
                   </span>
                 </div>
                 <div className="mt-4 rounded-xl border border-slate-800 bg-slate-900/60 p-3.5 max-w-md">
-                  <div className="text-xs font-semibold uppercase tracking-wider text-slate-400 mb-2">After your free support — both opt-in</div>
+                  <div className="text-xs font-semibold uppercase tracking-wider text-slate-400 mb-2">After your free support, both opt-in</div>
                   <div className="flex flex-col gap-2">
                     <div className="flex items-baseline justify-between gap-3">
                       <span className="flex items-center gap-1.5 text-sm text-slate-300">
@@ -408,7 +408,7 @@ export default function OfferPage() {
                     </div>
                   </div>
                   <p className="mt-2 text-[11px] leading-relaxed text-slate-500">
-                    Support, maintenance, and hosting/APIs to keep your system running. Nothing recurring is charged during your build — you opt in when you sign.
+                    Support, maintenance, and hosting/APIs to keep your system running. Nothing recurring is charged during your build. You opt in when you sign.
                   </p>
                 </div>
                 <p className="mt-3 text-xs text-slate-500 max-w-md">
@@ -431,13 +431,13 @@ export default function OfferPage() {
         <motion.div {...reveal} id="start" className="mt-16 rounded-2xl border border-teal-200 dark:border-teal-800 bg-teal-50 dark:bg-teal-950/40 p-6 sm:p-8">
           <h2 className="text-2xl font-semibold tracking-tight">Start without a call</h2>
           <p className="mt-2 text-slate-700 dark:text-slate-300 max-w-2xl">
-            Run the free audit first — it takes 2 minutes and carries straight into your Build Plan on the same page.
+            Run the free audit first. It takes 2 minutes and carries straight into your Build Plan on the same page.
           </p>
           <div className="mt-6 grid grid-cols-1 sm:grid-cols-3 gap-4">
             {[
-              ["Run the free audit", "2-minute Lead Leakage Calculator — AI pinpoints where your sales cycle is breaking down."],
-              ["Lock in your Build Plan", "Same page — a few more questions pin down exactly what we'll build and the date we'll ship it."],
-              ["Build begins", "We send scope, price, and a start date. Approve it, pay the deposit, and we're off — daily updates, no meetings."],
+              ["Run the free audit", "2-minute Lead Leakage Calculator. AI pinpoints where your sales cycle is breaking down."],
+              ["Lock in your Build Plan", "Same page, a few more questions pin down exactly what we'll build and the date we'll ship it."],
+              ["Build begins", "We send scope, price, and a start date. Approve it, pay the deposit, and we're off. Daily updates, no meetings."],
             ].map(([t, b], i) => (
               <div key={t} className="rounded-xl border border-teal-200 dark:border-teal-800 bg-white dark:bg-slate-900 p-4">
                 <span className="font-mono text-sm font-semibold text-teal-600 dark:text-teal-400 tabular-nums">{`0${i + 1}`}</span>
@@ -464,7 +464,7 @@ export default function OfferPage() {
             </div>
             <h2 className="text-2xl sm:text-3xl font-semibold tracking-tight text-white">Ready to fix your sales cycle?</h2>
             <p className="mt-2 text-slate-400 max-w-lg mx-auto">
-              Run the free audit, see your number, and turn it into a fixed Build Plan — all on one page. No call required.
+              Run the free audit, see your number, and turn it into a fixed Build Plan, all on one page. No call required.
             </p>
             <div className="mt-6 flex flex-col sm:flex-row items-center justify-center gap-3">
               <motion.a whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} href="/calculator" className="inline-flex items-center justify-center gap-2 rounded-lg bg-teal-500 px-6 py-3 text-sm font-semibold text-slate-950 hover:bg-teal-400">

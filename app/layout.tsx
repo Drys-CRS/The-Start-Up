@@ -9,11 +9,11 @@ import { SITE_URL as siteUrl } from "@/lib/site";
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
   title: {
-    default: "The Start Up — Business Systems & AI, Shipped in 30 Days",
+    default: "The Start Up: Business Systems & AI, Shipped in 30 Days",
     template: "%s | The Start Up",
   },
   description:
-    "We help businesses of every kind grow — through custom systems, intelligent workflows, and AI built in 30 days. Fixed price. Free automated audit. No call required to start.",
+    "We help businesses of every kind grow through custom systems, intelligent workflows, and AI built in 30 days. Fixed price. Free automated audit. No call required to start.",
   keywords: [
     "custom CRM development",
     "platform-agnostic implementation",
@@ -39,23 +39,23 @@ export const metadata: Metadata = {
     locale: "en_US",
     url: siteUrl,
     siteName: "The Start Up",
-    title: "The Start Up — Business Systems & AI, Shipped in 30 Days",
+    title: "The Start Up: Business Systems & AI, Shipped in 30 Days",
     description:
-      "We help businesses of every kind grow through custom systems, intelligent workflows, and AI — built in 30 days, fixed price. No call required to start.",
+      "We help businesses of every kind grow through custom systems, intelligent workflows, and AI, built in 30 days, fixed price. No call required to start.",
     images: [
       {
         url: "/og-image.png",
         width: 851,
         height: 315,
-        alt: "The Start Up — Business Systems & AI, Shipped in 30 Days",
+        alt: "The Start Up: Business Systems & AI, Shipped in 30 Days",
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "The Start Up — Business Systems & AI, Shipped in 30 Days",
+    title: "The Start Up: Business Systems & AI, Shipped in 30 Days",
     description:
-      "Custom systems, workflows, and AI for any business — built in 30 days, fixed price. Free automated audit. No call required.",
+      "Custom systems, workflows, and AI for any business, built in 30 days, fixed price. Free automated audit. No call required.",
     images: ["/og-image.png"],
   },
   robots: {
