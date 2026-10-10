@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { LEADS, LEADS_BOARD_ID, SCOPE, SCOPE_BOARD_ID, listBoardItems } from "@/lib/monday";
+import { LEADS, LEADS_BOARD_ID, SCOPE, SCOPE_BOARD_ID, listBoardItems, setSimpleColumn } from "@/lib/monday";
 import { backfillLead, backfillScopeLock, dbConfigured, type BackfillResult } from "@/lib/db";
 
 export const runtime = "nodejs";
@@ -61,7 +61,19 @@ export async function POST(_req: NextRequest) {
   for (const item of scopeItems) {
     // Deals created before the Ref No column existed have no ref, and ref_no is the
     // unique key here, so fall back to something stable: the Monday item id.
-    const refNo = (item.texts[SCOPE.ref] || "").trim() || `LEGACY-${item.id}`;
+    const existingRef = (item.texts[SCOPE.ref] || "").trim();
+    const refNo = existingRef || `LEGACY-${item.id}`;
+
+    // Write a synthesised ref back to Monday. Without this the board and the database
+    // disagree, and every customer-facing lookup (portal, status, follow-ups) fails
+    // for that deal, because those all resolve the ref through Monday.
+    if (!existingRef) {
+      try {
+        await setSimpleColumn(SCOPE_BOARD_ID, item.id, SCOPE.ref, refNo);
+      } catch (e) {
+        console.error("backfill: could not write ref to Monday", item.id, e);
+      }
+    }
     count("deals", await backfillScopeLock({
       refNo,
       email: item.texts[SCOPE.email] || "",
