@@ -330,7 +330,7 @@ export default function CustomerPortal() {
 
           {sent && (
             <p style={{ fontSize: 13, color: TEAL, fontWeight: 600, margin: "0 0 0.75rem" }}>
-              ✓ Sent — our team will come back to you by email.
+              Sent. Our team will come back to you by email.
             </p>
           )}
 

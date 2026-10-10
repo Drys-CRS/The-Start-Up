@@ -178,8 +178,8 @@ export default function MvpAgentPage() {
                 )}
                 <div style={{ marginTop: 8, fontSize: 12, fontWeight: 600, color: result.claudeCodePromptPosted ? "#15803d" : "#b91c1c" }}>
                   {result.claudeCodePromptPosted
-                    ? "✓ Claude Code prompt posted to the scope lock update"
-                    : "✗ Claude Code prompt was NOT posted — check the log"}
+                    ? "Claude Code prompt posted to the scope lock update"
+                    : "Claude Code prompt was not posted. Check the log."}
                 </div>
               </div>
             ) : (

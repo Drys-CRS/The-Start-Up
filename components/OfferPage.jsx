@@ -11,11 +11,10 @@ import PipelinePreview from "./PipelinePreview";
 import { FAQS } from "@/lib/faqs";
 
 // Fade-and-rise as each section scrolls into view — plays once, doesn't re-trigger on scroll-back.
+// Intentionally inert. Fading every section in on scroll is one of the clearest
+// tells of a generated site, and it slows down reading. Kept as an object so the
+// existing {...reveal} call sites stay valid.
 const reveal = {
-  initial: { opacity: 0, y: 24 },
-  whileInView: { opacity: 1, y: 0 },
-  viewport: { once: true, margin: "-80px" },
-  transition: { duration: 0.5, ease: "easeOut" },
 };
 
 // Per-item stagger for grids — pass i as the array index.
@@ -235,30 +234,6 @@ export default function OfferPage() {
           {...reveal}
           className="mt-16 relative overflow-hidden rounded-3xl border border-teal-500/30 bg-slate-950 p-8 sm:p-12"
         >
-          {/* Pulsing aurora glow */}
-          <motion.div
-            aria-hidden
-            className="pointer-events-none absolute inset-0"
-            style={{ background: "radial-gradient(ellipse 65% 55% at 50% -5%, rgba(20,184,166,0.28) 0%, transparent 70%)" }}
-            animate={{ opacity: [0.45, 1, 0.45] }}
-            transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
-          />
-          {/* Drifting accent orbs */}
-          <motion.div
-            aria-hidden
-            className="pointer-events-none absolute -top-20 -right-16 h-56 w-56 rounded-full"
-            style={{ background: "radial-gradient(circle, rgba(45,212,191,0.18) 0%, transparent 70%)" }}
-            animate={{ x: [0, -24, 0], y: [0, 18, 0] }}
-            transition={{ duration: 9, repeat: Infinity, ease: "easeInOut" }}
-          />
-          <motion.div
-            aria-hidden
-            className="pointer-events-none absolute -bottom-24 -left-16 h-56 w-56 rounded-full"
-            style={{ background: "radial-gradient(circle, rgba(20,184,166,0.15) 0%, transparent 70%)" }}
-            animate={{ x: [0, 20, 0], y: [0, -16, 0] }}
-            transition={{ duration: 11, repeat: Infinity, ease: "easeInOut" }}
-          />
-
           <div className="relative">
             <div className="text-center max-w-2xl mx-auto mb-10">
               <motion.div
@@ -364,8 +339,7 @@ export default function OfferPage() {
 
           {/* Limited Time Offer — full-width feature block */}
           <div className="relative rounded-2xl border-2 border-teal-500 bg-slate-950 text-slate-100 p-7 sm:p-9 shadow-xl mb-5 overflow-hidden">
-            <div className="absolute inset-0 pointer-events-none" style={{ background: "radial-gradient(ellipse at 80% 0%, rgba(16,185,129,0.12) 0%, transparent 60%)" }} />
-            <div className="relative flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6">
+              <div className="relative flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6">
               <div className="flex-1">
                 <div className="flex items-center gap-2 mb-3">
                   <span className="rounded-full bg-teal-500 px-3 py-0.5 text-xs font-bold text-slate-950 tracking-wide uppercase">
@@ -460,7 +434,6 @@ export default function OfferPage() {
 
         {/* Final CTA band */}
         <motion.div {...reveal} className="mt-16 relative overflow-hidden rounded-2xl bg-slate-950 p-8 sm:p-12 text-center">
-          <div className="absolute inset-0 pointer-events-none" style={{ background: "radial-gradient(ellipse at 50% 0%, rgba(16,185,129,0.15) 0%, transparent 65%)" }} />
           <div className="relative">
             <div className="max-w-xl mx-auto mb-8 text-left">
               <PipelinePreview stage="complete" />

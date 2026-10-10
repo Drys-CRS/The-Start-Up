@@ -72,7 +72,7 @@ const CLAUDE_CODE_PROMPT_SPEC = `A complete Claude Code prompt covering:
 
 Write it in second-person imperative ("Build...", "Create...", "Set up...").
 Be specific — include real field names, column types, endpoint paths, model IDs (claude-sonnet-4-6 for Claude), and example prompt templates.
-No vague placeholders. Before the final line, include the "## 📡 Progress Tracking — Sync Back to Monday.com" section described in point 13.
+No vague placeholders. Before the final line, include the "## Progress Tracking: Sync Back to Monday.com" section described in point 13.
 End with: "Start by scaffolding the project and environment, build the core system first, then layer in the AI agents and workflows in order, marking each task Done on Monday.com as you go."`;
 
 // ── Tool declarations (Gemini format) ────────────────────────────────────────
@@ -804,11 +804,11 @@ Cover all layers: auth, data model, API routes, UI pages, integrations, deployme
           });
         }
         if (functionCall.name === "post_claude_code_prompt") claudeCodePromptPosted = true;
-        log.push(`  ✓ ${JSON.stringify(result).slice(0, 200)}`);
+        log.push(`  ok ${JSON.stringify(result).slice(0, 200)}`);
         const safeResult = Array.isArray(result) ? { items: result } : (result ?? {});
         responseParts.push({ functionResponse: { name: functionCall.name, response: safeResult } });
       } catch (err) {
-        log.push(`  ✗ ${String(err)}`);
+        log.push(`  failed: ${String(err)}`);
         responseParts.push({ functionResponse: { name: functionCall.name, response: { error: String(err) } } });
       }
     }
@@ -828,7 +828,7 @@ Cover all layers: auth, data model, API routes, UI pages, integrations, deployme
       claudeCodePromptPosted = true;
       log.push("→ fallback: post_claude_code_prompt (guaranteed delivery — main run ended before reaching this step)");
     } catch (err) {
-      log.push(`✗ fallback post_claude_code_prompt failed: ${String(err)}`);
+      log.push(`fallback post_claude_code_prompt failed: ${String(err)}`);
     }
   }
 

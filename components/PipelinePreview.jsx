@@ -244,11 +244,18 @@ export default function PipelinePreview({ stage = "complete", columns, leads }) 
   // Lead ids must stay "a".."e" — CompleteBoard keys its stage cycling off them.
   const rows = leads && leads.length === 5 ? leads : BASE_LEADS;
   return (
-    <Chrome stage={stage}>
-      {stage === "broken" && <BrokenBoard leads={rows} />}
-      {stage === "organizing" && <OrganizingBoard columns={cols} leads={rows} />}
-      {stage === "ai" && <AIBoard columns={cols} leads={rows} />}
-      {stage === "complete" && <CompleteBoard columns={cols} leads={rows} />}
-    </Chrome>
+    <div>
+      <Chrome stage={stage}>
+        {stage === "broken" && <BrokenBoard leads={rows} />}
+        {stage === "organizing" && <OrganizingBoard columns={cols} leads={rows} />}
+        {stage === "ai" && <AIBoard columns={cols} leads={rows} />}
+        {stage === "complete" && <CompleteBoard columns={cols} leads={rows} />}
+      </Chrome>
+      {/* The companies on this board are made up. Say so, rather than letting it
+          read as a customer list. */}
+      <p className="mt-2 text-center text-[11px] text-slate-400 dark:text-slate-500">
+        Sample board with made-up companies, not real customers.
+      </p>
+    </div>
   );
 }
