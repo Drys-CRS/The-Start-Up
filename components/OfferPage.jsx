@@ -216,6 +216,30 @@ export default function OfferPage() {
           ))}
         </motion.div>
 
+        {/* Proof: the one real system we can show in full, rather than another claim. */}
+        <motion.div {...reveal} className="mt-16">
+          <a
+            href="/case-study/am-portal"
+            className="group block rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-6 hover:border-teal-300 dark:hover:border-teal-700 transition-colors"
+          >
+            <div className="text-xs font-semibold uppercase tracking-wider text-teal-600 dark:text-teal-400">
+              Case study
+            </div>
+            <div className="mt-2 flex items-start gap-3">
+              <div className="min-w-0">
+                <h2 className="text-xl font-semibold tracking-tight">
+                  The sales portal we built for a cyber security reseller
+                </h2>
+                <p className="mt-2 text-sm leading-relaxed text-slate-600 dark:text-slate-400">
+                  Account managers work their book in one place. Managers see the whole team on one page. Read the
+                  modules, the access rules, and the two things we would do differently.
+                </p>
+              </div>
+              <ArrowRight className="mt-1 h-4 w-4 flex-none text-slate-300 dark:text-slate-600 group-hover:text-teal-500" />
+            </div>
+          </a>
+        </motion.div>
+
         {/* Pipeline preview — organizing */}
         <motion.div {...reveal} className="mt-16">
           <div className="text-center max-w-lg mx-auto mb-6">
