@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { rateLimit } from "@/lib/rate-limit";
-import { geminiJson } from "@/lib/gemini";
+import { aiConfigured, jsonFromAI } from "@/lib/ai";
 
 export const runtime = "nodejs";
 
@@ -12,7 +12,7 @@ export async function POST(req: NextRequest) {
 
   const { description } = await req.json().catch(() => ({}));
   if (!description?.trim()) return NextResponse.json({ error: "description is required" }, { status: 400 });
-  if (!GEMINI_KEY()) return NextResponse.json({ error: "GOOGLE_AI_API_KEY not configured" }, { status: 500 });
+  if (!aiConfigured()) return NextResponse.json({ error: "No AI provider is configured" }, { status: 503 });
 
   const prompt = `You are a startup consulting agent helping pre-fill a software project scope form.
 
@@ -34,7 +34,7 @@ Based only on what they wrote, return a JSON object with EXACTLY these string ke
 
 Be specific and faithful to their description. Infer missing detail from context — do not add features they didn't imply. Return ONLY valid JSON, no markdown fences.`;
 
-  const result = await geminiJson(prompt);
+  const result = await jsonFromAI(prompt);
   if (!result.ok || !result.json) {
     return NextResponse.json({ error: `Couldn't read that — ${result.message}` }, { status: 502 });
   }
