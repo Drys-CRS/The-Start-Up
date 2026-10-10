@@ -1,11 +1,10 @@
 "use client";
-import { track } from "@vercel/analytics";
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
-  ArrowRight, Check, X, ShieldCheck, FileText, ChevronDown, Monitor,
+  ArrowRight, Check, ShieldCheck, FileText, ChevronDown, Monitor,
   Search, TrendingDown, ClipboardCheck, Hammer, LifeBuoy, Tag, Unlock, Zap, RefreshCw,
-  Sparkles, Target, Route, Mail, Bell, BarChart3, Gauge, Bot, Loader2, Puzzle,
+  Sparkles, Target, Route, Mail, Bell, BarChart3, Gauge, Bot, Puzzle,
 } from "lucide-react";
 import WordMark from "./WordMark";
 import PipelinePreview from "./PipelinePreview";
@@ -90,94 +89,25 @@ const GUARANTEES = [
 
 export default function OfferPage() {
   const [openFaq, setOpenFaq] = useState(0);
-  const [bizText, setBizText] = useState("");
-  const [tailoring, setTailoring] = useState(false);
-  const [tailorErr, setTailorErr] = useState("");
-  const [tailored, setTailored] = useState(null); // null = generic; else AI-tailored result
   const tiers = TIERS;
-
-  async function tailorPage(e) {
-    if (e) e.preventDefault();
-    const description = bizText.trim();
-    if (description.length < 8 || tailoring) return;
-    setTailoring(true);
-    setTailorErr("");
-    try {
-      const res = await fetch("/api/tailor", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ description }),
-      });
-      const data = await res.json().catch(() => ({}));
-      if (res.ok && data.tailored) {
-        setTailored(data.tailored);
-        track("Homepage Tailored");
-        if (typeof window !== "undefined") window.scrollTo({ top: 0, behavior: "smooth" });
-      } else {
-        setTailorErr(data.error || "Couldn't tailor the page just now — please try again.");
-      }
-    } catch {
-      setTailorErr("Couldn't tailor the page just now — please try again.");
-    } finally {
-      setTailoring(false);
-    }
-  }
-
-  const resetTailor = () => { setTailored(null); setTailorErr(""); };
-
   return (
     <div className="min-h-screen w-full bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 font-sans">
       {/* Sticky nav */}
       <div className="sticky top-0 z-40 border-b border-slate-200/80 dark:border-slate-800/80 bg-slate-50/80 dark:bg-slate-950/80 backdrop-blur-md">
         <div className="mx-auto max-w-5xl px-5 py-4 flex items-center justify-between">
           <WordMark />
-          <a href="#pricing" className="hidden sm:inline-flex items-center gap-1.5 rounded-lg bg-slate-900 dark:bg-teal-500 px-4 py-2 text-xs font-semibold text-white dark:text-slate-950 hover:bg-slate-800 dark:hover:bg-teal-400">
-            See pricing <ArrowRight className="h-3.5 w-3.5" />
-          </a>
+          <div className="flex items-center gap-3">
+            <a href="#pricing" className="hidden sm:inline text-xs font-semibold text-slate-500 dark:text-slate-400 hover:text-teal-600 dark:hover:text-teal-400">
+              See pricing
+            </a>
+            <a href="/calculator?step=buildplan" className="inline-flex items-center gap-1.5 rounded-lg bg-teal-500 px-4 py-2 text-xs font-semibold text-slate-950 hover:bg-teal-400">
+              Start your Build <ArrowRight className="h-3.5 w-3.5" />
+            </a>
+          </div>
         </div>
       </div>
 
       <div className="mx-auto max-w-5xl px-5 py-10 sm:py-14">
-
-        {/* Tailor-to-your-business — describe it and we personalise the page to your sector */}
-        <motion.div
-          initial={{ opacity: 0, y: -8 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.4, ease: "easeOut" }}
-          className="mb-8 rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-4 sm:p-5"
-        >
-          <div className="mb-2.5 flex items-center gap-2">
-            <Sparkles className="h-4 w-4 text-teal-500" />
-            <span className="text-sm font-semibold text-slate-900 dark:text-slate-100">See this page tailored to your business</span>
-            {tailored && (
-              <button onClick={resetTailor} className="ml-auto inline-flex items-center gap-1 text-xs font-medium text-slate-500 hover:text-teal-600 dark:hover:text-teal-400">
-                <X className="h-3.5 w-3.5" /> Reset
-              </button>
-            )}
-          </div>
-          <form onSubmit={tailorPage} className="flex flex-col sm:flex-row gap-2">
-            <input
-              value={bizText}
-              onChange={(e) => setBizText(e.target.value)}
-              placeholder="Tell us what your business does — e.g. 'We run a dental practice and lose new-patient enquiries.'"
-              className="flex-1 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 px-3.5 py-2.5 text-sm text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus:border-teal-500 focus:outline-none focus:ring-2 focus:ring-teal-100 dark:focus:ring-teal-900"
-            />
-            <button
-              type="submit"
-              disabled={tailoring || bizText.trim().length < 8}
-              className={"flex-none inline-flex items-center justify-center gap-1.5 rounded-lg px-5 py-2.5 text-sm font-semibold transition-colors " +
-                (tailoring || bizText.trim().length < 8
-                  ? "bg-slate-200 dark:bg-slate-700 text-slate-400 cursor-not-allowed"
-                  : "bg-teal-500 text-slate-950 hover:bg-teal-400")}
-            >
-              {tailoring ? <>Tailoring…</> : <>Tailor this page <ArrowRight className="h-4 w-4" /></>}
-            </button>
-          </form>
-          {tailorErr && <p className="mt-2 text-xs text-rose-600">{tailorErr}</p>}
-          {tailored && (
-            <p className="mt-2 text-xs text-teal-600 dark:text-teal-400">Tailored for <span className="font-semibold">{tailored.sector}</span> — scroll to see how we'd help.</p>
-          )}
-        </motion.div>
 
         {/* Hero */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-14 items-center">
@@ -188,40 +118,12 @@ export default function OfferPage() {
           >
             <div className="inline-flex items-center gap-1.5 rounded-full border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-1 text-xs font-medium text-slate-500 dark:text-slate-400 mb-5">
               <span className="h-1.5 w-1.5 rounded-full bg-teal-500" />
-              {tailored ? tailored.eyebrow : "For businesses whose CRM isn't running the sales cycle"}
+              For businesses whose CRM isn't running the sales cycle
             </div>
             <h1 className="text-4xl sm:text-5xl font-semibold tracking-tight leading-tight">
               Your CRM isn't broken.
               <br /> Your sales cycle is.
             </h1>
-            <AnimatePresence mode="wait">
-              {tailoring && !tailored && (
-                <motion.div
-                  key="tagline-skeleton"
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                  transition={{ duration: 0.2 }}
-                  className="mt-4 space-y-2"
-                  aria-hidden
-                >
-                  <div className="h-4 w-4/5 rounded bg-teal-100 dark:bg-teal-900/40 animate-pulse" />
-                  <div className="h-4 w-3/5 rounded bg-teal-100 dark:bg-teal-900/40 animate-pulse" />
-                </motion.div>
-              )}
-              {tailored && (
-                <motion.p
-                  key={tailored.sector}
-                  initial={{ opacity: 0, y: -6 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -6 }}
-                  transition={{ duration: 0.25, ease: "easeOut" }}
-                  className="mt-4 text-base font-medium text-teal-700 dark:text-teal-300"
-                >
-                  {tailored.tagline}
-                </motion.p>
-              )}
-            </AnimatePresence>
             <p className="mt-4 text-lg text-slate-600 dark:text-slate-400">
               Leads stall, reps skip steps, follow-up happens whenever someone remembers — and your CRM isn't
               as flexible as you need it to be. That's why we're here. We rebuild the process and automation
@@ -229,11 +131,11 @@ export default function OfferPage() {
               free. No endless discovery. No disappearing act.
             </p>
             <div className="mt-7 flex flex-col sm:flex-row gap-3">
-              <motion.a whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} href="/calculator" className="inline-flex items-center justify-center gap-2 rounded-lg bg-teal-500 px-6 py-3 text-sm font-semibold text-slate-950 hover:bg-teal-400">
-                Get your free audit <ArrowRight className="h-4 w-4" />
+              <motion.a whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} href="/calculator?step=buildplan" className="inline-flex items-center justify-center gap-2 rounded-lg bg-teal-500 px-6 py-3 text-sm font-semibold text-slate-950 hover:bg-teal-400">
+                Start your Build <ArrowRight className="h-4 w-4" />
               </motion.a>
-              <motion.a whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} href="/calculator?step=buildplan" className="inline-flex items-center justify-center gap-2 rounded-lg bg-slate-900 dark:bg-white px-6 py-3 text-sm font-semibold text-white dark:text-slate-950 hover:bg-slate-800 dark:hover:bg-slate-200">
-                Start Your Build Plan <ArrowRight className="h-4 w-4" />
+              <motion.a whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} href="/calculator" className="inline-flex items-center justify-center gap-2 rounded-lg border border-slate-300 dark:border-slate-600 px-6 py-3 text-sm font-semibold text-slate-700 dark:text-slate-200 hover:border-slate-400 dark:hover:border-slate-500">
+                Or run the free audit first <ArrowRight className="h-4 w-4" />
               </motion.a>
             </div>
             <p className="mt-4 flex items-center gap-1.5 text-xs text-slate-400 dark:text-slate-500">
@@ -246,25 +148,7 @@ export default function OfferPage() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.15, ease: "easeOut" }}
           >
-            <div className="relative">
-              <PipelinePreview stage="broken" leads={tailored?.leads} />
-              <AnimatePresence>
-                {tailoring && (
-                  <motion.div
-                    key="pipeline-tailoring"
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                    transition={{ duration: 0.2 }}
-                    className="absolute inset-0 flex items-center justify-center rounded-2xl bg-white/70 dark:bg-slate-950/70 backdrop-blur-[2px]"
-                  >
-                    <span className="inline-flex items-center gap-2 rounded-full border border-teal-300 dark:border-teal-700 bg-white dark:bg-slate-900 px-3.5 py-1.5 text-xs font-medium text-teal-700 dark:text-teal-300 shadow-sm">
-                      <Loader2 className="h-3.5 w-3.5 animate-spin" /> Tailoring to your business…
-                    </span>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </div>
+            <PipelinePreview stage="broken" />
             <a href="/crm-demo" className="mt-4 group flex items-center gap-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-4 py-3 hover:border-teal-300 dark:hover:border-teal-700 hover:bg-teal-50 dark:hover:bg-teal-950/40 transition-colors">
               <div className="flex h-8 w-8 flex-none items-center justify-center rounded-lg bg-slate-100 dark:bg-slate-800 group-hover:bg-teal-100 dark:group-hover:bg-teal-900 transition-colors">
                 <Monitor className="h-4 w-4 text-slate-500 dark:text-slate-400 group-hover:text-teal-600 dark:group-hover:text-teal-400" />
@@ -272,58 +156,13 @@ export default function OfferPage() {
               <div className="min-w-0">
                 <div className="text-sm font-semibold text-slate-900 dark:text-slate-100 group-hover:text-teal-700 dark:group-hover:text-teal-400">See a live system example</div>
                 <div className="text-xs text-slate-400 dark:text-slate-500 group-hover:text-teal-600 dark:group-hover:text-teal-400">
-                  {tailored ? `See exactly what we'd build for ${tailored.sector}` : "Pick your industry — see exactly what we'd build for you"}
+                  Pick your industry — see exactly what we'd build for you
                 </div>
               </div>
               <ArrowRight className="h-4 w-4 flex-none text-slate-300 dark:text-slate-600 group-hover:text-teal-500 ml-auto" />
             </a>
           </motion.div>
         </div>
-
-        {/* How we'd help — appears once the page is tailored to a described business */}
-        <AnimatePresence>
-          {tailored && Array.isArray(tailored.help) && tailored.help.length > 0 && (
-            <motion.div
-              key={tailored.sector}
-              initial={{ opacity: 0, y: 16 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: 8 }}
-              transition={{ duration: 0.4, ease: "easeOut" }}
-              className="mt-10 rounded-2xl border border-teal-200 dark:border-teal-800 bg-teal-50/60 dark:bg-teal-950/30 p-6 sm:p-8"
-            >
-              <div className="flex items-center gap-2 mb-1">
-                <Sparkles className="h-4 w-4 text-teal-500" />
-                <span className="text-xs font-semibold uppercase tracking-wider text-teal-700 dark:text-teal-400">Tailored for {tailored.sector}</span>
-              </div>
-              <h2 className="text-2xl font-semibold tracking-tight">How we'd help your {tailored.sector.toLowerCase()}.</h2>
-              <div className="mt-5 grid grid-cols-1 sm:grid-cols-2 gap-4">
-                {tailored.help.map((h, i) => (
-                  <motion.div
-                    key={h.title}
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.35, delay: i * 0.08, ease: "easeOut" }}
-                    className="rounded-xl border border-teal-200/70 dark:border-teal-800/70 bg-white dark:bg-slate-900 p-4"
-                  >
-                    <div className="flex items-center gap-2 mb-1.5">
-                      <span className="flex h-6 w-6 flex-none items-center justify-center rounded-lg bg-teal-100 dark:bg-teal-900/50 text-teal-600 dark:text-teal-400 text-xs font-mono font-semibold">{i + 1}</span>
-                      <span className="text-sm font-semibold tracking-tight">{h.title}</span>
-                    </div>
-                    <p className="text-sm leading-relaxed text-slate-600 dark:text-slate-400">{h.body}</p>
-                  </motion.div>
-                ))}
-              </div>
-              <div className="mt-5 flex flex-col sm:flex-row gap-3">
-                <a href="/calculator" className="inline-flex items-center justify-center gap-2 rounded-lg bg-teal-500 px-5 py-2.5 text-sm font-semibold text-slate-950 hover:bg-teal-400">
-                  Get your free audit <ArrowRight className="h-4 w-4" />
-                </a>
-                <a href="/calculator?step=buildplan" className="inline-flex items-center justify-center gap-2 rounded-lg border border-teal-300 dark:border-teal-700 bg-white dark:bg-slate-900 px-5 py-2.5 text-sm font-semibold text-slate-700 dark:text-slate-300 hover:bg-teal-50 dark:hover:bg-teal-950/60">
-                  Start Your Build Plan <ArrowRight className="h-4 w-4" />
-                </a>
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
 
         {/* Trust strip */}
         <motion.div {...reveal} className="mt-10 flex flex-wrap items-center justify-center gap-x-6 gap-y-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-5 py-3.5">
@@ -387,7 +226,7 @@ export default function OfferPage() {
             </p>
           </div>
           <div className="max-w-xl mx-auto">
-            <PipelinePreview stage="organizing" columns={tailored?.stages} leads={tailored?.leads} />
+            <PipelinePreview stage="organizing" />
           </div>
         </motion.div>
 
@@ -454,7 +293,7 @@ export default function OfferPage() {
 
             {/* Live AI board */}
             <div className="max-w-xl mx-auto mb-10">
-              <PipelinePreview stage="ai" columns={tailored?.stages} leads={tailored?.leads} />
+              <PipelinePreview stage="ai" />
             </div>
 
             {/* Ways AI works */}
@@ -624,7 +463,7 @@ export default function OfferPage() {
           <div className="absolute inset-0 pointer-events-none" style={{ background: "radial-gradient(ellipse at 50% 0%, rgba(16,185,129,0.15) 0%, transparent 65%)" }} />
           <div className="relative">
             <div className="max-w-xl mx-auto mb-8 text-left">
-              <PipelinePreview stage="complete" columns={tailored?.stages} leads={tailored?.leads} />
+              <PipelinePreview stage="complete" />
             </div>
             <h2 className="text-2xl sm:text-3xl font-semibold tracking-tight text-white">Ready to fix your sales cycle?</h2>
             <p className="mt-2 text-slate-400 max-w-lg mx-auto">
