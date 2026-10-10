@@ -28,6 +28,7 @@ export const metadata: Metadata = {
     images: [{ url: "/og-image.png", width: 851, height: 315, alt: "Lead Leakage Calculator — The Start Up" }],
   },
   twitter: {
+    card: "summary_large_image",
     title: "Free Lead Leakage Calculator + Build Plan",
     description:
       "Enter four numbers, get an instant AI Bottleneck Report, then lock in your Build Plan. Free. No call required.",

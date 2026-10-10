@@ -26,6 +26,9 @@ export const metadata: Metadata = {
     images: [{ url: "/og-image.png", width: 851, height: 315, alt: "The Start Up" }],
   },
   twitter: {
+    // Must be repeated: a page-level twitter block replaces the layout's, so
+    // omitting card silently downgrades the preview to the small "summary" card.
+    card: "summary_large_image",
     title: "Business Systems & AI for Any Sector — Built in 30 Days",
     description:
       "Custom systems, workflows, and AI for any business — built in 30 days, fixed price. Free automated audit.",

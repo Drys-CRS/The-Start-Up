@@ -27,6 +27,7 @@ export const metadata: Metadata = {
     images: [{ url: "/og-image.png", width: 851, height: 315, alt: "Live System Demo — The Start Up" }],
   },
   twitter: {
+    card: "summary_large_image",
     title: "Live System Demo — See What We Build for Your Industry",
     description:
       "Pick your industry and see exactly how your pipeline, automations, and AI would work. Interactive demo, no signup required.",
