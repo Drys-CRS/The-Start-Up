@@ -7,6 +7,7 @@ import { sendFollowUp } from "@/lib/email";
 import { copyFor, dueStep, formatState, type Sequence } from "@/lib/follow-ups";
 import { buildPlanUrl, payUrl, signUrl, unsubscribeUrl, type FollowUpBoard } from "@/lib/links";
 import { findScopeLock, logActivity } from "@/lib/db";
+import { purgeExpiredTokens } from "@/lib/portal-auth";
 
 export const runtime = "nodejs";
 export const maxDuration = 300;
@@ -148,11 +149,16 @@ export async function GET(req: NextRequest) {
     sent.push(label);
   }
 
+  // Spent and expired sign-in links are dead weight, and a table of live
+  // credentials should not accumulate rows nobody will ever use.
+  const purged = await purgeExpiredTokens();
+
   return NextResponse.json({
     ok: true,
     due: jobs.length,
     sent,
     failed,
     deferred: Math.max(0, jobs.length - MAX_SENDS_PER_RUN),
+    tokensPurged: purged,
   });
 }

@@ -1,16 +1,21 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getScopeStatus } from "@/lib/monday";
-import { getCustomerBundle } from "@/lib/db";
+import { getCustomerBundle, listDealsForEmail } from "@/lib/db";
 import { STAGE_ORDER, stageMeta } from "@/lib/status";
 import { payUrl, signUrl } from "@/lib/links";
 import { isDepositPaid } from "@/lib/payments";
 import { rateLimit } from "@/lib/rate-limit";
+import { PORTAL_COOKIE, readSession } from "@/lib/portal-auth";
 
 export const runtime = "nodejs";
 
-// Data behind the customer portal. Identity rule matches /api/status: the reference
-// number and the email on file must both match, and any mismatch returns the same
-// generic 404 so neither is enumerable.
+// Data behind the customer portal.
+//
+// Identity now comes from the session cookie, which only exists because
+// somebody clicked a one-time link we emailed to that address. The reference
+// number is no longer a credential: it is used to pick which of your projects
+// to show, and it is checked against the deals your address actually owns.
+// Passing someone else's reference gets you nothing.
 //
 // Scope is deliberately narrow — the customer's own milestones, payments, and
 // requests. Admin notes, the internal timeline and the email log never appear here.
@@ -21,31 +26,45 @@ const SIGNABLE = new Set(["New", "Reviewing", "Scoped & Sent", "Approved"]);
 const REQUEST_PREFIX = "Customer requested an update: ";
 
 export async function POST(req: NextRequest) {
-  const limited = rateLimit(req, "portal", 10, 60_000);
+  const limited = rateLimit(req, "portal", 20, 60_000);
   if (limited) return limited;
 
-  const { ref, email } = await req.json().catch(() => ({}));
-  if (!ref || !email || typeof ref !== "string" || typeof email !== "string") {
-    return NextResponse.json({ error: "A reference number and email are required." }, { status: 400 });
+  const email = readSession(req.cookies.get(PORTAL_COOKIE)?.value);
+  if (!email) {
+    return NextResponse.json({ error: "Your session has ended. Request a new sign-in link." }, { status: 401 });
   }
 
-  const NOT_FOUND = NextResponse.json(
-    { error: "We couldn't find a project matching that reference and email." },
-    { status: 404 },
-  );
+  const deals = await listDealsForEmail(email);
+  if (deals.length === 0) {
+    return NextResponse.json({ error: "There are no projects on this address." }, { status: 404 });
+  }
 
-  let record;
+  // Which project. Only ever one this address owns.
+  const { ref: wanted } = await req.json().catch(() => ({}));
+  const chosen =
+    (typeof wanted === "string" && deals.find(d => d.ref_no === wanted.trim())) || deals[0];
+
+  const NOT_FOUND = NextResponse.json({ error: "We could not load that project." }, { status: 404 });
+
+  // Monday holds the live stage, but it is a third party on the critical path
+  // of a page the customer opens to find out what is happening. When it is
+  // slow, down, or simply does not have this reference (backfilled deals were
+  // written to Postgres before Monday knew their reference), the portal falls
+  // back to our own row rather than telling someone their project does not
+  // exist.
+  let record: Awaited<ReturnType<typeof getScopeStatus>> | null = null;
   try {
-    record = await getScopeStatus(ref.trim());
+    record = await getScopeStatus(chosen.ref_no);
   } catch {
-    return NOT_FOUND;
+    record = null;
   }
-  if (!record || record.email.trim().toLowerCase() !== email.trim().toLowerCase()) return NOT_FOUND;
 
-  const refNo = record.ref || ref.trim();
+  const refNo = record?.ref || chosen.ref_no;
   const bundle = await getCustomerBundle(refNo);
   const deal = bundle.deal;
-  const stage = record.stageLabel || "";
+  if (!record && !deal) return NOT_FOUND;
+
+  const stage = record?.stageLabel || deal?.stage || "";
   const meta = stageMeta(stage);
 
   // The one thing they can act on right now, if anything.
@@ -56,21 +75,27 @@ export async function POST(req: NextRequest) {
       label: "Review and sign your agreement",
       url: signUrl({
         ref: refNo,
-        itemId: record.itemId,
-        email: record.email,
-        tierLabel: deal?.tier || record.tierLabel || "",
+        itemId: record?.itemId || deal?.monday_item_id || "",
+        email: record?.email || deal?.email || email,
+        tierLabel: deal?.tier || record?.tierLabel || "",
       }),
     };
   } else if (stage === "Signed") {
-    action = { kind: "pay", label: "Pay your 10% deposit", url: payUrl({ itemId: record.itemId, email: record.email }) };
+    action = {
+      kind: "pay",
+      label: "Pay your deposit",
+      url: payUrl({ itemId: record?.itemId || deal?.monday_item_id || "", email: record?.email || deal?.email || email }),
+    };
   }
 
   return NextResponse.json({
     ok: true,
+    signedInAs: email,
+    projects: deals.map(d => ({ ref: d.ref_no, company: d.company || "", stage: d.stage || "" })),
     ref: refNo,
-    company: deal?.company || record.name || "",
+    company: deal?.company || record?.name || "",
     contact: deal?.contact || "",
-    tier: deal?.tier || record.tierLabel || "",
+    tier: deal?.tier || record?.tierLabel || "",
     stage,
     stages: STAGE_ORDER,
     title: meta.title,

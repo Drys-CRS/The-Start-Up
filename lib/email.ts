@@ -1,6 +1,7 @@
 import { Resend } from "resend";
 import { stageMeta } from "./status";
 import { statusUrl, tierKey } from "./links";
+import { SITE_URL } from "./site";
 import { findScopeLock, logEmail } from "./db";
 
 // Resend is optional: if RESEND_API_KEY is unset (local/dev), every send is a
@@ -123,6 +124,46 @@ async function logOutbound(o: {
   } catch {
     // logging must never affect delivery
   }
+}
+
+// ── Customer: portal sign-in link ────────────────────────────────────────────
+
+/**
+ * The one-time link that signs someone into their portal.
+ *
+ * The href goes to a page with a button on it, not straight to the exchange.
+ * Mail security products follow links in incoming mail to check them, and a
+ * single-use token spent by a scanner is one the customer never gets to use.
+ */
+export async function sendPortalLink(opts: {
+  to: string;
+  token: string;
+  projects: number;
+}): Promise<boolean> {
+  const link = `${SITE_URL}/status/enter?t=${encodeURIComponent(opts.token)}`;
+  const what =
+    opts.projects > 1
+      ? `You have ${opts.projects} projects with us, and the portal shows all of them.`
+      : "It shows where your build is, what is next, and anything you have sent us.";
+
+  const body =
+    eyebrow("Sign in") +
+    heading("Your link to the portal") +
+    paragraph(`${what} The link below works once and expires in an hour.`) +
+    button("Open my portal", link) +
+    `<p style="margin:18px 0 0;font-size:12px;line-height:1.5;color:${LIGHT};">` +
+    `Signing in as ${escapeHtml(opts.to)}. If you did not ask for this, ignore it: nothing happens until the link is opened, ` +
+    `and it stops working after an hour.</p>` +
+    `<p style="margin:10px 0 0;font-size:11px;line-height:1.5;color:${LIGHT};">Button not working? Paste this into your browser: ` +
+    `<a href="${escapeHtml(link)}" style="color:${TEAL};">${escapeHtml(link)}</a></p>`;
+
+  return send({
+    to: opts.to,
+    subject: "Your sign-in link",
+    html: shell(body),
+    replyTo: TEAM_TO || undefined,
+    template: "portal_sign_in",
+  });
 }
 
 // ── Customer: status updates ─────────────────────────────────────────────────

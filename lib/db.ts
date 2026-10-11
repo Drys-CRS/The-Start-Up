@@ -364,6 +364,36 @@ export async function findScopeLockByEmail(email: string): Promise<{ id: string;
   }
 }
 
+/** The same client, for modules that do their own queries (portal sign-in). */
+export const supabase = db;
+
+/**
+ * Every deal an address can see. The portal signs people in by email rather
+ * than by reference, so one address with two builds has to get both.
+ */
+export async function listDealsForEmail(
+  email: string,
+): Promise<{ ref_no: string; company: string | null; stage: string | null; created_at: string }[]> {
+  const client = db();
+  const address = (email || "").trim().toLowerCase();
+  if (!client || !address) return [];
+  try {
+    const { data, error } = await client
+      .from("scope_locks")
+      .select("ref_no, company, stage, created_at")
+      .ilike("email", address)
+      .order("created_at", { ascending: false });
+    if (error) {
+      fail("listDealsForEmail", error);
+      return [];
+    }
+    return ((data as any) || []).filter((d: any) => d.ref_no);
+  } catch (e) {
+    fail("listDealsForEmail", e);
+    return [];
+  }
+}
+
 // Same idea for someone who only ever ran the calculator.
 export async function findLeadByEmail(email: string): Promise<{ id: string } | null> {
   const client = db();
@@ -436,6 +466,9 @@ export type CustomerBundle = {
     company: string | null;
     contact: string | null;
     tier: string | null;
+    stage: string | null;
+    monday_item_id: string | null;
+    email: string | null;
     created_at: string;
     signed_at: string | null;
     signature_name: string | null;
@@ -459,7 +492,9 @@ export async function getCustomerBundle(refNo: string): Promise<CustomerBundle> 
     const { data: deal, error } = await client
       .from("scope_locks")
       .select(
-        "id, ref_no, company, contact, tier, created_at, signed_at, signature_name, deposit_paid_at, delivered_at, amount_usd, monthly_tools_usd",
+        // stage and monday_item_id are here so the portal can still render when
+        // Monday is unreachable: see the fallback in /api/portal.
+        "id, ref_no, company, contact, tier, stage, monday_item_id, email, created_at, signed_at, signature_name, deposit_paid_at, delivered_at, amount_usd, monthly_tools_usd",
       )
       .eq("ref_no", refNo)
       .maybeSingle();
