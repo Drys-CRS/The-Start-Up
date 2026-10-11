@@ -22,13 +22,34 @@ export type StaleItem = {
   reason: string;
 };
 
+/**
+ * What Stripe holds as the business identity.
+ *
+ * This is the address that already prints on receipts and invoices, so it is
+ * the one the site, the legal pages and the agreement should agree with. It
+ * is also where a leftover South African address would show up, which would
+ * explain a good deal about the Rand-era products.
+ */
+export type AccountIdentity = {
+  name: string | null;
+  country: string | null;
+  defaultCurrency: string | null;
+  supportPhone: string | null;
+  supportEmail: string | null;
+  addressLines: string[];
+};
+
 export type Audit = {
   configured: boolean;
   currencies: Record<string, number>;
   stale: StaleItem[];
   keptProducts: { id: string; name: string; description: string | null }[];
+  identity?: AccountIdentity;
   error?: string;
 };
+
+const addressOf = (a: Stripe.Address | null | undefined): string[] =>
+  !a ? [] : [a.line1, a.line2, [a.city, a.state, a.postal_code].filter(Boolean).join(", "), a.country].filter(Boolean) as string[];
 
 function client(): Stripe | null {
   const key = process.env.STRIPE_SECRET_KEY;
@@ -47,6 +68,35 @@ export async function auditStripe(): Promise<Audit> {
   const currencies: Record<string, number> = {};
   const stale: StaleItem[] = [];
   const keptProducts: Audit["keptProducts"] = [];
+
+  let identity: AccountIdentity | undefined;
+
+  try {
+    // GET /v1/account returns the account the key belongs to. The SDK's typed
+    // accounts.retrieve() wants an id (it is the Connect accessor), so this
+    // goes straight to the endpoint.
+    const res = await fetch("https://api.stripe.com/v1/account", {
+      headers: { Authorization: `Bearer ${process.env.STRIPE_SECRET_KEY}` },
+    });
+    if (res.ok) {
+      const account = (await res.json()) as Stripe.Account;
+      const company = account.company;
+      const registered = addressOf(company?.address);
+      identity = {
+        name: account.business_profile?.name || company?.name || account.settings?.dashboard?.display_name || null,
+        country: account.country || null,
+        defaultCurrency: account.default_currency ? account.default_currency.toUpperCase() : null,
+        supportPhone: account.business_profile?.support_phone || null,
+        supportEmail: account.business_profile?.support_email || account.email || null,
+        // Prefer the registered company address over the support one.
+        addressLines: registered.length ? registered : addressOf(account.business_profile?.support_address),
+      };
+    } else {
+      console.error("[stripe-admin] account lookup returned", res.status);
+    }
+  } catch (e) {
+    console.error("[stripe-admin] could not read the account identity:", e);
+  }
 
   try {
     for await (const price of stripe.prices.list({ limit: 100, active: true, expand: ["data.product"] })) {
@@ -109,11 +159,12 @@ export async function auditStripe(): Promise<Audit> {
       currencies,
       stale,
       keptProducts,
+      identity,
       error: e instanceof Error ? e.message : String(e),
     };
   }
 
-  return { configured: true, currencies, stale, keptProducts };
+  return { configured: true, currencies, stale, keptProducts, identity };
 }
 
 export type ArchiveResult = { archived: number; failed: { id: string; error: string }[] };

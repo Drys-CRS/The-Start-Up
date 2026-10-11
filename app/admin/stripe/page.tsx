@@ -51,6 +51,38 @@ export default async function AdminStripe() {
         </Table>
       </Section>
 
+      <Section title="What Stripe holds as your business identity">
+        <p className="mb-3 text-xs text-slate-500 dark:text-slate-400">
+          This is the address and number already printing on your Stripe receipts and invoices. Copy it into
+          lib/company and the site footer, the legal pages, the agreement and the email sign-off will all say the
+          same thing. If it is wrong or still South African, fix it in Stripe first: it reaches customers either
+          way.
+        </p>
+        {audit.identity ? (
+          <dl className="space-y-1.5 text-sm">
+            {([
+              ["Account name", audit.identity.name],
+              ["Country", audit.identity.country],
+              ["Default currency", audit.identity.defaultCurrency],
+              ["Registered address", audit.identity.addressLines.join(", ") || null],
+              ["Support phone", audit.identity.supportPhone],
+              ["Support email", audit.identity.supportEmail],
+            ] as [string, string | null][]).map(([k, v]) => (
+              <div key={k} className="flex flex-col gap-0.5 sm:flex-row sm:gap-4">
+                <dt className="shrink-0 font-mono text-[11px] uppercase tracking-wide text-slate-400 dark:text-slate-500 sm:w-40 sm:pt-1">
+                  {k}
+                </dt>
+                <dd className={v ? "text-slate-800 dark:text-slate-100" : "italic text-slate-400 dark:text-slate-500"}>
+                  {v || "not set in Stripe"}
+                </dd>
+              </div>
+            ))}
+          </dl>
+        ) : (
+          <Empty>Stripe did not return account details.</Empty>
+        )}
+      </Section>
+
       <Section title="Currencies on active prices">
         {Object.keys(audit.currencies).length ? (
           <div className="flex flex-wrap gap-2">
