@@ -96,34 +96,19 @@ export const EARLY_OFFER = {
 /** The half-price special the early offer sits on top of. */
 export const PROMO_ENDS_LABEL = "31 Oct 2026";
 
-// Stripe Payment Links for the discounted amounts. A Payment Link has its price
-// baked in, so the $500 offer needs its own set and cannot reuse the standard
-// ones.
-//
-// EMPTY UNTIL THE LINKS EXIST, AND THAT IS THE SWITCH. Every price shown on the
-// site runs through earlyLive below, which returns false while a tier's links
-// are missing, so the site keeps quoting the standard price until the thing
-// that can charge the discounted one exists. Fill these in and the offer goes
-// live everywhere at once: offer page, Build Plan, sign page, proposal PDF,
-// FAQ and schema.
-export const EARLY_PAYMENT_LINKS: Record<string, string> = {
-  "promo|USD|deposit": "",
-  "promo|USD|mvp": "",
-  "promo|USD|balance": "",
-  "premium|USD|deposit": "",
-  "premium|USD|mvp": "",
-  "premium|USD|balance": "",
-};
-
-/** True when every milestone link for the tier is present. */
-export function hasEarlyLinks(tier: TierKey): boolean {
-  if (!TIER_CONFIG[tier]?.earlyEligible) return false;
-  return TIER_CONFIG[tier].schedule.every(m => !!EARLY_PAYMENT_LINKS[`${tier}|USD|${m.key}`]);
-}
-
-/** Whether the $500 offer applies right now, for this tier. */
+/**
+ * Whether the $500 offer applies right now, for this tier.
+ *
+ * Nothing to switch on. Checkout builds a Stripe session from these same
+ * numbers when the customer clicks (see lib/payments.ts), so a discount is
+ * live the moment it is true here. This used to be gated on a set of
+ * hand-made Payment Links existing, because a link has its amount baked in
+ * and the site must never advertise a price the till cannot charge. Pricing
+ * checkout from this function removes the gap the gate was protecting.
+ */
 export function earlyLive(tier: TierKey, now: number = Date.now()): boolean {
-  return now < EARLY_OFFER.endsAt && hasEarlyLinks(tier);
+  if (!TIER_CONFIG[tier]?.earlyEligible) return false;
+  return now < EARLY_OFFER.endsAt;
 }
 
 export type Price = {

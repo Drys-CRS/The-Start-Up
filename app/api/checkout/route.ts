@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { resolveScopeLock } from "@/lib/monday";
-import { isDepositPaid, paymentUrl } from "@/lib/payments";
+import { createCheckoutUrl, isDepositPaid } from "@/lib/payments";
 import { rateLimit } from "@/lib/rate-limit";
 
 export const runtime = "nodejs";
@@ -28,10 +28,19 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  const url = paymentUrl(record, paymentType);
+  let url: string | null = null;
+  try {
+    url = await createCheckoutUrl(record, paymentType);
+  } catch (e) {
+    console.error("[checkout] Stripe rejected the session:", e);
+    return NextResponse.json(
+      { error: "We could not start checkout just now. Try again, or email support@tsu.agency." },
+      { status: 502 },
+    );
+  }
   if (!url) {
     return NextResponse.json(
-      { error: "No payment option is set up for this agreement — please contact us." },
+      { error: "That payment does not apply to this agreement. Please contact us." },
       { status: 400 },
     );
   }
