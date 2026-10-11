@@ -24,6 +24,20 @@ const TOKEN_TTL_MS = 60 * 60 * 1000;
 const SESSION_TTL_MS = 14 * 24 * 60 * 60 * 1000;
 
 export const PORTAL_COOKIE = "tsu_portal";
+export const ADMIN_COOKIE = "tsu_admin";
+
+/**
+ * Which portal a link or a session is for.
+ *
+ * Tokens and sessions are both tagged, and the tag is checked on the way out.
+ * Without it, a customer link emailed to an address that also happens to be an
+ * administrator's would open the admin portal when forwarded, which is a much
+ * bigger thing to hand over than a view of one project.
+ */
+export type Scope = "customer" | "admin";
+
+/** Admin sessions are deliberately short: this one reads everybody's mail. */
+const ADMIN_SESSION_TTL_MS = 12 * 60 * 60 * 1000;
 
 const sha256 = (s: string) => createHash("sha256").update(s).digest("hex");
 
@@ -50,7 +64,11 @@ export type IssuedToken = { token: string; expiresAt: Date };
  * Mint a one-time token for an address. The caller decides whether the address
  * deserves one; this only stores the hash.
  */
-export async function createLoginToken(email: string, ip?: string): Promise<IssuedToken | null> {
+export async function createLoginToken(
+  email: string,
+  ip?: string,
+  scope: Scope = "customer",
+): Promise<IssuedToken | null> {
   const client = supabase();
   if (!client) return null;
 
@@ -62,6 +80,7 @@ export async function createLoginToken(email: string, ip?: string): Promise<Issu
     email: normaliseEmail(email),
     expires_at: expiresAt.toISOString(),
     requested_ip: ip || null,
+    scope,
   });
   if (error) {
     console.error("[portal-auth] could not store login token:", error.message);
@@ -84,15 +103,16 @@ export type ConsumeResult = {
  * Spend a token. Succeeds at most once: the update is conditional on used_at
  * still being null, so two clicks racing each other cannot both win.
  */
-export async function consumeLoginToken(token: string): Promise<ConsumeResult> {
+export async function consumeLoginToken(token: string, scope: Scope = "customer"): Promise<ConsumeResult> {
   const client = supabase();
   if (!client) return { ok: false, reason: "unavailable" };
   if (!token || typeof token !== "string") return { ok: false, reason: "unknown" };
 
   const { data: row, error } = await client
     .from("portal_login_tokens")
-    .select("id, email, expires_at, used_at")
+    .select("id, email, expires_at, used_at, scope")
     .eq("token_hash", sha256(token))
+    .eq("scope", scope)
     .maybeSingle();
 
   if (error) return { ok: false, reason: "unavailable" };
@@ -135,22 +155,30 @@ export async function purgeExpiredTokens(): Promise<number> {
  * and nothing in it the holder could usefully tamper with: every field is
  * covered by the signature.
  */
-export function signSession(email: string, now: number = Date.now()): string | null {
+export function signSession(email: string, scope: Scope = "customer", now: number = Date.now()): string | null {
   const key = sessionKey();
   if (!key) return null;
-  const payload = `${Buffer.from(normaliseEmail(email)).toString("base64url")}.${now + SESSION_TTL_MS}`;
+  const ttl = scope === "admin" ? ADMIN_SESSION_TTL_MS : SESSION_TTL_MS;
+  // The scope is inside the signed payload, so it cannot be edited into the
+  // other portal's cookie.
+  const payload = `${scope}.${Buffer.from(normaliseEmail(email)).toString("base64url")}.${now + ttl}`;
   return `${payload}.${createHmac("sha256", key).update(payload).digest("base64url")}`;
 }
 
-export function readSession(cookie: string | undefined, now: number = Date.now()): string | null {
+export function readSession(
+  cookie: string | undefined,
+  scope: Scope = "customer",
+  now: number = Date.now(),
+): string | null {
   const key = sessionKey();
   if (!key || !cookie) return null;
 
   const parts = cookie.split(".");
-  if (parts.length !== 3) return null;
-  const [encoded, expiry, signature] = parts;
+  if (parts.length !== 4) return null;
+  const [cookieScope, encoded, expiry, signature] = parts;
+  if (cookieScope !== scope) return null;
 
-  const expected = createHmac("sha256", key).update(`${encoded}.${expiry}`).digest("base64url");
+  const expected = createHmac("sha256", key).update(`${cookieScope}.${encoded}.${expiry}`).digest("base64url");
   const a = Buffer.from(signature);
   const b = Buffer.from(expected);
   if (a.length !== b.length || !timingSafeEqual(a, b)) return null;
@@ -170,4 +198,9 @@ export const sessionCookieOptions = {
   secure: process.env.NODE_ENV === "production",
   path: "/",
   maxAge: SESSION_TTL_MS / 1000,
+};
+
+export const adminCookieOptions = {
+  ...sessionCookieOptions,
+  maxAge: ADMIN_SESSION_TTL_MS / 1000,
 };

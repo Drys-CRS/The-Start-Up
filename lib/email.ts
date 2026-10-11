@@ -166,6 +166,28 @@ export async function sendPortalLink(opts: {
   });
 }
 
+/** The same one-time link, for the admin portal. */
+export async function sendAdminLink(opts: { to: string; token: string }): Promise<boolean> {
+  const link = `${SITE_URL}/admin/enter?t=${encodeURIComponent(opts.token)}`;
+  const body =
+    eyebrow("Admin sign-in") +
+    heading("Your link to the admin portal") +
+    paragraph("Works once, expires in an hour, and signs you in for twelve hours.") +
+    button("Open the admin portal", link) +
+    `<p style="margin:18px 0 0;font-size:12px;line-height:1.5;color:${LIGHT};">` +
+    `If you did not ask for this, someone has your address and is trying to reach the admin portal. ` +
+    `The link alone does not let them in: it only works from this mailbox.</p>` +
+    `<p style="margin:10px 0 0;font-size:11px;line-height:1.5;color:${LIGHT};">Button not working? Paste this into your browser: ` +
+    `<a href="${escapeHtml(link)}" style="color:${TEAL};">${escapeHtml(link)}</a></p>`;
+
+  return send({
+    to: opts.to,
+    subject: "Your admin sign-in link",
+    html: shell(body),
+    template: "admin_sign_in",
+  });
+}
+
 // ── Customer: status updates ─────────────────────────────────────────────────
 
 // Send a status-change email to the customer. Never throws — email failure must

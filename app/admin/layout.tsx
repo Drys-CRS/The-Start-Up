@@ -1,5 +1,8 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { cookies, headers } from "next/headers";
+import { ADMIN_COOKIE, readSession } from "@/lib/portal-auth";
+import AdminSignOut from "./AdminSignOut";
 
 export const metadata: Metadata = {
   title: { default: "Admin", template: "%s · Admin" },
@@ -16,6 +19,16 @@ const NAV = [
 ];
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
+  // The sign-in pages live under /admin so the middleware can treat the whole
+  // prefix as one thing, but they must not render the signed-in chrome. The
+  // middleware forwards the path for exactly this.
+  const pathname = headers().get("x-pathname") || "";
+  if (pathname.startsWith("/admin/login") || pathname.startsWith("/admin/enter")) {
+    return <>{children}</>;
+  }
+
+  const who = readSession(cookies().get(ADMIN_COOKIE)?.value, "admin");
+
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-950 font-sans text-slate-900 dark:text-slate-100">
       <header className="border-b border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900">
@@ -34,6 +47,10 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
               </Link>
             ))}
           </nav>
+          <div className="ml-auto flex items-center gap-3">
+            {who && <span className="hidden sm:inline font-mono text-[11px] text-slate-400 dark:text-slate-500">{who}</span>}
+            <AdminSignOut />
+          </div>
         </div>
       </header>
       <main className="mx-auto max-w-6xl px-5 py-6">{children}</main>
