@@ -2,6 +2,7 @@
 import { track } from "@vercel/analytics";
 import { useEffect, useRef, useState } from "react";
 import { CheckCircle, AlertCircle, Loader2, CreditCard, ShieldCheck, RefreshCw } from "lucide-react";
+import { priceFor, usd } from "@/lib/pricing";
 
 type Stage = "form" | "signing" | "signed" | "paying" | "error";
 
@@ -10,16 +11,25 @@ type Stage = "form" | "signing" | "signed" | "paying" | "error";
 const TEAL = "#14b8a6";
 
 const TIER_LABEL: Record<string, string> = {
-  promo:   "Promotional — Limited Time",
+  promo:   "Promotional, limited time",
   premium: "Premium",
 };
 
-// Payment structure: 10% deposit now → 80% on MVP plan approval → 10% on delivery
-// 50% off special (ends 31 Oct 2026) — "was" reflects the full-price total.
-const AMOUNTS: Record<string, { total: string; was: string; deposit: string; mvp: string; balance: string }> = {
-  promo:   { total: "$1,500", was: "$3,000", deposit: "$150", mvp: "$1,200", balance: "$150" },
-  premium: { total: "$2,500", was: "$5,000", deposit: "$250", mvp: "$2,000", balance: "$250" },
+// Payment structure: 10% deposit now → 80% on MVP plan approval → 10% on delivery.
+// Figures come from lib/pricing, which is also what the Stripe link charges and
+// what the signed PDF says, so the three cannot drift apart.
+const amountsFor = (tier: string) => {
+  const p = priceFor(tier === "premium" ? "premium" : "promo");
+  return {
+    total: usd(p.total),
+    was: usd(p.early ? p.standard : p.list),
+    deposit: usd(p.deposit),
+    mvp: usd(p.mvp),
+    balance: usd(p.balance),
+    early: p.early,
+  };
 };
+
 
 const KEY_TERMS = [
   "The investment amount and payment schedule as outlined in your proposal",
@@ -55,17 +65,56 @@ export default function SignPage() {
     if (mt && !isNaN(Number(mt))) setMonthlyTools(Number(mt));
   }, []);
 
+  // The signature is drawn onto white paper rather than onto the page.
+  //
+  // It used to draw near-black ink straight onto a transparent canvas sitting
+  // on var(--c-subtle). In dark mode that is black on near-black, so the box
+  // looked empty and people thought the signature had not been captured. It
+  // had: the PNG posted to /api/sign was correct the whole time, which is the
+  // worse version of the bug, because the fix is invisible in the record.
+  //
+  // Filling the paper also makes what is on screen exactly what gets stored
+  // and embedded in the PDF, so it cannot go wrong again on a theme change.
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
+
+    // Back the canvas at device resolution: this image ends up in a PDF, where
+    // a 500px-wide signature stretched across the page looks like a fax.
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    const W = 500;
+    const H = 110;
+    canvas.width = W * dpr;
+    canvas.height = H * dpr;
+
     const ctx = canvas.getContext("2d")!;
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    if (!name.trim()) return;
-    ctx.font = "italic 30px Georgia, 'Times New Roman', serif";
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    ctx.fillStyle = "#ffffff";
+    ctx.fillRect(0, 0, W, H);
+
+    // The signing line, so an empty box reads as somewhere to sign.
+    ctx.strokeStyle = "#cbd5e1";
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(40, H - 28);
+    ctx.lineTo(W - 40, H - 28);
+    ctx.stroke();
+
+    const signed = name.trim();
+    if (!signed) return;
+
+    // Shrink to fit rather than overflow the paper on a long legal name.
+    let size = 30;
+    ctx.font = `italic ${size}px Georgia, 'Times New Roman', serif`;
+    while (ctx.measureText(signed).width > W - 100 && size > 14) {
+      size -= 1;
+      ctx.font = `italic ${size}px Georgia, 'Times New Roman', serif`;
+    }
+
     ctx.fillStyle = "#0f172a";
     ctx.textAlign = "center";
-    ctx.textBaseline = "middle";
-    ctx.fillText(name.trim(), canvas.width / 2, canvas.height / 2);
+    ctx.textBaseline = "alphabetic";
+    ctx.fillText(signed, W / 2, H - 36);
   }, [name]);
 
   async function submitSignature() {
@@ -81,11 +130,11 @@ export default function SignPage() {
       if (res.ok) { track("Agreement Signed"); setStage("signed"); }
       else {
         const d = await res.json().catch(() => ({}));
-        setErrMsg(d.error || "Submission failed — please try again.");
+        setErrMsg(d.error || "Submission failed. Please try again.");
         setStage("error");
       }
     } catch {
-      setErrMsg("Network error — please check your connection and try again.");
+      setErrMsg("Network error. Check your connection and try again.");
       setStage("error");
     }
   }
@@ -103,7 +152,7 @@ export default function SignPage() {
       window.location.href = url;
     } else {
       const d = await res.json().catch(() => ({}));
-      setErrMsg(d.error || "Could not start payment — please contact us directly.");
+      setErrMsg(d.error || "Could not start payment. Please contact us directly.");
       setStage("error");
     }
   }
@@ -120,12 +169,12 @@ export default function SignPage() {
       const { url } = await res.json();
       window.location.href = url;
     } else {
-      setErrMsg("Could not start subscription — please contact us directly.");
+      setErrMsg("Could not start subscription. Please contact us directly.");
       setStage("error");
     }
   }
 
-  const amountInfo = AMOUNTS[tier] ?? AMOUNTS.promo;
+  const amountInfo = amountsFor(tier);
   const ai = amountInfo; // shorthand
   const canSign    = name.trim().length > 0 && agreed;
 
@@ -161,8 +210,15 @@ export default function SignPage() {
 
             {/* Payment milestone breakdown */}
             <div style={{ background: "var(--c-subtle)", borderRadius: 10, padding: "0.85rem 1rem", marginBottom: "1rem" }}>
+              {ai.early && (
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center",
+                  padding: "0 0 0.5rem", borderBottom: "1px solid var(--c-border)", marginBottom: "0.25rem" }}>
+                  <span style={{ fontSize: 11, fontWeight: 700, color: TEAL }}>EARLY SIGNING DISCOUNT APPLIED</span>
+                  <span style={{ fontSize: 12, fontWeight: 700, color: TEAL }}>{ai.was} → {ai.total}</span>
+                </div>
+              )}
               {[
-                { phase: "10% now",         amount: ai.deposit, note: "Deposit — secures your start date",        active: true  },
+                { phase: "10% now",         amount: ai.deposit, note: "Deposit, secures your start date",        active: true  },
                 { phase: "80% on approval", amount: ai.mvp,     note: "After MVP plan is reviewed and approved",   active: false },
                 { phase: "10% on delivery", amount: ai.balance,  note: "Final balance at end of 30-day build",    active: false },
               ].map((row, i) => (
@@ -198,7 +254,7 @@ export default function SignPage() {
                         Add Ongoing Support &amp; Tools Coverage
                       </div>
                       <div style={{ fontSize: 12, color: "var(--c-mid)", lineHeight: 1.5 }}>
-                        Keep your system running after your included support period ends. This subscription only starts once your {TIER_LABEL[tier] === "Promotional" ? "90" : "120"}-day support period completes — <strong>nothing is charged today or during your build.</strong>
+                        Keep your system running after your included support period ends. This subscription only starts once your {TIER_LABEL[tier] === "Promotional" ? "90" : "120"}-day support period completes. <strong>Nothing is charged today or during your build.</strong>
                       </div>
                     </div>
                   </label>
@@ -254,7 +310,7 @@ export default function SignPage() {
             )}
 
             <p style={{ color: "var(--c-light)", fontSize: 11, textAlign: "center", marginTop: "0.6rem" }}>
-              Secured by Stripe — SSL encrypted
+              Secured by Stripe, SSL encrypted
             </p>
           </div>
         </div>
@@ -352,7 +408,7 @@ export default function SignPage() {
             </div>
           )}
           <p style={{ fontSize: 11, color: "var(--c-light)", margin: "0.5rem 0 0", lineHeight: 1.5 }}>
-            Optional subscription you can activate after signing. Billing only begins once your included support period ends — nothing extra is charged today.
+            Optional subscription you can activate after signing. Billing only begins once your included support period ends. Nothing extra is charged today.
           </p>
         </div>
 
@@ -379,10 +435,10 @@ export default function SignPage() {
         {/* Signature preview */}
         <label style={{ ...S.label, margin: "1.25rem 0 0.4rem" }}>Your Signature</label>
         <div style={{ border: `2px solid ${name.trim() ? TEAL : "var(--c-border)"}`, borderRadius: 10, background: "var(--c-subtle)", transition: "border-color 0.15s", overflow: "hidden" }}>
-          <canvas ref={canvasRef} width={500} height={110} style={{ width: "100%", height: 110, display: "block", borderRadius: 8 }} />
+          <canvas ref={canvasRef} style={{ width: "100%", height: 110, display: "block", borderRadius: 8 }} />
         </div>
         <p style={{ fontSize: 11, color: "var(--c-light)", margin: "4px 0 0", textAlign: "center" }}>
-          {name.trim() ? "Signature captured — your typed name is your legal digital signature." : "Your signature will appear here as you type your name above."}
+          {name.trim() ? "Signature captured. Your typed name is your legal digital signature." : "Your signature will appear here as you type your name above."}
         </p>
 
         {/* Agree */}

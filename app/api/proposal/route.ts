@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { EARLY_OFFER, priceFor, usd, type TierKey } from "@/lib/pricing";
 import { rateLimit } from "@/lib/rate-limit";
 import { PDFDocument, StandardFonts, PageSizes, rgb, PDFName, PDFString, PDFArray } from "pdf-lib";
 import { addFileToItem } from "@/lib/monday";
@@ -24,19 +25,18 @@ const BORDER = c("#e2e8f0");
 const WHITE  = rgb(1, 1, 1);
 
 // ── Tier data ─────────────────────────────────────────────────────────────────
-// 50% off special (ends 31 Oct 2026) — wasUsd holds the full-price reference.
-const TIERS: Record<string, { label: string; usd: string; wasUsd: string; period: string; isPromo: boolean }> = {
+// Amounts come from lib/pricing so the PDF cannot quote a different number to
+// the page the client just signed on. wasUsd is the full-price reference.
+const TIERS: Record<string, { label: string; key: TierKey; period: string; isPromo: boolean }> = {
   "PROMOTIONAL (Base + Free 2 Months)": {
     label: "Promotional - 50% Off Special",
-    usd: "$1,500 flat",
-    wasUsd: "$3,000",
+    key: "promo",
     period: "90 days total (30-day build - 60 days support FREE)",
     isPromo: true,
   },
   Premium: {
     label: "Premium - 50% Off Special",
-    usd: "$2,500 flat",
-    wasUsd: "$5,000",
+    key: "premium",
     period: "120 days total (30-day build - 60 days support - +30 days FREE)",
     isPromo: false,
   },
@@ -90,8 +90,9 @@ export async function POST(req: NextRequest) {
   const currency = "USD";
   const tier: string = b.tier || "Premium";
   const pkg = TIERS[tier] ?? TIERS.Premium;
-  const price = pkg.usd;
-  const wasPrice = pkg.wasUsd;
+  const money = priceFor(pkg.key);
+  const price = `${usd(money.total)} flat`;
+  const wasPrice = usd(money.early ? money.standard : money.list);
   const mondayItemId: string | undefined = b.mondayItemId;
 
   // Reuse the Build Plan's ref so the proposal, signature, and /status all agree.
@@ -229,7 +230,8 @@ export async function POST(req: NextRequest) {
   // Price (size 22) — topY cy-30, baseline cy-52. Descenders reach ~cy-56
   txt(price,                   ML + 12, cy - 30, fontB, 22, WHITE);
   const priceW = fontB.widthOfTextAtSize(sanitize(price), 22);
-  txt(`(was ${wasPrice} - 50% OFF)`, ML + 12 + priceW + 8, cy - 40, fontR, 8, TEAL);
+  const offLabel = money.early ? `${usd(EARLY_OFFER.offUsd)} OFF` : "50% OFF";
+  txt(`(was ${wasPrice} - ${offLabel})`, ML + 12 + priceW + 8, cy - 40, fontR, 8, TEAL);
   // Period (size 8) — topY cy-60, baseline cy-68. Cap top ~cy-62. Gap from descenders = 6pt ✓
   txt(pkg.period,              ML + 12, cy - 60, fontR, 8,  LIGHT);
   // Feature line (size 7.5) — topY cy-74, baseline cy-81.5, well within 88pt box ✓
@@ -293,15 +295,19 @@ export async function POST(req: NextRequest) {
   // ── INVESTMENT SUMMARY ─────────────────────────────────────────────────────
   sectionTitle("Investment Summary");
   type IRow = [string, string, string];
-  const invDeposit = pkg.isPromo ? "$150"   : "$250";
-  const invMvp     = pkg.isPromo ? "$1,200" : "$2,000";
-  const invBalance = pkg.isPromo ? "$150"   : "$250";
   const invRows: IRow[] = [
-    ["Deposit - 10%",          invDeposit, "Due on signature - secures your start date"],
-    ["MVP Approval - 80%",     invMvp,     "Due once MVP plan is reviewed and approved by client"],
-    ["Final Balance - 10%",    invBalance, "Due at end of 30-day build on delivery"],
-    ["Total Investment",       price,      "Fixed price - no overruns"],
+    ["Deposit - 10%",      usd(money.deposit), "Due on signature - secures your start date"],
+    ["MVP Approval - 80%", usd(money.mvp),     "Due once MVP plan is reviewed and approved by client"],
+    ["Final Balance - 10%", usd(money.balance), "Due at end of 30-day build on delivery"],
+    ["Total Investment",   price,              "Fixed price - no overruns, payment plan included"],
   ];
+  if (money.early) {
+    invRows.splice(3, 0, [
+      "Early signing discount",
+      `-${usd(EARLY_OFFER.offUsd)}`,
+      `Applied: signed on or before ${EARLY_OFFER.deadlineLabel}`,
+    ]);
+  }
   const i1W = CW * 0.44;
   const i2W = CW * 0.22;
   const i3X = ML + i1W + i2W + 6;
@@ -321,14 +327,14 @@ export async function POST(req: NextRequest) {
   const tcs: [string, string][] = [
     ["1. Scope & Agreement", "This document constitutes a binding service proposal between The Startup, a service of Cyber Retaliator Solutions LLC (service provider), and the client named herein. Scope is limited to what is described; changes require written amendment and may affect timeline and price."],
     ["2. 30-Day Build Guarantee", "We commit to delivering a working system within 30 calendar days of the confirmed build start. If we miss this for reasons attributable solely to us, the client receives an additional 30 days of support at no cost."],
-    ["3. Payment Terms", "All tiers follow a three-stage schedule: 10% deposit on signature (secures your start date); 80% on MVP plan approval (client must review and approve before build continues); 10% final balance on delivery at end of the 30-day build. Invoices are due within 5 business days. Overdue payments may pause the build."],
+    ["3. Payment Terms", "A payment plan is included at no extra cost: all tiers follow a three-stage schedule of 10% deposit on signature (secures your start date); 80% on MVP plan approval (client must review and approve before build continues); 10% final balance on delivery at end of the 30-day build. Invoices are due within 5 business days. Overdue payments may pause the build."],
     ["4. Ownership of Deliverables", "All custom configurations, automations, dashboards, and documentation become the client's property upon final payment. The Startup retains rights to its reusable internal frameworks and methodologies."],
     ["5. Third-Party Subscriptions & Tools", "The client is solely responsible for the cost of all third-party tools, platforms, APIs, and software subscriptions required to operate and maintain the delivered system. This includes — but is not limited to — CRM/workspace subscriptions, cloud hosting fees, domain registration, payment processing fees, API usage costs, and any SaaS tools integrated during the build. A Budget & Subscriptions breakdown is provided with the project outlining estimated monthly and annual costs. These ongoing costs are entirely separate from The Startup's service fee and are not included in the project price."],
     ["6. Support Period", "The support period covers active system support, bug fixes, optimisation, and training. It begins on handover and does not include new feature development."],
     ["7. Confidentiality", "Both parties agree to keep all project details, business information, and proprietary data confidential and will not disclose to third parties without prior written consent."],
     ["8. Cancellation Policy", "Before build start: full refund minus 10% scoping and admin fee. After build start: deposit is non-refundable; remaining work invoiced at a pro-rata day rate."],
     ["9. Limitation of Liability", "The Startup's total liability is limited to the fees paid under this agreement. We are not liable for indirect, consequential, or incidental losses."],
-    ["10. Force Majeure", "Neither party is liable for delays caused by circumstances beyond reasonable control, including natural disasters, government actions, or infrastructure failure."],
+    ["10. Force Majeure", "Neither party is liable for delays or failure to perform caused by circumstances beyond its reasonable control, including acts of God, natural disasters, fire, flood, severe weather, epidemic or pandemic, war, terrorism, civil unrest, labour disputes, government actions or restrictions, utility or infrastructure failure, and failures of third-party platforms or telecommunications. The affected party will notify the other promptly and resume performance as soon as reasonably practicable."],
     ["11. Governing Law", "This agreement is governed by the laws of the State of Texas and applicable U.S. federal law, without regard to conflict-of-law rules. Disputes are subject to the state and federal courts located in Williamson County, Texas."],
   ];
   tcs.forEach(([title, body]) => {
@@ -343,10 +349,8 @@ export async function POST(req: NextRequest) {
   // ── PAYMENT METHODS ────────────────────────────────────────────────────────
   sectionTitle("Payment Methods");
   ([
-    ["EFT / Bank Transfer",  "Details on invoice (Capitec / Standard Bank). Reference your proposal number."],
+    ["Wire / Bank Transfer", "Account details are on your invoice. Reference your proposal number."],
     ["Credit / Debit Card",  "Secure Stripe payment link sent with invoice."],
-    ["PayPal / Wise",        "Available for international clients. USD pricing applies."],
-    ["Cryptocurrency",       "BTC, ETH, or USDC accepted on request. Wallet details provided on confirmation."],
   ] as [string, string][]).forEach(([method, detail]) => {
     const dLines = wrapText(detail, (s) => fontR.widthOfTextAtSize(s, 8), CW - 12);
     checkBreak(12 + dLines.length * 10 + 6);

@@ -1,4 +1,5 @@
 import { tierKey } from "./links";
+import { EARLY_PAYMENT_LINKS, earlyLive, type TierKey } from "./pricing";
 
 // Payment structure: 10% deposit → 80% MVP approval → 10% final balance.
 // 50% off special (ends 31 Oct 2026). Regenerated via seed-stripe.mjs equivalent
@@ -30,7 +31,13 @@ export function paymentUrl(
   paymentType: string = "deposit",
 ): string | null {
   const tier = tierKey(record.tierLabel);
-  const base = tier ? PAYMENT_LINKS[`${tier}|USD|${paymentType}`] : undefined;
+  if (!tier) return null;
+
+  // While the October offer is running, charge the discounted link. earlyLive
+  // is false unless that tier's links actually exist, so this can never quote
+  // one price on the page and charge another at the till.
+  const key = `${tier}|USD|${paymentType}`;
+  const base = earlyLive(tier as TierKey) ? EARLY_PAYMENT_LINKS[key] : PAYMENT_LINKS[key];
   if (!base) return null;
   const q = new URLSearchParams({ client_reference_id: record.itemId, prefilled_email: record.email });
   return `${base}?${q}`;

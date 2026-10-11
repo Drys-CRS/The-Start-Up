@@ -8,7 +8,8 @@ import {
 } from "lucide-react";
 import WordMark from "./WordMark";
 import PipelinePreview from "./PipelinePreview";
-import { FAQS } from "@/lib/faqs";
+import { getFaqs } from "@/lib/faqs";
+import { EARLY_OFFER, PROMO_ENDS_LABEL, priceFor, usd } from "@/lib/pricing";
 
 // Fade-and-rise as each section scrolls into view — plays once, doesn't re-trigger on scroll-back.
 // Intentionally inert. Fading every section in on scroll is one of the clearest
@@ -25,11 +26,19 @@ const staggerItem = (i) => ({
   transition: { duration: 0.4, delay: i * 0.08, ease: "easeOut" },
 });
 
-const OFFER_DEADLINE = "31 Oct 2026";
+const OFFER_DEADLINE = PROMO_ENDS_LABEL;
+
+// Every figure on this page comes from lib/pricing, which is also what the
+// Stripe link charges and what the signed PDF says.
+const PROMO = priceFor("promo");
 
 const TIERS = {
   sym: "$",
-  offer: { total: "1,500", was: "3,000", tag: "30-day build · 60 days support FREE" },
+  offer: {
+    total: PROMO.total.toLocaleString("en-US"),
+    was: (PROMO.early ? PROMO.standard : PROMO.list).toLocaleString("en-US"),
+    tag: "30-day build · 60 days support FREE",
+  },
   retainer: "150", // optional monthly retainer, starts only after the free support period ends
 };
 
@@ -37,7 +46,7 @@ const TRUST_POINTS = [
   "Fixed price, no overruns",
   "30-day build, fixed date",
   "No call required to start",
-  "50% off launch cohort",
+  "Payment plan included",
 ];
 
 const STEPS = [
@@ -367,9 +376,11 @@ export default function OfferPage() {
               <div className="flex-1">
                 <div className="flex items-center gap-2 mb-3">
                   <span className="rounded-full bg-teal-500 px-3 py-0.5 text-xs font-bold text-slate-950 tracking-wide uppercase">
-                    50% Off Special
+                    {PROMO.early ? `${usd(EARLY_OFFER.offUsd)} Off, This Week` : "50% Off Special"}
                   </span>
-                  <span className="text-xs text-slate-400">Ends {OFFER_DEADLINE}</span>
+                  <span className="text-xs text-slate-400">
+                    {PROMO.early ? `Sign by ${EARLY_OFFER.deadlineLabel}` : `Ends ${OFFER_DEADLINE}`}
+                  </span>
                 </div>
                 <div className="flex items-baseline gap-2">
                   <span className="font-mono text-2xl text-slate-500 line-through tabular-nums">
@@ -380,6 +391,16 @@ export default function OfferPage() {
                   </span>
                   <span className="text-slate-400 text-sm">flat · all-in</span>
                 </div>
+                <p className="mt-2 text-sm text-slate-400">
+                  {PROMO.early && (
+                    <span className="text-teal-400">
+                      {usd(EARLY_OFFER.offUsd)} off the usual {usd(PROMO.standard)} if you sign by{" "}
+                      {EARLY_OFFER.deadlineLabel}.{" "}
+                    </span>
+                  )}
+                  Paid in three: {usd(PROMO.deposit)} to start, {usd(PROMO.mvp)} when you approve the MVP plan,{" "}
+                  {usd(PROMO.balance)} on delivery.
+                </p>
                 <div className="mt-3 flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-5">
                   <span className="flex items-center gap-1.5 text-sm text-slate-300">
                     <Check className="h-4 w-4 text-teal-400" strokeWidth={3} /> 30-day build, fixed date
@@ -389,6 +410,9 @@ export default function OfferPage() {
                   </span>
                   <span className="flex items-center gap-1.5 text-sm text-slate-300">
                     <Check className="h-4 w-4 text-teal-400" strokeWidth={3} /> Full handover docs
+                  </span>
+                  <span className="flex items-center gap-1.5 text-sm text-slate-300">
+                    <Check className="h-4 w-4 text-teal-400" strokeWidth={3} /> Payment plan included
                   </span>
                 </div>
                 <div className="mt-4 rounded-xl border border-slate-800 bg-slate-900/60 p-3.5 max-w-md">
@@ -481,7 +505,7 @@ export default function OfferPage() {
         <motion.div {...reveal} className="mt-16">
           <div className="text-xs font-medium uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-5">Questions</div>
           <div className="divide-y divide-slate-200 dark:divide-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900">
-            {FAQS.map((f, i) => (
+            {getFaqs().map((f, i) => (
               <div key={f.q} className="p-5">
                 <button onClick={() => setOpenFaq(openFaq === i ? -1 : i)}
                   className="flex w-full items-center justify-between gap-4 text-left">

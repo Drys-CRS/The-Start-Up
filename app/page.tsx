@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import OfferPage from "@/components/OfferPage";
-import { FAQS } from "@/lib/faqs";
+import { getFaqs } from "@/lib/faqs";
+import { EARLY_OFFER, PROMO_ENDS_LABEL, priceFor, usd } from "@/lib/pricing";
 import { SITE_URL as siteUrl } from "@/lib/site";
 
 export const metadata: Metadata = {
@@ -38,7 +39,9 @@ export const metadata: Metadata = {
   },
 };
 
-const jsonLd = {
+function buildJsonLd() {
+  const build = priceFor("promo");
+  return {
   "@context": "https://schema.org",
   "@graph": [
     {
@@ -80,17 +83,21 @@ const jsonLd = {
         {
           "@type": "Offer",
           name: "30-Day Build",
-          price: "1500",
+          price: String(build.total),
           priceCurrency: "USD",
           availability: "https://schema.org/LimitedAvailability",
-          description:
-            "50% off special (was $3,000, ends 31 Oct 2026). One flat build fee — 30-day build with 60 days of free support. Keep it running afterward with an optional $150/month retainer, plus third-party tools and subscriptions billed at cost.",
+          priceValidUntil: build.early
+            ? new Date(EARLY_OFFER.endsAt).toISOString().slice(0, 10)
+            : "2026-10-31",
+          description: build.early
+            ? `${usd(EARLY_OFFER.offUsd)} off the ${usd(build.standard)} half-price rate for agreements signed on or before ${EARLY_OFFER.deadlineLabel}. One flat build fee covering a 30-day build with 60 days of free support, with a payment plan included: ${usd(build.deposit)} to start, ${usd(build.mvp)} on MVP plan approval, ${usd(build.balance)} on delivery. An optional $150/month retainer and third-party tools are billed separately.`
+            : `50% off special (was ${usd(build.list)}, ends ${PROMO_ENDS_LABEL}). One flat build fee covering a 30-day build with 60 days of free support, with a payment plan included: ${usd(build.deposit)} to start, ${usd(build.mvp)} on MVP plan approval, ${usd(build.balance)} on delivery. An optional $150/month retainer and third-party tools are billed separately.`,
         },
       ],
     },
     {
       "@type": "FAQPage",
-      mainEntity: FAQS.map(({ q, a }) => ({
+      mainEntity: getFaqs().map(({ q, a }) => ({
         "@type": "Question",
         name: q,
         acceptedAnswer: {
@@ -100,9 +107,15 @@ const jsonLd = {
       })),
     },
   ],
-};
+  };
+}
+
+// Revalidate so the early-signing offer actually expires on a static page
+// instead of staying frozen at whatever was true at build time.
+export const revalidate = 900;
 
 export default function Page() {
+  const jsonLd = buildJsonLd();
   return (
     <>
       <script

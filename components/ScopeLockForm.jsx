@@ -5,17 +5,21 @@ import { motion, AnimatePresence } from "framer-motion";
 import { ArrowRight, Check, Download, FileText, Globe, Loader2, PenLine, ShieldCheck, Sparkles, X } from "lucide-react";
 import WordMark from "./WordMark";
 import GoalPicker, { OTHER_LABEL } from "./GoalPicker";
+import { priceFor, usd } from "@/lib/pricing";
 
 const OFFER_DEADLINE = "31 Oct 2026";
+
+// Price comes from lib/pricing so the form, the proposal and Stripe agree.
+const PROMO = priceFor("promo");
 
 const TIERS = [
   {
     value: "PROMOTIONAL (Base + Free 2 Months)",
     label: "Promotional",
     sublabel: "Base + Free 2 Months",
-    price: "$1,500 flat",
-    wasPrice: "$3,000",
-    note: "30-day build · 60 days support FREE · then optional $150/mo retainer",
+    price: `${usd(PROMO.total)} flat`,
+    wasPrice: usd(PROMO.early ? PROMO.standard : PROMO.list),
+    note: "30-day build · 60 days support FREE · payment plan included · then optional $150/mo retainer",
     promo: true,
   },
 ];

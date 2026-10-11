@@ -1,7 +1,20 @@
+import { EARLY_OFFER, PROMO_ENDS_LABEL, earlyLive, priceFor, usd } from "@/lib/pricing";
+
 // Plain-language answers, straight punctuation, no em dashes. Facts here are
 // load-bearing: the prices, the payment milestones and the promo end date must
-// match the sign page, the Stripe products and the agreement.
-export const FAQS = [
+// match the sign page, the Stripe products and the agreement, so the money
+// comes from lib/pricing rather than being typed out again here.
+//
+// A function, not a constant: the cost answer changes when the early-signing
+// offer expires, and a module-level array would be built once per server
+// process and then keep quoting a dead discount.
+export function getFaqs() {
+  const p = priceFor("promo");
+  const early = earlyLive("promo");
+  return FAQ_LIST(p, early);
+}
+
+const FAQ_LIST = (p: ReturnType<typeof priceFor>, early: boolean) => [
   {
     q: "Do I have to get on a call?",
     a: "No. The audit runs itself, the scope and price are on this page, and you start by filling in the Build Plan questions and paying the deposit. If you would rather talk it through first, we will happily do that. Nothing here requires it.",
@@ -20,7 +33,11 @@ export const FAQS = [
   },
   {
     q: "What does it cost?",
-    a: "One build fee of $1,500, which is half the standard $3,000 rate. That covers the 30-day build and 60 days of support afterwards. Once the free support ends you can opt in to a $150/month retainer to keep the system maintained, and you pay for any third-party tools at cost. Both are optional and neither is charged during the build. The half-price rate runs until 31 Oct 2026.",
+    a:
+      (early
+        ? `One build fee of ${usd(p.total)}. That is ${usd(EARLY_OFFER.offUsd)} off the ${usd(p.standard)} half-price rate, for agreements signed on or before ${EARLY_OFFER.deadlineLabel}. After that it goes back to ${usd(p.standard)}.`
+        : `One build fee of ${usd(p.total)}, which is half the standard ${usd(p.list)} rate, and the half-price rate runs until ${PROMO_ENDS_LABEL}.`) +
+      ` A payment plan is included at no extra cost: ${usd(p.deposit)} to start, ${usd(p.mvp)} once you approve the MVP plan, ${usd(p.balance)} on delivery. The fee covers the 30-day build and 60 days of support afterwards. Once the free support ends you can opt in to a $150/month retainer to keep the system maintained, and you pay for any third-party tools at cost. Both are optional and neither is charged during the build.`,
   },
   {
     q: "What platforms do you build on?",
@@ -48,7 +65,9 @@ export const FAQS = [
   },
   {
     q: "How does payment work?",
-    a: "Three milestones. A 10% deposit on signature secures your start date and begins scoping. We then deliver the MVP plan for your approval, and 80% is due before the build continues. The last 10% is due on delivery at the end of the 30 days. Nothing moves forward without your sign-off.",
+    a:
+      `The payment plan is part of the deal, not an extra. Three milestones: ${usd(p.deposit)} on signature, which is 10% and secures your start date; ${usd(p.mvp)} once we deliver the MVP plan and you approve it; ${usd(p.balance)} on delivery at the end of the 30 days. ` +
+      "Nothing moves forward without your sign-off. We take card through Stripe, or a wire transfer against an invoice.",
   },
   {
     q: "Can we make changes during the build?",
