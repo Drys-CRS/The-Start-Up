@@ -58,6 +58,7 @@ export async function POST(req: NextRequest) {
       company: b.company || "",
       ref: refNo,
       signUrl: signUrl({ ref: refNo, itemId: id, email: b.email, tierLabel: b.tier || "Premium" }),
+      tierLabel: b.tier || "Premium",
     });
     waitUntil(
       (async () => {

@@ -1,6 +1,6 @@
 import { Resend } from "resend";
 import { stageMeta } from "./status";
-import { statusUrl } from "./links";
+import { statusUrl, tierKey } from "./links";
 import { findScopeLock, logEmail } from "./db";
 
 // Resend is optional: if RESEND_API_KEY is unset (local/dev), every send is a
@@ -168,13 +168,20 @@ export async function sendBuildPlanConfirmation(opts: {
   company: string;
   ref: string;
   signUrl: string;
+  tierLabel?: string;
 }): Promise<boolean> {
   const forCompany = opts.company ? ` for ${opts.company}` : "";
   const body =
     eyebrow("Build Plan received") +
     heading("Your Build Plan is in") +
     paragraph(`Thanks, we've received your Build Plan${forCompany}. Your reference number is ${opts.ref}.`) +
-    paragraph("Next, review and sign your agreement, then pay the 10% deposit to confirm your start date. Signing takes about a minute.") +
+    paragraph(
+      // The Advanced engagement cannot start from a signature alone: we need
+      // the call and the access review before anyone commits to a date.
+      tierKey(opts.tierLabel || "") === "advanced"
+        ? "We will email you within one business day to book your scoping call. Review and sign the agreement whenever suits you, and the 50% deposit confirms the work once we have agreed scope on that call."
+        : "Next, review and sign your agreement, then pay the 10% deposit to confirm your start date. Signing takes about a minute.",
+    ) +
     button("Review and sign", opts.signUrl) +
     `<p style="margin:18px 0 0;font-size:12px;line-height:1.5;color:${LIGHT};">Check progress anytime on <a href="${escapeHtml(statusUrl(opts.ref))}" style="color:${TEAL};">your status page</a> using this reference and your email.</p>`;
 

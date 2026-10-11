@@ -5,12 +5,13 @@ import { motion, AnimatePresence } from "framer-motion";
 import { ArrowRight, Check, Download, FileText, Globe, Loader2, PenLine, ShieldCheck, Sparkles, X } from "lucide-react";
 import WordMark from "./WordMark";
 import GoalPicker, { OTHER_LABEL } from "./GoalPicker";
-import { priceFor, usd } from "@/lib/pricing";
+import { ADVANCED, TIER_CONFIG, priceFor, usd } from "@/lib/pricing";
 
 const OFFER_DEADLINE = "31 Oct 2026";
 
 // Price comes from lib/pricing so the form, the proposal and Stripe agree.
 const PROMO = priceFor("promo");
+const ADV = priceFor("advanced");
 
 const TIERS = [
   {
@@ -21,6 +22,16 @@ const TIERS = [
     wasPrice: usd(PROMO.early ? PROMO.standard : PROMO.list),
     note: "30-day build · 60 days support FREE · payment plan included · then optional $150/mo retainer",
     promo: true,
+  },
+  {
+    value: TIER_CONFIG.advanced.value,
+    label: "Advanced",
+    sublabel: "Integration + AI layer",
+    price: `${usd(ADV.total)} total`,
+    wasPrice: null,
+    note: `Keep your current systems · ${usd(ADV.deposit)} to start, ${usd(ADV.balance)} on handover · scoping call required`,
+    promo: false,
+    requiresCall: true,
   },
 ];
 
@@ -557,7 +568,7 @@ export default function ScopeLockForm({ embedded = false, initialValues = {}, pr
                         </div>
                       </div>
                       <span className="flex items-baseline gap-1.5 flex-none">
-                        <span className="font-mono text-xs text-slate-400 line-through">{t.wasPrice}</span>
+                        {t.wasPrice && <span className="font-mono text-xs text-slate-400 line-through">{t.wasPrice}</span>}
                         <span className={`font-mono text-sm font-semibold ${t.promo ? "text-teal-600" : "text-slate-900"}`}>
                           {t.price}
                         </span>
@@ -567,6 +578,17 @@ export default function ScopeLockForm({ embedded = false, initialValues = {}, pr
                 );
               })}
             </div>
+            {f.tier === TIER_CONFIG.advanced.value && (
+              <div className="mt-3 rounded-xl border border-amber-300 bg-amber-50 p-3.5 dark:border-amber-800/60 dark:bg-amber-950/30">
+                <p className="text-xs font-semibold text-amber-900 dark:text-amber-200">Before you pick this, two things</p>
+                <ul className="mt-1.5 space-y-1 pl-4 text-xs leading-relaxed text-amber-900/90 dark:text-amber-200/90">
+                  {ADVANCED.requires.map((r) => (
+                    <li key={r} className="list-disc">{r}</li>
+                  ))}
+                </ul>
+                <p className="mt-2 text-xs leading-relaxed text-amber-900/90 dark:text-amber-200/90">{ADVANCED.caveat}</p>
+              </div>
+            )}
           </div>
 
           <div>

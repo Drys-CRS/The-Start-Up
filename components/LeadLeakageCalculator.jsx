@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import WordMark from "./WordMark";
 import ScopeLockForm from "./ScopeLockForm";
+import { TIER_CONFIG } from "@/lib/pricing";
 
 /**
  * THE START UP — Lead Leakage Calculator + AI Bottleneck Report
@@ -227,8 +228,14 @@ Be concrete and non-generic. No flattery, no filler.`;
     "block text-xs font-medium uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-1.5";
 
   // Carries the audit's numbers straight into the Build Plan step — same page, no re-typing.
+  // ?tier=advanced comes off the "Book a scoping call" button on the offer
+  // page, so the right option is already chosen when the form opens.
+  const wantsAdvanced =
+    typeof window !== "undefined" && new URLSearchParams(window.location.search).get("tier") === "advanced";
+
   const buildPlanInitial = {
     ...(company ? { company } : {}),
+    ...(wantsAdvanced ? { tier: TIER_CONFIG.advanced.value } : {}),
     ...(calc.valid
       ? {
           goal: `Recover the ~${fmt(calc.annualLeak, currency)}/year we're losing to a slow sales cycle.`,

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { EARLY_OFFER, priceFor, usd, type TierKey } from "@/lib/pricing";
+import { ADVANCED, EARLY_OFFER, TIER_CONFIG, priceFor, usd, type TierKey } from "@/lib/pricing";
 import { rateLimit } from "@/lib/rate-limit";
 import { PDFDocument, StandardFonts, PageSizes, rgb, PDFName, PDFString, PDFArray } from "pdf-lib";
 import { addFileToItem } from "@/lib/monday";
@@ -27,18 +27,54 @@ const WHITE  = rgb(1, 1, 1);
 // ── Tier data ─────────────────────────────────────────────────────────────────
 // Amounts come from lib/pricing so the PDF cannot quote a different number to
 // the page the client just signed on. wasUsd is the full-price reference.
-const TIERS: Record<string, { label: string; key: TierKey; period: string; isPromo: boolean }> = {
+type Phase = [string, string, string, boolean];
+
+type TierDoc = {
+  label: string;
+  key: TierKey;
+  period: string;
+  features: string;
+  phases: Phase[];
+};
+
+const TIERS: Record<string, TierDoc> = {
   "PROMOTIONAL (Base + Free 2 Months)": {
     label: "Promotional - 50% Off Special",
     key: "promo",
     period: "90 days total (30-day build - 60 days support FREE)",
-    isPromo: true,
+    features: "30-day build  -  60 days support FREE  -  Full handover documentation",
+    phases: [
+      ["Build Phase", "Day 1-30", "System scoped, configured, tested, and delivered", false],
+      ["Support Phase", "Day 31-90", "Active support: training, optimisation, bug fixes", false],
+      ["Total Engagement", "90 days", "From signed agreement to end of support", true],
+    ],
   },
   Premium: {
     label: "Premium - 50% Off Special",
     key: "premium",
     period: "120 days total (30-day build - 60 days support - +30 days FREE)",
-    isPromo: false,
+    features: "30-day build  -  60 days support  -  +30 days FREE  -  Full handover documentation",
+    phases: [
+      ["Build Phase", "Day 1-30", "System scoped, configured, tested, and delivered", false],
+      ["Support Phase", "Day 31-90", "Active support: training, optimisation, bug fixes", false],
+      ["Free Support Extension", "Day 91-120", "30 additional days at no charge", false],
+      ["Total Engagement", "120 days", "From signed agreement to end of support", true],
+    ],
+  },
+  // No day-1-to-30 promise on the front of this one. The discovery is the
+  // first deliverable, and whether the build fits in 30 days depends on what
+  // the access review finds.
+  [TIER_CONFIG.advanced.value]: {
+    label: "Advanced - Integration and AI Layer",
+    key: "advanced",
+    period: "Scoping call first, then build - timeline confirmed after access review",
+    features: "Keep your current systems  -  Integration and AI layer  -  Full handover documentation",
+    phases: [
+      ["Scoping Call", "Week 1", "Your systems, your workflow, and what access we need", false],
+      ["Access Review", "Week 1-2", "What each vendor supports, and what has to be replicated", false],
+      ["Integration Build", "From agreed start", "Connections and the AI layer, to the timeline set after the review", false],
+      ["Support Phase", "60 days from handover", "Active support: training, optimisation, fixes", false],
+    ],
   },
 };
 
@@ -103,7 +139,7 @@ export async function POST(req: NextRequest) {
   // Signing URL — includes tier key and currency so the sign page knows the amount
   const host    = req.headers.get("host") || "the-start-up-eight.vercel.app";
   const proto   = host.startsWith("localhost") ? "http" : "https";
-  const tierKey = pkg.isPromo ? "promo" : "premium";
+  const tierKey = pkg.key;
   const signUrl = `${proto}://${host}/sign?ref=${refNo}&t=${tierKey}&c=${currency}${mondayItemId ? `&item=${mondayItemId}` : ""}${b.email ? `&e=${encodeURIComponent(b.email)}` : ""}`;
 
   // ── Create PDF document ────────────────────────────────────────────────────
@@ -230,15 +266,14 @@ export async function POST(req: NextRequest) {
   // Price (size 22) — topY cy-30, baseline cy-52. Descenders reach ~cy-56
   txt(price,                   ML + 12, cy - 30, fontB, 22, WHITE);
   const priceW = fontB.widthOfTextAtSize(sanitize(price), 22);
-  const offLabel = money.early ? `${usd(EARLY_OFFER.offUsd)} OFF` : "50% OFF";
-  txt(`(was ${wasPrice} - ${offLabel})`, ML + 12 + priceW + 8, cy - 40, fontR, 8, TEAL);
+  if (money.discounted) {
+    const offLabel = money.early ? `${usd(EARLY_OFFER.offUsd)} OFF` : "50% OFF";
+    txt(`(was ${wasPrice} - ${offLabel})`, ML + 12 + priceW + 8, cy - 40, fontR, 8, TEAL);
+  }
   // Period (size 8) — topY cy-60, baseline cy-68. Cap top ~cy-62. Gap from descenders = 6pt ✓
   txt(pkg.period,              ML + 12, cy - 60, fontR, 8,  LIGHT);
   // Feature line (size 7.5) — topY cy-74, baseline cy-81.5, well within 88pt box ✓
-  const feat = pkg.isPromo
-    ? "30-day build  -  60 days support FREE  -  Full handover documentation"
-    : "30-day build  -  60 days support  -  +30 days FREE  -  Full handover documentation";
-  txt(feat, ML + 12, cy - 74, fontR, 7.5, TEAL);
+  txt(pkg.features, ML + 12, cy - 74, fontR, 7.5, TEAL);
 
   cy -= pkgH + 8;
 
@@ -271,13 +306,7 @@ export async function POST(req: NextRequest) {
 
   // ── TIMELINE ───────────────────────────────────────────────────────────────
   sectionTitle("Project Timeline");
-  type Phase = [string, string, string, boolean];
-  const phases: Phase[] = [
-    ["Build Phase",    "Day 1-30",  "System scoped, configured, tested, and delivered", false],
-    ["Support Phase",  "Day 31-90", "Active support: training, optimisation, bug fixes", false],
-    ...(!pkg.isPromo ? [["Free Support Extension", "Day 91-120", "30 additional days at no charge", false] as Phase] : []),
-    ["Total Engagement", `${pkg.isPromo ? 90 : 120} days`, "From signed agreement to end of support", true],
-  ];
+  const phases: Phase[] = pkg.phases;
   const p1W = CW * 0.37;
   const p2W = CW * 0.2;
   const p3X = ML + p1W + p2W + 6;
@@ -295,19 +324,15 @@ export async function POST(req: NextRequest) {
   // ── INVESTMENT SUMMARY ─────────────────────────────────────────────────────
   sectionTitle("Investment Summary");
   type IRow = [string, string, string];
-  const invRows: IRow[] = [
-    ["Deposit - 10%",      usd(money.deposit), "Due on signature - secures your start date"],
-    ["MVP Approval - 80%", usd(money.mvp),     "Due once MVP plan is reviewed and approved by client"],
-    ["Final Balance - 10%", usd(money.balance), "Due at end of 30-day build on delivery"],
-    ["Total Investment",   price,              "Fixed price - no overruns, payment plan included"],
-  ];
+  const invRows: IRow[] = money.schedule.map(m => [m.label, usd(m.amount), m.note] as IRow);
   if (money.early) {
-    invRows.splice(3, 0, [
+    invRows.push([
       "Early signing discount",
       `-${usd(EARLY_OFFER.offUsd)}`,
       `Applied: signed on or before ${EARLY_OFFER.deadlineLabel}`,
     ]);
   }
+  invRows.push(["Total Investment", price, "Fixed price - no overruns, payment plan included"]);
   const i1W = CW * 0.44;
   const i2W = CW * 0.22;
   const i3X = ML + i1W + i2W + 6;
@@ -335,7 +360,13 @@ export async function POST(req: NextRequest) {
     ["8. Cancellation Policy", "Before build start: full refund minus 10% scoping and admin fee. After build start: deposit is non-refundable; remaining work invoiced at a pro-rata day rate."],
     ["9. Limitation of Liability", "The Startup's total liability is limited to the fees paid under this agreement. We are not liable for indirect, consequential, or incidental losses."],
     ["10. Force Majeure", "Neither party is liable for delays or failure to perform caused by circumstances beyond its reasonable control, including acts of God, natural disasters, fire, flood, severe weather, epidemic or pandemic, war, terrorism, civil unrest, labour disputes, government actions or restrictions, utility or infrastructure failure, and failures of third-party platforms or telecommunications. The affected party will notify the other promptly and resume performance as soon as reasonably practicable."],
-    ["11. Governing Law", "This agreement is governed by the laws of the State of Texas and applicable U.S. federal law, without regard to conflict-of-law rules. Disputes are subject to the state and federal courts located in Williamson County, Texas."],
+    ...(pkg.key === "advanced"
+      ? ([[
+          "11. Integration Dependencies (Advanced)",
+          "This engagement depends on the client providing timely access to the systems to be integrated, or a representative who can grant it. Where a third-party vendor provides no supported integration path (no API, export, or webhook), the relevant capability must be replicated before it can be connected. Replication is included in the engagement fee at no additional cost, but it extends the delivery timeline beyond 30 days. Any such dependency will be identified during the access review and confirmed in writing with a revised date before that work begins.",
+        ]] as [string, string][])
+      : []),
+    [pkg.key === "advanced" ? "12. Governing Law" : "11. Governing Law", "This agreement is governed by the laws of the State of Texas and applicable U.S. federal law, without regard to conflict-of-law rules. Disputes are subject to the state and federal courts located in Williamson County, Texas."],
   ];
   tcs.forEach(([title, body]) => {
     const bodyLines = wrapText(body, (s) => fontR.widthOfTextAtSize(s, 7.5), CW);

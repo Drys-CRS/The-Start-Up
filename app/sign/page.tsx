@@ -2,7 +2,7 @@
 import { track } from "@vercel/analytics";
 import { useEffect, useRef, useState } from "react";
 import { CheckCircle, AlertCircle, Loader2, CreditCard, ShieldCheck, RefreshCw } from "lucide-react";
-import { priceFor, usd } from "@/lib/pricing";
+import { priceFor, usd, type TierKey } from "@/lib/pricing";
 
 type Stage = "form" | "signing" | "signed" | "paying" | "error";
 
@@ -11,15 +11,17 @@ type Stage = "form" | "signing" | "signed" | "paying" | "error";
 const TEAL = "#14b8a6";
 
 const TIER_LABEL: Record<string, string> = {
-  promo:   "Promotional, limited time",
-  premium: "Premium",
+  promo:    "Promotional, limited time",
+  premium:  "Premium",
+  advanced: "Advanced, integration and AI layer",
 };
 
 // Payment structure: 10% deposit now → 80% on MVP plan approval → 10% on delivery.
 // Figures come from lib/pricing, which is also what the Stripe link charges and
 // what the signed PDF says, so the three cannot drift apart.
+const TIER_KEYS = ["promo", "premium", "advanced"] as const;
 const amountsFor = (tier: string) => {
-  const p = priceFor(tier === "premium" ? "premium" : "promo");
+  const p = priceFor((TIER_KEYS as readonly string[]).includes(tier) ? (tier as TierKey) : "promo");
   return {
     total: usd(p.total),
     was: usd(p.early ? p.standard : p.list),
@@ -27,6 +29,9 @@ const amountsFor = (tier: string) => {
     mvp: usd(p.mvp),
     balance: usd(p.balance),
     early: p.early,
+    discounted: p.discounted,
+    schedule: p.schedule,
+    requiresCall: p.requiresCall,
   };
 };
 
@@ -210,25 +215,21 @@ export default function SignPage() {
 
             {/* Payment milestone breakdown */}
             <div style={{ background: "var(--c-subtle)", borderRadius: 10, padding: "0.85rem 1rem", marginBottom: "1rem" }}>
-              {ai.early && (
+              {ai.discounted && ai.early && (
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center",
                   padding: "0 0 0.5rem", borderBottom: "1px solid var(--c-border)", marginBottom: "0.25rem" }}>
                   <span style={{ fontSize: 11, fontWeight: 700, color: TEAL }}>EARLY SIGNING DISCOUNT APPLIED</span>
                   <span style={{ fontSize: 12, fontWeight: 700, color: TEAL }}>{ai.was} → {ai.total}</span>
                 </div>
               )}
-              {[
-                { phase: "10% now",         amount: ai.deposit, note: "Deposit, secures your start date",        active: true  },
-                { phase: "80% on approval", amount: ai.mvp,     note: "After MVP plan is reviewed and approved",   active: false },
-                { phase: "10% on delivery", amount: ai.balance,  note: "Final balance at end of 30-day build",    active: false },
-              ].map((row, i) => (
-                <div key={i} style={{ display: "flex", justifyContent: "space-between", alignItems: "center",
-                  padding: "0.5rem 0", borderBottom: i < 2 ? `1px solid var(--c-border)` : "none" }}>
+              {ai.schedule.map((row, i) => (
+                <div key={row.key} style={{ display: "flex", justifyContent: "space-between", alignItems: "center",
+                  padding: "0.5rem 0", borderBottom: i < ai.schedule.length - 1 ? `1px solid var(--c-border)` : "none" }}>
                   <div>
-                    <span style={{ fontSize: 12, fontWeight: 700, color: row.active ? TEAL : "var(--c-mid)" }}>{row.phase}</span>
+                    <span style={{ fontSize: 12, fontWeight: 700, color: i === 0 ? TEAL : "var(--c-mid)" }}>{row.label}</span>
                     <div style={{ fontSize: 11, color: "var(--c-light)", marginTop: 1 }}>{row.note}</div>
                   </div>
-                  <span style={{ fontSize: 14, fontWeight: 700, color: row.active ? TEAL : "var(--c-mid)" }}>{row.amount}</span>
+                  <span style={{ fontSize: 14, fontWeight: 700, color: i === 0 ? TEAL : "var(--c-mid)" }}>{usd(row.amount)}</span>
                 </div>
               ))}
               <div style={{ display: "flex", justifyContent: "space-between", paddingTop: "0.5rem" }}>

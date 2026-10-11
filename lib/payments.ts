@@ -9,6 +9,12 @@ export const PAYMENT_LINKS: Record<string, string> = {
   "promo|USD|deposit": "https://buy.stripe.com/fZuaEX9BC8NxaCdf1t57W0c",
   "promo|USD|mvp":     "https://buy.stripe.com/14AcN5g00gfZ9y9g5x57W0d",
   "promo|USD|balance": "https://buy.stripe.com/14AfZh8xyaVFh0B3iL57W0e",
+  // ── Advanced — integration and AI layer, $5,000, half up front ─────────
+  // Empty until the links exist. The Advanced flow starts with a scoping call,
+  // so a missing link is caught by a person rather than by a customer: the
+  // deposit button only appears once the agreement is signed.
+  "advanced|USD|deposit": "",
+  "advanced|USD|balance": "",
   // ── Premium — 50% off ($2,500, was $5,000) ──────────────────────────────
   "premium|USD|deposit": "https://buy.stripe.com/fZucN56pqd3NfWxcTl57W0i",
   "premium|USD|mvp":     "https://buy.stripe.com/aFacN50123tdaCd4mP57W0j",

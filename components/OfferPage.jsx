@@ -9,7 +9,7 @@ import {
 import WordMark from "./WordMark";
 import PipelinePreview from "./PipelinePreview";
 import { getFaqs } from "@/lib/faqs";
-import { EARLY_OFFER, PROMO_ENDS_LABEL, priceFor, usd } from "@/lib/pricing";
+import { ADVANCED, EARLY_OFFER, PROMO_ENDS_LABEL, priceFor, usd } from "@/lib/pricing";
 
 // Fade-and-rise as each section scrolls into view — plays once, doesn't re-trigger on scroll-back.
 // Intentionally inert. Fading every section in on scroll is one of the clearest
@@ -31,6 +31,7 @@ const OFFER_DEADLINE = PROMO_ENDS_LABEL;
 // Every figure on this page comes from lib/pricing, which is also what the
 // Stripe link charges and what the signed PDF says.
 const PROMO = priceFor("promo");
+const ADV = priceFor("advanced");
 
 const TIERS = {
   sym: "$",
@@ -366,7 +367,7 @@ export default function OfferPage() {
         <motion.div {...reveal} id="pricing" className="mt-16">
           <div className="mb-7">
             <div className="text-xs font-medium uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-1">Pricing</div>
-            <h2 className="text-2xl font-semibold tracking-tight">One package. Fixed scope. 50% off.</h2>
+            <h2 className="text-2xl font-semibold tracking-tight">Two ways in. Fixed scope on both.</h2>
             <p className="mt-1.5 text-sm text-slate-600 dark:text-slate-400">One flat build fee: 30-day build plus 60 days FREE support. Keep it running after with an optional {tiers.sym}{tiers.retainer}/mo retainer, plus third-party tools &amp; subscriptions billed at cost. Both are opt-in at signing. Nothing recurring during your build.</p>
           </div>
 
@@ -445,6 +446,50 @@ export default function OfferPage() {
                   Claim this rate <ArrowRight className="h-5 w-5" />
                 </a>
                 <p className="mt-2 text-center text-xs text-slate-500">No call required</p>
+              </div>
+            </div>
+          </div>
+
+          {/* The other job: people who want to keep what they have. Deliberately
+              plainer than the block above, because it is not a discounted
+              impulse buy and it starts with a conversation. */}
+          <div className="rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-6 sm:p-7">
+            <div className="flex flex-col gap-5 sm:flex-row sm:items-start sm:justify-between">
+              <div className="flex-1">
+                <div className="flex flex-wrap items-center gap-2">
+                  <h3 className="text-lg font-semibold tracking-tight">Advanced: keep your systems, connect them</h3>
+                  <span className="rounded-full border border-slate-300 dark:border-slate-600 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
+                    Scoping call required
+                  </span>
+                </div>
+                <p className="mt-2 text-sm leading-relaxed text-slate-600 dark:text-slate-400">
+                  For teams who do not want to replace anything. We map how your current systems connect to each
+                  other, work out where AI actually belongs in your workflow, and build that layer.
+                </p>
+                <div className="mt-4 flex items-baseline gap-2">
+                  <span className="font-mono text-3xl font-semibold tabular-nums">{usd(ADV.total)}</span>
+                  <span className="text-sm text-slate-500 dark:text-slate-400">
+                    {usd(ADV.deposit)} to start, {usd(ADV.balance)} on handover
+                  </span>
+                </div>
+                <ul className="mt-4 space-y-1.5">
+                  {ADVANCED.requires.map((r) => (
+                    <li key={r} className="flex items-start gap-2 text-sm text-slate-600 dark:text-slate-400">
+                      <Check className="mt-0.5 h-4 w-4 flex-none text-teal-500" strokeWidth={2.5} /> {r}
+                    </li>
+                  ))}
+                </ul>
+                <p className="mt-4 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/60 p-3.5 text-xs leading-relaxed text-slate-600 dark:text-slate-400">
+                  <span className="font-semibold text-slate-900 dark:text-slate-200">One honest caveat. </span>
+                  {ADVANCED.caveat}
+                </p>
+              </div>
+              <div className="flex-none w-full sm:w-auto">
+                <a href="/calculator?step=buildplan&amp;tier=advanced"
+                  className="flex sm:inline-flex items-center justify-center gap-2 rounded-xl border-2 border-slate-900 dark:border-white px-7 py-3.5 text-sm font-semibold hover:bg-slate-900 hover:text-white dark:hover:bg-white dark:hover:text-slate-900 whitespace-nowrap transition-colors">
+                  Book a scoping call <ArrowRight className="h-4 w-4" />
+                </a>
+                <p className="mt-2 text-center text-xs text-slate-400 dark:text-slate-500">We reply within one business day</p>
               </div>
             </div>
           </div>

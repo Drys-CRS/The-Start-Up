@@ -1,4 +1,4 @@
-import { EARLY_OFFER, PROMO_ENDS_LABEL, earlyLive, priceFor, usd } from "@/lib/pricing";
+import { ADVANCED, EARLY_OFFER, PROMO_ENDS_LABEL, earlyLive, priceFor, usd } from "@/lib/pricing";
 
 // Plain-language answers, straight punctuation, no em dashes. Facts here are
 // load-bearing: the prices, the payment milestones and the promo end date must
@@ -38,6 +38,14 @@ const FAQ_LIST = (p: ReturnType<typeof priceFor>, early: boolean) => [
         ? `One build fee of ${usd(p.total)}. That is ${usd(EARLY_OFFER.offUsd)} off the ${usd(p.standard)} half-price rate, for agreements signed on or before ${EARLY_OFFER.deadlineLabel}. After that it goes back to ${usd(p.standard)}.`
         : `One build fee of ${usd(p.total)}, which is half the standard ${usd(p.list)} rate, and the half-price rate runs until ${PROMO_ENDS_LABEL}.`) +
       ` A payment plan is included at no extra cost: ${usd(p.deposit)} to start, ${usd(p.mvp)} once you approve the MVP plan, ${usd(p.balance)} on delivery. The fee covers the 30-day build and 60 days of support afterwards. Once the free support ends you can opt in to a $150/month retainer to keep the system maintained, and you pay for any third-party tools at cost. Both are optional and neither is charged during the build.`,
+  },
+  {
+    q: "We do not want to replace our systems. Can you just connect them?",
+    a:
+      `Yes, that is the Advanced option: ${usd(priceFor("advanced").total)} for the engagement, ${usd(priceFor("advanced").deposit)} to start and ${usd(priceFor("advanced").balance)} on handover. ` +
+      "You keep the systems you already run. We map how they connect, work out where AI genuinely helps in your workflow rather than where it demos well, and build that layer. " +
+      "It starts with a scoping call, and we need access to the systems you want connected, or someone on your side who can grant it. " +
+      ADVANCED.caveat,
   },
   {
     q: "What platforms do you build on?",

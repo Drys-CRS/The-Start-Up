@@ -3,10 +3,13 @@ import { SITE_URL } from "./site";
 // Absolute, customer-facing URLs used in emails and redirects. Built in one place
 // so the query parameters each page expects never drift between senders.
 
-export type TierKey = "promo" | "premium";
+export type TierKey = "promo" | "premium" | "advanced";
 
-// Map a Scope Lock's stored tier label to its pricing family.
+// Map a Scope Lock's stored tier label to its pricing family. Advanced is
+// checked first: its label is the only one a human might also write "premium"
+// into, and the integration engagement is not a build tier.
 export function tierKey(label: string): TierKey | null {
+  if (/advanced/i.test(label)) return "advanced";
   if (/promo/i.test(label)) return "promo";
   if (/premium/i.test(label)) return "premium";
   return null;
