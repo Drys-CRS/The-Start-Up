@@ -48,3 +48,8 @@ export function unsubscribeUrl(o: { board: FollowUpBoard; itemId: string; email:
 export function mondayBoardUrl(boardId: string): string {
   return `https://view.monday.com/boards/${boardId}`;
 }
+
+/** Deep link to one item on a board. Monday calls items "pulses" in URLs. */
+export function mondayItemUrl(boardId: string, itemId: string): string {
+  return `https://view.monday.com/boards/${boardId}/pulses/${itemId}`;
+}
