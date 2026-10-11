@@ -317,14 +317,55 @@ export async function listInbox(
 
 // ── Email log ───────────────────────────────────────────────────────────────
 
-export async function listEmails(opts: { limit?: number; problemsOnly?: boolean } = {}): Promise<EmailRow[]> {
+export async function listEmails(
+  opts: { limit?: number; problemsOnly?: boolean; direction?: "inbound" | "outbound" } = {},
+): Promise<EmailRow[]> {
   let query = client()
     .from("emails")
     .select(EMAIL_FIELDS)
     .order("created_at", { ascending: false })
     .limit(opts.limit || 200);
   if (opts.problemsOnly) query = query.in("status", ["failed", "bounced", "complained"]);
+  if (opts.direction) query = query.eq("direction", opts.direction);
   const { data, error } = await query;
   if (error) throw error;
   return (data || []) as unknown as EmailRow[];
+}
+
+/** One message with its body, for the thread view. */
+export type EmailMessage = EmailRow & {
+  provider_id: string | null;
+  message_id: string | null;
+  body_text: string | null;
+  body_html: string | null;
+};
+
+const MESSAGE_FIELDS = `${EMAIL_FIELDS}, provider_id, message_id, body_text, body_html`;
+
+export async function getEmail(id: string): Promise<EmailMessage | null> {
+  const { data, error } = await client().from("emails").select(MESSAGE_FIELDS).eq("id", id).maybeSingle();
+  if (error) throw error;
+  return (data as unknown as EmailMessage) || null;
+}
+
+/**
+ * Everything in the same conversation, oldest first, so it reads like a thread.
+ *
+ * Falls back to the single message when there is no conversation id: Resend
+ * sends ours without one, and a thread of one is still a thread.
+ */
+export async function getThread(id: string): Promise<EmailMessage[]> {
+  const first = await getEmail(id);
+  if (!first) return [];
+  if (!first.conversation_id) return [first];
+
+  const { data, error } = await client()
+    .from("emails")
+    .select(MESSAGE_FIELDS)
+    .eq("conversation_id", first.conversation_id)
+    .order("created_at", { ascending: true });
+  if (error) throw error;
+
+  const rows = (data as unknown as EmailMessage[]) || [];
+  return rows.length ? rows : [first];
 }
