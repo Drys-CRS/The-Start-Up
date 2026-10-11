@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { LegalPage, LegalSection } from "@/components/LegalPage";
+import { ContactDetails, LegalPage, LegalSection } from "@/components/LegalPage";
 import { COMPANY, LEGAL_UPDATED } from "@/lib/company";
 import { SITE_URL } from "@/lib/site";
 
@@ -138,6 +138,7 @@ export default function PrivacyPage() {
 
       <LegalSection title="Contact">
         <p>Questions or requests about your information? Email {email}.</p>
+        <ContactDetails />
       </LegalSection>
     </LegalPage>
   );

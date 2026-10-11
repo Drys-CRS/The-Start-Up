@@ -1,5 +1,27 @@
 import Link from "next/link";
 import WordMark from "@/components/WordMark";
+import { COMPANY, addressOneLine, hasAddress } from "@/lib/company";
+
+/**
+ * Registered entity, postal address and phone, for the Contact section of a
+ * legal page. Renders only what is set: a half-filled address on a privacy
+ * policy is worse than naming the email alone.
+ */
+export function ContactDetails() {
+  if (!hasAddress() && !COMPANY.phone) return null;
+  return (
+    <p>
+      <strong>{COMPANY.legalName}</strong>
+      {hasAddress() && <>, {addressOneLine()}</>}
+      {COMPANY.phone && (
+        <>
+          . Telephone <a href={`tel:${COMPANY.phoneHref || COMPANY.phone}`}>{COMPANY.phone}</a>
+        </>
+      )}
+      .
+    </p>
+  );
+}
 
 // Shared shell for the Privacy, Terms, and Refund pages.
 export function LegalPage({ title, updated, children }: { title: string; updated: string; children: React.ReactNode }) {

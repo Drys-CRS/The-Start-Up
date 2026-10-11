@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { LegalPage, LegalSection } from "@/components/LegalPage";
+import { ContactDetails, LegalPage, LegalSection } from "@/components/LegalPage";
 import { COMPANY, LEGAL_UPDATED } from "@/lib/company";
 import { SITE_URL } from "@/lib/site";
 
@@ -63,6 +63,7 @@ export default function RefundPolicyPage() {
           business days to post them.
         </p>
         <p>If you have a problem with a charge, please contact us before disputing it with your bank.</p>
+        <ContactDetails />
       </LegalSection>
     </LegalPage>
   );

@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { LegalPage, LegalSection } from "@/components/LegalPage";
+import { ContactDetails, LegalPage, LegalSection } from "@/components/LegalPage";
 import { COMPANY, LEGAL_UPDATED } from "@/lib/company";
 import { SITE_URL } from "@/lib/site";
 
@@ -167,6 +167,7 @@ export default function TermsPage() {
 
       <LegalSection title="19. Contact">
         <p>Questions about these Terms? Email {email}.</p>
+        <ContactDetails />
       </LegalSection>
     </LegalPage>
   );

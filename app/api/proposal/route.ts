@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { ADVANCED, EARLY_OFFER, TIER_CONFIG, priceFor, usd, type TierKey } from "@/lib/pricing";
+import { COMPANY, addressOneLine } from "@/lib/company";
 import { rateLimit } from "@/lib/rate-limit";
 import { PDFDocument, StandardFonts, PageSizes, rgb, PDFName, PDFString, PDFArray } from "pdf-lib";
 import { addFileToItem } from "@/lib/monday";
@@ -133,6 +134,12 @@ export async function POST(req: NextRequest) {
 
   // Reuse the Build Plan's ref so the proposal, signature, and /status all agree.
   const refNo = (typeof b.refNo === "string" && b.refNo) || `SL-${Date.now().toString().slice(-8)}`;
+  // Named on the agreement itself: a contract should identify who is
+  // contracting, and where. Omitted entirely while unset rather than printing
+  // a partial address on a signed document.
+  const contactBits = [addressOneLine(), COMPANY.phone ? `telephone ${COMPANY.phone}` : ""].filter(Boolean);
+  const providerAddress = contactBits.length ? ` of ${contactBits.join(", ")}` : "";
+
   const today  = fmt(new Date());
   const expiry = fmt(new Date(Date.now() + 14 * 864e5));
 
@@ -350,7 +357,7 @@ export async function POST(req: NextRequest) {
   if (cy < MIN_Y + 200) newPage();
   sectionTitle("Terms & Conditions");
   const tcs: [string, string][] = [
-    ["1. Scope & Agreement", "This document constitutes a binding service proposal between The Startup, a service of Cyber Retaliator Solutions LLC (service provider), and the client named herein. Scope is limited to what is described; changes require written amendment and may affect timeline and price."],
+    ["1. Scope & Agreement", `This document constitutes a binding service proposal between ${COMPANY.brand}, a service of ${COMPANY.legalName}${providerAddress} (service provider), and the client named herein. Scope is limited to what is described; changes require written amendment and may affect timeline and price.`],
     ["2. 30-Day Build Guarantee", "We commit to delivering a working system within 30 calendar days of the confirmed build start. If we miss this for reasons attributable solely to us, the client receives an additional 30 days of support at no cost."],
     ["3. Payment Terms", "A payment plan is included at no extra cost: all tiers follow a three-stage schedule of 10% deposit on signature (secures your start date); 80% on MVP plan approval (client must review and approve before build continues); 10% final balance on delivery at end of the 30-day build. Invoices are due within 5 business days. Overdue payments may pause the build."],
     ["4. Ownership of Deliverables", "All custom configurations, automations, dashboards, and documentation become the client's property upon final payment. The Startup retains rights to its reusable internal frameworks and methodologies."],

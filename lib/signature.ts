@@ -1,11 +1,11 @@
 // The sign-off on replies sent from the admin portal.
 //
-// Built from lib/company so the address in a reply is the same one on the
-// site footer, the legal pages and the agreement. A signature that drifts
-// from the contact details on the page is how a customer ends up emailing a
-// mailbox nobody reads.
+// Built from lib/company so the address and number in a reply are the same
+// ones on the site footer, the legal pages and the agreement. A signature
+// that drifts from the contact details on the page is how a customer ends up
+// phoning a line nobody answers.
 
-import { COMPANY } from "./company";
+import { COMPANY, addressOneLine } from "./company";
 import { SITE_URL } from "./site";
 
 /** Plain text, because Graph sends replies as text. */
@@ -13,13 +13,20 @@ export function signature(sender?: string | null): string {
   const who = (sender || "").trim();
   const name = who ? who.split("@")[0].replace(/[._-]+/g, " ").replace(/\b\w/g, c => c.toUpperCase()) : COMPANY.brand;
 
+  // Each line only appears once it has a value, so an unfilled detail is
+  // absent rather than a blank line or the word "undefined".
   return [
     "Regards,",
     name,
     COMPANY.brand,
+    COMPANY.legalName,
+    addressOneLine(),
+    COMPANY.phone,
     COMPANY.supportEmail,
     SITE_URL.replace(/^https?:\/\//, ""),
-  ].join("\n");
+  ]
+    .filter(Boolean)
+    .join("\n");
 }
 
 /** Append it, unless the writer has already signed off themselves. */
