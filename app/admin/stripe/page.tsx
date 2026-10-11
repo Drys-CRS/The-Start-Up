@@ -3,6 +3,7 @@ import { priceFor, type TierKey } from "@/lib/pricing";
 import { usd } from "@/lib/pricing";
 import { Empty, NotConfigured, Pill, Table, Td } from "../ui";
 import StripeActions from "./StripeActions";
+import DescriptionFixer from "./DescriptionFixer";
 
 export const dynamic = "force-dynamic";
 export const metadata = { title: "Stripe" };
@@ -114,7 +115,23 @@ export default async function AdminStripe() {
         <StripeActions items={audit.stale} />
       </Section>
 
-      <Section title="Product descriptions customers can see">
+      <Section title="Descriptions quoting Rand or a dead date">
+        <p className="mb-3 text-xs text-slate-500 dark:text-slate-400">
+          These show on the Stripe-hosted checkout page and on receipts, which makes them the only ZAR a customer
+          can still actually see. The replacement is written from lib/pricing, so it says what the site says. Edit
+          before saving if you want different wording.
+        </p>
+        <DescriptionFixer
+          products={audit.keptProducts.map(p => ({
+            ...p,
+            suggestion: `${priceFor("promo").name} build. ${usd(priceFor("promo").total)} all in, paid ${priceFor("promo")
+              .schedule.map(m => usd(m.amount))
+              .join(" then ")}. 30-day build with 60 days of support included.`,
+          }))}
+        />
+      </Section>
+
+      <Section title="All product descriptions">
         {audit.keptProducts.length ? (
           <Table head={["Product", "Description"]}>
             {audit.keptProducts.map(p => {
