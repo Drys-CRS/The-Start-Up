@@ -2,6 +2,7 @@ import { Resend } from "resend";
 import { stageMeta } from "./status";
 import { statusUrl, tierKey } from "./links";
 import { SITE_URL } from "./site";
+import { COMPANY } from "./company";
 import { findScopeLock, logEmail } from "./db";
 
 // Resend is optional: if RESEND_API_KEY is unset (local/dev), every send is a
@@ -23,31 +24,96 @@ const escapeHtml = (s: string) =>
   s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
 
 // ── Layout ────────────────────────────────────────────────────────────────────
+//
+// Same structure as the CRS partner portal's email layout: a slate page, the
+// logo as a rounded tile, a letter-spaced brand label, one white card, a small
+// footer. Our palette and our mark.
+//
+// Nested tables with inline styles, because that is what email clients render.
+// Outlook on Windows ignores most modern CSS, so there is no flexbox, no CSS
+// variables, no classes, and every colour is a literal.
+
+const PAGE_BG = "#f1f5f9";
+const CARD_BORDER = "#e2e8f0";
+const FAINT = "#cbd5e1";
+
+/** Absolute, because an email is read somewhere that is not our origin. */
+const logoUrl = () => `${SITE_URL}/logo-icon.png`;
 
 function shell(body: string, footer = ""): string {
-  return `
-  <div style="font-family:-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;max-width:520px;margin:0 auto;padding:24px;">
-    <div style="background:${DARK};border-radius:12px 12px 0 0;padding:20px 24px;">
-      <span style="color:#fff;font-size:16px;font-weight:800;letter-spacing:0.5px;">THE STARTUP</span>
-    </div>
-    <div style="border:1px solid #e2e8f0;border-top:none;border-radius:0 0 12px 12px;padding:28px 24px;">
-      ${body}
-    </div>
-    ${footer ? `<p style="margin:16px 0 0;font-size:11px;line-height:1.5;color:${LIGHT};text-align:center;">${footer}</p>` : ""}
-  </div>`;
+  const year = new Date().getFullYear();
+  return `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>${COMPANY.brand}</title>
+</head>
+<body style="margin:0;padding:0;background-color:${PAGE_BG};font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif">
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:${PAGE_BG}">
+    <tr>
+      <td align="center" style="padding:40px 16px">
+        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="max-width:520px">
+
+          <!-- The icon has a dark background baked into it, so the rounded
+               corner is what makes it read as a tile rather than a block. -->
+          <tr>
+            <td align="center" style="padding-bottom:10px">
+              <img src="${logoUrl()}" alt="${COMPANY.brand}" width="56" height="56"
+                style="display:block;width:56px;height:56px;border-radius:14px;border:0" />
+            </td>
+          </tr>
+
+          <tr>
+            <td align="center" style="padding-bottom:24px">
+              <span style="display:block;font-size:11px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:${MID};text-align:center">
+                ${COMPANY.brand}
+              </span>
+            </td>
+          </tr>
+
+          <tr>
+            <td style="background-color:#ffffff;border:1px solid ${CARD_BORDER};border-radius:16px;padding:32px 28px">
+              ${body}
+            </td>
+          </tr>
+
+          <tr>
+            <td align="center" style="padding-top:20px">
+              ${footer ? `<p style="margin:0 0 6px;font-size:11px;line-height:1.6;color:${LIGHT};text-align:center">${footer}</p>` : ""}
+              <p style="margin:0;font-size:11px;line-height:1.6;color:${FAINT};text-align:center">
+                &copy; ${year} ${COMPANY.legalName}. ${COMPANY.brand} is a service of ${COMPANY.legalName}.
+              </p>
+            </td>
+          </tr>
+
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>`;
 }
 
 const eyebrow = (text: string) =>
-  `<p style="margin:0 0 4px;font-size:12px;font-weight:700;color:${TEAL};text-transform:uppercase;letter-spacing:0.5px;">${escapeHtml(text)}</p>`;
+  `<p style="margin:0 0 6px;font-size:11px;font-weight:700;color:${TEAL};text-transform:uppercase;letter-spacing:0.12em">${escapeHtml(text)}</p>`;
 
 const heading = (text: string) =>
-  `<h1 style="margin:0 0 12px;font-size:20px;color:${DARK};">${escapeHtml(text)}</h1>`;
+  `<h1 style="margin:0 0 14px;font-size:21px;font-weight:700;line-height:1.3;color:${DARK}">${escapeHtml(text)}</h1>`;
 
 const paragraph = (text: string) =>
-  `<p style="margin:0 0 16px;font-size:14px;line-height:1.6;color:${MID};">${escapeHtml(text)}</p>`;
+  `<p style="margin:0 0 16px;font-size:15px;line-height:1.7;color:${MID}">${escapeHtml(text)}</p>`;
 
+// A table, not a styled anchor: Outlook will not give an <a> padding, so a
+// bare anchor collapses to underlined text with no button around it.
 const button = (label: string, url: string) =>
-  `<a href="${escapeHtml(url)}" style="display:inline-block;background:${TEAL};color:#fff;text-decoration:none;font-weight:700;font-size:14px;padding:11px 22px;border-radius:8px;">${escapeHtml(label)} →</a>`;
+  `<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin:4px 0">
+    <tr>
+      <td align="center" style="border-radius:10px;background-color:${TEAL}">
+        <a href="${escapeHtml(url)}" style="display:inline-block;padding:13px 26px;font-size:15px;font-weight:700;color:#ffffff;text-decoration:none;border-radius:10px">${escapeHtml(label)} &rarr;</a>
+      </td>
+    </tr>
+  </table>`;
 
 // ── Send + log ───────────────────────────────────────────────────────────────
 
@@ -140,6 +206,18 @@ export async function sendPortalLink(opts: {
   token: string;
   projects: number;
 }): Promise<boolean> {
+  const html = portalLinkHtml(opts);
+
+  return send({
+    to: opts.to,
+    subject: "Your sign-in link",
+    html,
+    replyTo: TEAM_TO || undefined,
+    template: "portal_sign_in",
+  });
+}
+
+export function portalLinkHtml(opts: { to: string; token: string; projects: number }): string {
   const link = `${SITE_URL}/status/enter?t=${encodeURIComponent(opts.token)}`;
   const what =
     opts.projects > 1
@@ -157,17 +235,20 @@ export async function sendPortalLink(opts: {
     `<p style="margin:10px 0 0;font-size:11px;line-height:1.5;color:${LIGHT};">Button not working? Paste this into your browser: ` +
     `<a href="${escapeHtml(link)}" style="color:${TEAL};">${escapeHtml(link)}</a></p>`;
 
-  return send({
-    to: opts.to,
-    subject: "Your sign-in link",
-    html: shell(body),
-    replyTo: TEAM_TO || undefined,
-    template: "portal_sign_in",
-  });
+  return shell(body);
 }
 
 /** The same one-time link, for the admin portal. */
 export async function sendAdminLink(opts: { to: string; token: string }): Promise<boolean> {
+  return send({
+    to: opts.to,
+    subject: "Your admin sign-in link",
+    html: adminLinkHtml(opts),
+    template: "admin_sign_in",
+  });
+}
+
+export function adminLinkHtml(opts: { to: string; token: string }): string {
   const link = `${SITE_URL}/admin/enter?t=${encodeURIComponent(opts.token)}`;
   const body =
     eyebrow("Admin sign-in") +
@@ -180,12 +261,7 @@ export async function sendAdminLink(opts: { to: string; token: string }): Promis
     `<p style="margin:10px 0 0;font-size:11px;line-height:1.5;color:${LIGHT};">Button not working? Paste this into your browser: ` +
     `<a href="${escapeHtml(link)}" style="color:${TEAL};">${escapeHtml(link)}</a></p>`;
 
-  return send({
-    to: opts.to,
-    subject: "Your admin sign-in link",
-    html: shell(body),
-    template: "admin_sign_in",
-  });
+  return shell(body);
 }
 
 // ── Customer: status updates ─────────────────────────────────────────────────
@@ -201,25 +277,31 @@ export async function sendStatusEmail(opts: {
   const ref = opts.ref || "";
   if (!to || !stageLabel) return false;
 
+  return send({
+    to,
+    subject: `Your build update: ${stageMeta(stageLabel).title}`,
+    html: statusHtml({ stageLabel, ref }),
+    template: `status:${stageLabel}`,
+    ref,
+  });
+}
+
+export function statusHtml(opts: { stageLabel: string; ref?: string }): string {
+  const { stageLabel } = opts;
+  const ref = opts.ref || "";
   const m = stageMeta(stageLabel);
   const body =
     eyebrow("Status update") +
     heading(m.title) +
     paragraph(m.description) +
-    `<div style="background:#f0fdfa;border:1px solid ${TEAL}40;border-radius:10px;padding:14px 16px;margin:0 0 20px;">
+    `<div style="background:#f0fdfa;border:1px solid #99f6e4;border-radius:10px;padding:14px 16px;margin:0 0 20px;">
       <p style="margin:0 0 4px;font-size:12px;font-weight:700;color:#0f766e;">WHAT'S NEXT</p>
       <p style="margin:0;font-size:13px;line-height:1.5;color:${MID};">${escapeHtml(m.next)}</p>
     </div>` +
     button("Track your build status", statusUrl(ref)) +
     (ref ? `<p style="margin:18px 0 0;font-size:12px;color:${LIGHT};">Reference: ${escapeHtml(ref)}</p>` : "");
 
-  return send({
-    to,
-    subject: `Your build update: ${m.title}`,
-    html: shell(body),
-    template: `status:${stageLabel}`,
-    ref,
-  });
+  return shell(body);
 }
 
 // ── Customer: Build Plan confirmation ────────────────────────────────────────

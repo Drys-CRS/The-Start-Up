@@ -51,7 +51,15 @@ export default async function AdminEmails({
             );
           })}
         </nav>
-        <p className="text-sm text-slate-500 dark:text-slate-400">{emails.length} shown</p>
+        <div className="flex items-center gap-4">
+          <Link
+            href="/admin/emails/preview"
+            className="text-xs font-semibold text-teal-600 hover:underline dark:text-teal-400"
+          >
+            Email design →
+          </Link>
+          <p className="text-sm text-slate-500 dark:text-slate-400">{emails.length} shown</p>
+        </div>
       </div>
 
       <div className="mt-4">
