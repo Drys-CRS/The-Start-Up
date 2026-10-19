@@ -1,4 +1,4 @@
-import { auditStripe } from "@/lib/stripe-admin";
+import { auditStripe, WEBHOOK_PATH } from "@/lib/stripe-admin";
 import { priceFor, type TierKey } from "@/lib/pricing";
 import { usd } from "@/lib/pricing";
 import { Empty, NotConfigured, Pill, Table, Td } from "../ui";
@@ -81,6 +81,35 @@ export default async function AdminStripe() {
           </dl>
         ) : (
           <Empty>Stripe did not return account details.</Empty>
+        )}
+      </Section>
+
+      <Section title="Webhook endpoints">
+        <p className="mb-3 text-xs text-slate-500 dark:text-slate-400">
+          Stripe tells us a payment happened by calling one of these. A webhook on the wrong path fails quietly
+          until Stripe emails to say it is giving up, and the payment never gets recorded. The handler lives at{" "}
+          <span className="font-mono">{WEBHOOK_PATH}</span>, on any of our domains.
+        </p>
+        {audit.webhooks?.length ? (
+          <ul className="divide-y divide-slate-100 dark:divide-slate-800">
+            {audit.webhooks.map(w => (
+              <li key={w.id} className="py-2.5">
+                <div className="flex flex-wrap items-center gap-2">
+                  <Pill tone={w.problem ? "warn" : "good"}>{w.problem ? "Check this" : "OK"}</Pill>
+                  <span className="break-all font-mono text-xs text-slate-700 dark:text-slate-200">{w.url}</span>
+                  <span className="text-[11px] text-slate-400 dark:text-slate-500">{w.events} events</span>
+                </div>
+                {w.problem && (
+                  <p className="mt-1 text-xs leading-relaxed text-amber-700 dark:text-amber-400">{w.problem}</p>
+                )}
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <Empty>
+            No webhook endpoints on this account. Without one, a completed payment is never recorded against the
+            deal.
+          </Empty>
         )}
       </Section>
 

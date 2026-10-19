@@ -39,14 +39,51 @@ export type AccountIdentity = {
   addressLines: string[];
 };
 
+/** The path our handler lives at, and the older alias that still re-exports
+ *  it. An endpoint on either one works; anything else is misconfigured. */
+export const WEBHOOK_PATH = "/api/stripe-webhook";
+const WEBHOOK_PATHS = [WEBHOOK_PATH, "/api/webhook"];
+
+export type WebhookEndpoint = {
+  id: string;
+  url: string;
+  status: string;
+  events: number;
+  /** Null when it looks right; otherwise what is wrong with it. */
+  problem: string | null;
+};
+
 export type Audit = {
   configured: boolean;
   currencies: Record<string, number>;
   stale: StaleItem[];
   keptProducts: { id: string; name: string; description: string | null }[];
   identity?: AccountIdentity;
+  webhooks?: WebhookEndpoint[];
   error?: string;
 };
+
+/**
+ * Why an endpoint will not work, in the order the problems bite.
+ *
+ * The root of an alias domain is the specific trap: the canonical-host
+ * redirect in middleware.ts deliberately skips /api/*, so a webhook on the
+ * right path works from any of our domains, but one pointed at the site root
+ * gets a 308 and Stripe does not follow redirects.
+ */
+function webhookProblem(url: string): string | null {
+  let parsed: URL;
+  try {
+    parsed = new URL(url);
+  } catch {
+    return "Not a valid URL.";
+  }
+  if (parsed.protocol !== "https:") return "Not HTTPS. Stripe will not deliver to it.";
+  if (!WEBHOOK_PATHS.includes(parsed.pathname.replace(/\/$/, ""))) {
+    return `Points at ${parsed.pathname || "/"}, which is not the handler. It should be ${WEBHOOK_PATH}, and the site root answers a POST with a redirect rather than a 2xx.`;
+  }
+  return null;
+}
 
 const addressOf = (a: Stripe.Address | null | undefined): string[] =>
   !a ? [] : [a.line1, a.line2, [a.city, a.state, a.postal_code].filter(Boolean).join(", "), a.country].filter(Boolean) as string[];
@@ -70,6 +107,7 @@ export async function auditStripe(): Promise<Audit> {
   const keptProducts: Audit["keptProducts"] = [];
 
   let identity: AccountIdentity | undefined;
+  const webhooks: WebhookEndpoint[] = [];
 
   try {
     // GET /v1/account returns the account the key belongs to. The SDK's typed
@@ -153,6 +191,15 @@ export async function auditStripe(): Promise<Audit> {
         reason: "Checkout no longer uses pre-made links. Archive once no outstanding email points at it.",
       });
     }
+    for await (const hook of stripe.webhookEndpoints.list({ limit: 100 })) {
+      webhooks.push({
+        id: hook.id,
+        url: hook.url,
+        status: hook.status || "unknown",
+        events: hook.enabled_events?.length ?? 0,
+        problem: hook.status !== "enabled" ? `Status is "${hook.status}".` : webhookProblem(hook.url),
+      });
+    }
   } catch (e) {
     return {
       configured: true,
@@ -160,11 +207,12 @@ export async function auditStripe(): Promise<Audit> {
       stale,
       keptProducts,
       identity,
+      webhooks,
       error: e instanceof Error ? e.message : String(e),
     };
   }
 
-  return { configured: true, currencies, stale, keptProducts, identity };
+  return { configured: true, currencies, stale, keptProducts, identity, webhooks };
 }
 
 export type ArchiveResult = { archived: number; failed: { id: string; error: string }[] };
